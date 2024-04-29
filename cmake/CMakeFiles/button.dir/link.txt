@@ -1,1 +1,0 @@
-/usr/bin/cc CMakeFiles/button.dir/tests/button.c.o -o button   -L/user/0/chauvelq/Documents/Semestre_6/PLC/Projet/projet_c_ig_3.1.0/_x11  -Wl,-rpath,/user/0/chauvelq/Documents/Semestre_6/PLC/Projet/projet_c_ig_3.1.0/_x11 libei.a -leibase -lfreeimage -lSDL2 -lSDL2_ttf -lSDL2_gfx -lm 
