@@ -16,5 +16,16 @@ void ei_frame_configure(ei_widget_t widget,
                         ei_anchor_t *img_anchor)
 {
     frame_t *frame = (frame_t *)widget;
-    frame->color = *color;
+
+    if (requested_size != NULL)
+    {
+        widget->requested_size = *requested_size;
+        widget->screen_location.size = widget->requested_size;
+        widget->content_rect = &widget->screen_location;
+    }
+
+    if (color != NULL)
+    {
+        frame->color = *color;
+    }
 }

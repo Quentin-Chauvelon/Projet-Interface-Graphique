@@ -3,10 +3,11 @@
 #include "../api/hw_interface.h"
 #include "../api/ei_application.h"
 #include "../api/ei_widgetclass.h"
+#include "../implem/ei_widgetclass_ext.h"
 #include "../api/ei_geometrymanager.h"
+#include "../implem/ei_geometrymanager_ext.h"
 #include "../implem/ei_implementation.h"
 #include "../implem/ei_frame.h"
-#include "../implem/ei_widgetclass_ext.h"
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
@@ -17,7 +18,7 @@ void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 
     ei_widgetclass_register_all();
 
-    // ei_geometrymanager_register(ei_placer);
+    ei_geometrymanager_register_all();
 
     root = ei_widget_create("frame", NULL, NULL, NULL);
 
