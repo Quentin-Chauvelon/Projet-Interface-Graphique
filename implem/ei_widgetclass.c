@@ -4,31 +4,51 @@
 #include "../implem/ei_frame.h"
 #include "../implem/ei_widgetclass_ext.h"
 
-ei_widgetclass_t **widgetclasses;
-int widgetclasses_index = 0;
+ei_widgetclass_t *first_widgetclass = NULL;
 
 void ei_widgetclass_register(ei_widgetclass_t *widgetclass)
 {
-    widgetclasses[widgetclasses_index++] = widgetclass;
+    if (first_widgetclass == NULL)
+    {
+        first_widgetclass = widgetclass;
+    }
+    else
+    {
+        ei_widgetclass_t *current = first_widgetclass;
+
+        while (current->next != NULL)
+        {
+            current = current->next;
+        }
+
+        current->next = widgetclass;
+    }
 }
 
 ei_widgetclass_t *ei_widgetclass_from_name(ei_const_string_t name)
 {
-    for (int i = 0; i < widgetclasses_index; i++)
+    if (first_widgetclass == NULL)
     {
-        if (strcmp(widgetclasses[i]->name, name) == 0)
+        return NULL;
+    }
+
+    ei_widgetclass_t *current = first_widgetclass;
+
+    while (current != NULL)
+    {
+        if (strcmp(current->name, name) == 0)
         {
-            return widgetclasses[i];
+            return current;
         }
+
+        current = current->next;
     }
 
     return NULL;
 }
 
-ei_widgetclass_t *ei_widgetclass_register_all()
+void ei_widgetclass_register_all()
 {
-    widgetclasses = calloc(5, sizeof(ei_widgetclass_t));
-
     ei_widgetclass_t *frame = malloc(sizeof(ei_widgetclass_t));
     strcpy(frame->name, "frame");
     frame->allocfunc = &frame_allocfunc;
@@ -39,6 +59,4 @@ ei_widgetclass_t *ei_widgetclass_register_all()
     frame->next = NULL;
 
     ei_widgetclass_register(frame);
-
-    return frame;
 }
