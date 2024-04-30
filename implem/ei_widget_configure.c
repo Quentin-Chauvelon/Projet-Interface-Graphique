@@ -1,4 +1,6 @@
 #include "../api/ei_widget_configure.h"
+#include "../implem/ei_implementation.h"
+#include "../implem/ei_frame.h"
 
 void ei_frame_configure(ei_widget_t widget,
                         ei_size_t *requested_size,
@@ -13,4 +15,6 @@ void ei_frame_configure(ei_widget_t widget,
                         ei_rect_ptr_t *img_rect,
                         ei_anchor_t *img_anchor)
 {
+    frame_t *frame = (frame_t *)widget;
+    frame->color = *color;
 }
