@@ -92,6 +92,31 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     return NULL;
 }
 
+void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper)
+{
+    // Draw the relief if there is one and if the border width is not 0
+    // (otherwise it would be overriden by the button itself anyway)
+    if (button->border_width > 0 && button->relief != ei_relief_none)
+    {
+        ei_color_t relief_color_1 = (ei_color_t){200, 200, 200, 255};
+        ei_color_t relief_color_2 = (ei_color_t){100, 100, 100, 255};
+
+        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top), 185, relief_color_1, clipper);
+
+        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom), 185, relief_color_2, clipper);
+    }
+
+    ei_rect_t *border_width_rect = malloc(sizeof(ei_rect_t));
+    border_width_rect->top_left = (ei_point_t){button->widget.screen_location.top_left.x + button->border_width, button->widget.screen_location.top_left.y + button->border_width};
+    border_width_rect->size = (ei_size_t){button->widget.screen_location.size.width - 2 * button->border_width, button->widget.screen_location.size.height - 2 * button->border_width};
+
+    // If relief is none, we don't want to take the border width into account,
+    // otherwise the button would be smaller than what it should be
+    ei_draw_polygon(surface, rounded_frame(button->relief == ei_relief_none ? button->widget.screen_location : *border_width_rect, button->corner_radius, ei_rounded_frame_full), 364, button->color, clipper);
+
+    free(border_width_rect);
+}
+
 int ei_get_nb_points_in_arc(int start_angle, int end_angle)
 {
     return abs(end_angle - start_angle) + 1;
