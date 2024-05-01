@@ -2,10 +2,11 @@
 #define EI_FRAME_H
 
 #include "../api/ei_types.h"
+#include "../implem/ei_implementation.h"
 
 typedef struct
 {
-    ei_widget_t widget;
+    ei_impl_widget_t widget;
     ei_color_t color;
 } ei_frame_t;
 

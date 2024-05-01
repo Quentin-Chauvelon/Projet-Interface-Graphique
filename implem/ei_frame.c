@@ -52,6 +52,6 @@ void frame_setdefaultsfunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
-    frame->widget = widget;
+    frame->widget = *widget;
     frame->color = (ei_color_t){0, 0, 0, 255};
 }
