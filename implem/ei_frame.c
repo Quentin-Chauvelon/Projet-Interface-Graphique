@@ -9,8 +9,8 @@
 
 ei_widget_t frame_allocfunc()
 {
-    frame_t *frame = malloc(sizeof(frame_t));
-    memset(frame, 0, sizeof(frame_t));
+    ei_frame_t *frame = malloc(sizeof(ei_frame_t));
+    memset(frame, 0, sizeof(ei_frame_t));
 
     return (ei_widget_t)frame;
 }
@@ -33,7 +33,7 @@ void frame_releasefunc(ei_widget_t widget)
 
 void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    frame_t *frame = (frame_t *)widget;
+    ei_frame_t *frame = (ei_frame_t *)widget;
 
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
 
@@ -50,8 +50,7 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
 
 void frame_setdefaultsfunc(ei_widget_t widget)
 {
-    ei_widget_t frame_widget = frame_allocfunc();
-    frame_t *frame = (frame_t *)frame_widget;
+    ei_frame_t *frame = (ei_frame_t *)widget;
 
     frame->widget = widget;
     frame->color = (ei_color_t){0, 0, 0, 255};
