@@ -26,4 +26,14 @@
  */
 ei_color_t get_color_from_id(int id);
 
+/**
+ * @brief   Returns the id corresponding to the color
+ *          Eg: {0, 0, 0, 255} -> 0, {0, 1, 1, 255} -> 257
+ *
+ * @param   color   The color to convert to an id
+ *
+ * @return  The id corresponding to the color
+ */
+int get_id_from_color(ei_color_t color);
+
 #endif
