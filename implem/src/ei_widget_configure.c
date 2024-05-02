@@ -1,7 +1,7 @@
 #include "../api/ei_widget_configure.h"
-#include "../implem/ei_implementation.h"
-#include "../implem/ei_frame.h"
-#include "../implem/ei_button.h"
+#include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_frame.h"
+#include "../implem/headers/ei_button.h"
 
 void ei_frame_configure(ei_widget_t widget,
                         ei_size_t *requested_size,

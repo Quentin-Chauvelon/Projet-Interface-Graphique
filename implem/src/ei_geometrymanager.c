@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
 #include "../api/ei_geometrymanager.h"
-#include "../implem/ei_geometrymanager_ext.h"
 #include "../api/ei_placer.h"
+#include "../implem/headers/ei_geometrymanager_ext.h"
 
 ei_geometrymanager_t *first_geometrymanager = NULL;
 

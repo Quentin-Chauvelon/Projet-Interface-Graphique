@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../implem/ei_implementation.h"
 #include "../api/ei_application.h"
 #include "../api/ei_draw.h"
-#include "../implem/ei_draw_ext.h"
-#include "../implem/ei_button.h"
 #include "../api/ei_utils.h"
 #include "../api/ei_widget_configure.h"
+#include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_button.h"
+#include "../implem/headers/ei_draw_ext.h"
 
 ei_widget_t button_allocfunc()
 {

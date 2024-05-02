@@ -3,7 +3,7 @@
 
 #include "../api/ei_types.h"
 #include "../api/hw_interface.h"
-#include "../implem/ei_implementation.h"
+#include "../implem/headers/ei_implementation.h"
 
 typedef struct
 {

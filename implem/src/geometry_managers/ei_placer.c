@@ -1,6 +1,6 @@
 #include "../api/ei_placer.h"
 #include "../api/ei_types.h"
-#include "../implem/ei_implementation.h"
+#include "../implem/headers/ei_implementation.h"
 
 void ei_place(ei_widget_t widget,
               ei_anchor_t *anchor,

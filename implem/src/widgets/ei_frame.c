@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../implem/ei_implementation.h"
 #include "../api/ei_application.h"
 #include "../api/ei_draw.h"
-#include "../implem/ei_frame.h"
 #include "../api/ei_utils.h"
+#include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_frame.h"
 
 ei_widget_t frame_allocfunc()
 {

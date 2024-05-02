@@ -2,8 +2,8 @@
 #define EI_DRAW_EXT_H
 
 #include "../api/ei_types.h"
-#include "../implem/ei_types_ext.h"
-#include "../implem/ei_button.h"
+#include "../implem/headers/ei_types_ext.h"
+#include "../implem/headers/ei_button.h"
 
 /// @brief
 /// @return

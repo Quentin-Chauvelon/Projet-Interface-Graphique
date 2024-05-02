@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
 #include "../api/ei_widgetclass.h"
-#include "../implem/ei_widgetclass_ext.h"
-#include "../implem/ei_frame.h"
-#include "../implem/ei_button.h"
-#include "../implem/ei_implementation.h"
+#include "../implem/headers/ei_widgetclass_ext.h"
+#include "../implem/headers/ei_frame.h"
+#include "../implem/headers/ei_button.h"
+#include "../implem/headers/ei_implementation.h"
 
 ei_widgetclass_t *first_widgetclass = NULL;
 
