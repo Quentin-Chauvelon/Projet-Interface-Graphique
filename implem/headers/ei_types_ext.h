@@ -1,3 +1,15 @@
+/**
+ * @file    ei_types_ext.h
+ *
+ * @brief   Extends the \ref ei_types.h file to add new types.
+ *
+ * @see     \ref ei_types.h
+ *
+ * @authors Seydina BADIANE
+ * @authors Christian BOSSE
+ * @authors Quentin CHAUVELON
+ */
+
 #ifndef EI_TYPES_EXT_H
 #define EI_TYPES_EXT_H
 

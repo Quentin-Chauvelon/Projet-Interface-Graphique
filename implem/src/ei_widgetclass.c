@@ -6,6 +6,8 @@
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_implementation.h"
 
+// Keep a pointer to the first widget class registered
+// Other widget classes are linked using the next pointer
 ei_widgetclass_t *first_widgetclass = NULL;
 
 size_t ei_widget_struct_size()
@@ -15,10 +17,12 @@ size_t ei_widget_struct_size()
 
 void ei_widgetclass_register(ei_widgetclass_t *widgetclass)
 {
+    // If no widget class have been registered yet, set the first one
     if (first_widgetclass == NULL)
     {
         first_widgetclass = widgetclass;
     }
+    // Otherwise, link the new widget class to the previous one
     else
     {
         ei_widgetclass_t *current = first_widgetclass;
@@ -34,6 +38,7 @@ void ei_widgetclass_register(ei_widgetclass_t *widgetclass)
 
 ei_widgetclass_t *ei_widgetclass_from_name(ei_const_string_t name)
 {
+    // If no widget class have been registered yet, return NULL
     if (first_widgetclass == NULL)
     {
         return NULL;
@@ -41,6 +46,7 @@ ei_widgetclass_t *ei_widgetclass_from_name(ei_const_string_t name)
 
     ei_widgetclass_t *current = first_widgetclass;
 
+    // Traverse the linked list to find the widget class with the given name
     while (current != NULL)
     {
         if (strcmp(current->name, name) == 0)
