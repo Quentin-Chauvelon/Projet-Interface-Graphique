@@ -42,13 +42,45 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
 ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
- * @brief   Draws a button
+ * @brief   Draws a button.
+ *          The button takes a border width and a color as parameters so that it can be
+ *          customized without having to change the button values.
+ *
+ * @param   button  The button to draw.
+ * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   clipper If not NULL, the drawing is restricted within this rectangle.
+ * @param   border_width The width of the border of the button.
+ * @param   color The color of the button.
+ */
+void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color);
+
+/**
+ * @brief   Draws a visible button.
+ *          Wrapper for \ref ei_draw_button that uses the button's values.
  *
  * @param   button  The button to draw.
  * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
  * @param   clipper If not NULL, the drawing is restricted within this rectangle.
  */
-void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper);
+static inline void ei_draw_visible_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper)
+{
+    ei_draw_button(button, surface, clipper, button->border_width, button->color);
+}
+
+/**
+ * @brief   Draws an offscreen button.
+ *          Wrapper for \ref ei_draw_button that uses the given border width and color.
+ *
+ * @param   button  The button to draw.
+ * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   clipper If not NULL, the drawing is restricted within this rectangle.
+ * @param   border_width The width of the border of the button.
+ * @param   color The color of the button.
+ */
+static inline void ei_draw_offscreen_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color)
+{
+    ei_draw_button(button, surface, clipper, border_width, color);
+}
 
 /**
  * @brief   Calculates the number of points needed to draw an arc based on the given start and end angles.

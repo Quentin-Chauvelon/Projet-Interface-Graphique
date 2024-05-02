@@ -41,7 +41,14 @@ void button_releasefunc(ei_widget_t widget)
 
 void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    ei_draw_button((ei_button_t *)widget, surface, clipper);
+    ei_button_t *button = (ei_button_t *)widget;
+
+    // Use 2 separate functions to draw the button, since we have to force the border width and color
+    // for the offscreen picking surface.
+    // We could only use one function and always pass the border width and color as parameters,
+    // but it would be less intuitive having to pass them while the button already has them.
+    ei_draw_visible_button(button, surface, clipper);
+    ei_draw_offscreen_button(button, pick_surface, clipper, 0, *widget->pick_color);
 }
 
 void button_setdefaultsfunc(ei_widget_t widget)

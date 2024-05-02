@@ -11,6 +11,7 @@
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
+ei_surface_t picking_offscreen = NULL;
 
 void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 {
@@ -20,10 +21,11 @@ void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 
     ei_geometrymanager_register_all();
 
-    root = ei_widget_create("frame", NULL, NULL, NULL);
-
     window_surface = hw_create_window(main_window_size, fullscreen);
 
+    picking_offscreen = hw_surface_create(window_surface, main_window_size, true);
+
+    root = ei_widget_create("frame", NULL, NULL, NULL);
     root->screen_location = hw_surface_get_rect(window_surface);
 }
 
@@ -32,10 +34,11 @@ void ei_app_run(void)
     ei_widget_t current = root;
 
     hw_surface_lock(window_surface);
+    hw_surface_lock(picking_offscreen);
 
     while (true)
     {
-        current->wclass->drawfunc(current, window_surface, NULL, NULL);
+        current->wclass->drawfunc(current, window_surface, picking_offscreen, NULL);
 
         if (current->next_sibling != NULL)
         {
@@ -52,6 +55,8 @@ void ei_app_run(void)
     }
 
     hw_surface_unlock(window_surface);
+    hw_surface_unlock(picking_offscreen);
+
     hw_surface_update_rects(window_surface, NULL);
 
     getchar();
@@ -59,6 +64,8 @@ void ei_app_run(void)
 
 void ei_app_free(void)
 {
+    free(root);
+    hw_quit();
 }
 
 ei_widget_t ei_app_root_widget(void)

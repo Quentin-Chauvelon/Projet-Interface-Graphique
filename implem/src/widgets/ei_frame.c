@@ -39,11 +39,11 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
 
     point_array[0] = widget->screen_location.top_left;
     point_array[1] = ei_point(widget->screen_location.top_left.x + widget->screen_location.size.width, widget->screen_location.top_left.y);
-    point_array[1] = ei_point(widget->screen_location.top_left.x + widget->screen_location.size.width, widget->screen_location.top_left.y);
     point_array[2] = ei_point(widget->screen_location.top_left.x + widget->screen_location.size.width, widget->screen_location.top_left.y + widget->screen_location.size.height);
     point_array[3] = ei_point(widget->screen_location.top_left.x, widget->screen_location.top_left.y + widget->screen_location.size.height);
 
     ei_draw_polygon(surface, point_array, 4, frame->color, clipper);
+    ei_draw_polygon(pick_surface, point_array, 4, *widget->pick_color, clipper);
 
     free(point_array);
 }
