@@ -41,7 +41,7 @@ void*			ei_widget_get_user_data		(ei_widget_t		widget)
 
 const ei_size_t*	ei_widget_get_requested_size	(ei_widget_t		widget)
 {
-    return (*widget).requested_size;
+    return &(widget->requested_size);
 }
 
 void	 		ei_widget_set_requested_size	(ei_widget_t		widget,
@@ -52,7 +52,7 @@ void	 		ei_widget_set_requested_size	(ei_widget_t		widget,
 
 const ei_rect_t*	ei_widget_get_content_rect	(ei_widget_t		widget)
 {
-    return (*widget).content_rect;
+    return widget->content_rect;
 }
 
 void	 		ei_widget_set_content_rect	(ei_widget_t		widget,
