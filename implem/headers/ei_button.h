@@ -25,6 +25,8 @@ typedef struct
     int border_width;
     int corner_radius;
     ei_relief_t relief;
+    ei_callback_t callback;
+    ei_user_param_t *user_param;
 } ei_button_t;
 
 /**

@@ -75,4 +75,14 @@ void ei_button_configure(ei_widget_t widget,
     {
         button->relief = *relief;
     }
+
+    if (callback != NULL)
+    {
+        button->callback = *callback;
+    }
+
+    if (user_param != NULL)
+    {
+        button->user_param = *user_param;
+    }
 }

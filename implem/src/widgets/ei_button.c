@@ -59,4 +59,6 @@ void button_setdefaultsfunc(ei_widget_t widget)
     button->border_width = k_default_button_border_width;
     button->corner_radius = k_default_button_corner_radius;
     button->relief = ei_relief_raised;
+    button->callback = NULL;
+    button->user_param = NULL;
 }
