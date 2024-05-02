@@ -1,33 +1,59 @@
-#include <stdio.h>
-#include "../api/ei_types.h"
-#include "../api/ei_widget.h"
-#include <math.h>
-#define M_PI       3.14159265358979323846
+#include <stdlib.h>
 
-ei_point_t* arc(ei_point_t* center,
-        int radius,
-        double  B_angle,
-        double E_angle)
+#include "../api/ei_geometrymanager.h"
+#include "../implem/ei_geometrymanager_ext.h"
+#include "../api/ei_placer.h"
+
+ei_geometrymanager_t *first_geometrymanager = NULL;
+
+void ei_geometrymanager_register(ei_geometrymanager_t *geometrymanager)
 {
-    /*l' angle est pris par rapport a la l'horizontale.
-    Notre but est de trouver maintenat le nombre de point et leur valeurs a mettre
-    dans le tableau */
-    int number=100; //nombre de points
-    
-    ei_point_t **tab = malloc( number*sizeof(ei_point_t*));
-    ei_point_t **p_tab= tab ;
-    //int ** tab_angle = malloc(number*sizeof(int));
-    double arc_radius = (E_angle-B_angle) / number;
-
-    int i=0;
-    while( i< number ){
-        int x = center->x + radius*cos( (double) (B_angle+i*arc_radius));
-        int y = center->y + radius*sin( (double) (B_angle+i*arc_radius));
-        ei_point_t *point = malloc(sizeof(ei_point_t));
-        *point=(ei_point_t) {x,y};
-        *p_tab = point;
-        p_tab ++;
-        i++;
+    if (first_geometrymanager == NULL)
+    {
+        first_geometrymanager = geometrymanager;
     }
-    return tab;
+    else
+    {
+        ei_geometrymanager_t *current = first_geometrymanager;
+
+        while (current->next != NULL)
+        {
+            current = current->next;
+        }
+
+        current->next = geometrymanager;
+    }
+}
+
+ei_geometrymanager_t *ei_geometrymanager_from_name(ei_geometrymanager_name_t name)
+{
+    if (first_geometrymanager == NULL)
+    {
+        return NULL;
+    }
+
+    ei_geometrymanager_t *current = first_geometrymanager;
+
+    while (current != NULL)
+    {
+        if (strcmp(current->name, name) == 0)
+        {
+            return current;
+        }
+
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+void ei_geometrymanager_register_all()
+{
+    ei_geometrymanager_t *placer = malloc(sizeof(ei_geometrymanager_t));
+    strcpy(placer->name, "placer");
+    placer->runfunc = NULL;
+    placer->releasefunc = NULL;
+    placer->next = NULL;
+
+    ei_geometrymanager_register(placer);
 }
