@@ -10,11 +10,13 @@
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_widgetclass_ext.h"
 #include "../implem/headers/ei_geometrymanager_ext.h"
+#include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_frame.h"
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
 ei_surface_t offscreen_picking = NULL;
+bool main_loop_running = true;
 
 void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 {
@@ -36,7 +38,7 @@ void ei_app_run(void)
 {
     ei_event_t event;
 
-    while (true)
+    while (main_loop_running)
     {
         ei_widget_t current = root;
 
@@ -68,31 +70,7 @@ void ei_app_run(void)
 
         hw_event_wait_next(&event);
 
-        // User pressed a key
-        if (event.type == ei_ev_keydown)
-        {
-            // If the user pressed the escape key, exit the application
-            if (event.param.key_code == SDLK_ESCAPE)
-            {
-                break;
-            }
-        }
-        // User pressed a mouse button
-        else if (event.type == ei_ev_mouse_buttondown)
-        {
-            ei_widget_t widget = ei_widget_pick(&event.param.mouse.where);
-
-            // If the user clicked on a button, call its callback function
-            if (widget != NULL && strcmp(widget->wclass->name, "button") == 0)
-            {
-                ei_button_t *button = (ei_button_t *)widget;
-
-                if (button->callback != NULL)
-                {
-                    button->callback(widget, &event, button->user_param);
-                }
-            }
-        }
+        handle_event(event);
     }
 }
 
@@ -101,6 +79,11 @@ void ei_app_free(void)
     free(root);
     hw_surface_free(offscreen_picking);
     hw_quit();
+}
+
+void ei_app_quit_request(void)
+{
+    main_loop_running = false;
 }
 
 ei_widget_t ei_app_root_widget(void)

@@ -86,7 +86,7 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
         return NULL;
     }
 
-    // Iterate through the tree of widgets to find the one that was clicked
+    // Traverse the tree of widgets to find the one that was clicked
     while (true)
     {
         if (current->pick_id == id)
