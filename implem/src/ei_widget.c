@@ -2,6 +2,9 @@
 #include "../api/ei_widgetclass.h"
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_utils_ext.h"
+
+int pick_id = 0;
 
 ei_widget_t ei_widget_create(ei_const_string_t class_name,
                              ei_widget_t parent,
@@ -12,6 +15,10 @@ ei_widget_t ei_widget_create(ei_const_string_t class_name,
 
     ei_widget_t widget = wclass->allocfunc();
     wclass->setdefaultsfunc(widget);
+
+    widget->pick_id = pick_id++;
+    widget->pick_color = malloc(sizeof(ei_color_t));
+    *(widget->pick_color) = get_color_from_id(widget->pick_id);
 
     widget->wclass = wclass;
 
