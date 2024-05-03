@@ -7,13 +7,25 @@
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
+#include "../implem/headers/ei_widget_ext.h"
 
 int pick_id = 0;
 
-ei_widget_t ei_widget_create(ei_const_string_t class_name,
-                             ei_widget_t parent,
-                             ei_user_param_t user_data,
-                             ei_widget_destructor_t destructor)
+ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor)
+{
+    if (parent == NULL)
+    {
+        if (!TESTING)
+        {
+            printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\n", __func__, __FILE__, __LINE__);
+        }
+        return NULL;
+    }
+
+    return ei_widget_create_internal(class_name, parent, user_data, destructor);
+}
+
+ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor)
 {
     ei_widgetclass_t *wclass = ei_widgetclass_from_name(class_name);
 

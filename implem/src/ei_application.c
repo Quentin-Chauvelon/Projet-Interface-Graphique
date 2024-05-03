@@ -13,6 +13,7 @@
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_internal_callbacks.h"
+#include "../implem/headers/ei_widget_ext.h"
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
@@ -33,7 +34,7 @@ void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 
     offscreen_picking = hw_surface_create(window_surface, main_window_size, true);
 
-    root = ei_widget_create("frame", NULL, NULL, NULL);
+    root = ei_widget_create_internal("frame", NULL, NULL, NULL);
     root->screen_location = hw_surface_get_rect(window_surface);
 }
 

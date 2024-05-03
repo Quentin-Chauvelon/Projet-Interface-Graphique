@@ -15,6 +15,8 @@
 
 #include "../api/hw_interface.h"
 
+const bool TESTING = false;
+
 /**
  * \brief	Returns the offscreen picking surface.
  *
