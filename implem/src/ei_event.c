@@ -142,15 +142,13 @@ static bool handle_tag_event(ei_event_bind_t *binded_event, ei_event_t event, ei
  */
 static bool handle_mouse_button_down_event(ei_event_t event)
 {
-    ei_widget_t widget = ei_widget_pick(&event.param.mouse.where);
-
-    if (widget != NULL && strcmp(widget->wclass->name, "button") == 0)
+    if (picking_widget != NULL && strcmp(picking_widget->wclass->name, "button") == 0)
     {
-        ei_button_t *button = (ei_button_t *)widget;
+        ei_button_t *button = (ei_button_t *)picking_widget;
 
         if (button->callback != NULL)
         {
-            return button->callback(widget, &event, button->user_param);
+            return button->callback(picking_widget, &event, button->user_param);
         }
     }
 
@@ -160,19 +158,22 @@ static bool handle_mouse_button_down_event(ei_event_t event)
 void handle_event(ei_event_t event)
 {
     ei_event_bind_t *current_event = first_event_bind;
+
+    // Keep a reference to the widget beneath the mouse cursor, this way, we don't have
+    // to call the function multiple times in the callback functions
+    picking_widget = ei_widget_pick(&event.param.mouse.where);
+
     ei_widget_t filter_widget = NULL;
 
     // If the event is a mouse down event, use filter_widget to only call the calllback fucntion
     // of the widget beneath the mouse cursor even if other widgets are binded to the event
     // and match the widget/tag.
     // Don't filter other mouse events for now since they don't require picking
-    if (event.type == ei_ev_mouse_buttondown)
+    if (event.type == ei_ev_mouse_buttondown || event.type == ei_ev_mouse_buttonup)
     {
-        filter_widget = ei_widget_pick(&event.param.mouse.where);
-
         // If there is no widget beneath the mouse cursor, it means that the user clicked on the root widget
         // thus, we want to set the filter_widget to the root widget
-        filter_widget = filter_widget == NULL ? ei_app_root_widget() : filter_widget;
+        filter_widget = picking_widget == NULL ? ei_app_root_widget() : picking_widget;
     }
 
     while (current_event != NULL)
@@ -207,4 +208,9 @@ void handle_event(ei_event_t event)
         // The return value of this function does not really matter since it is the last handled event
         handle_mouse_button_down_event(event);
     }
+}
+
+ei_widget_t ei_get_picking_widget()
+{
+    return picking_widget;
 }

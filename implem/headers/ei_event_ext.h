@@ -16,6 +16,11 @@
 #include "../api/ei_event.h"
 
 /**
+ * @brief   Pointer to the widget under the mouse cursor
+ */
+static ei_widget_t picking_widget = NULL;
+
+/**
  * @brief	Describes an event binding.
  */
 typedef struct ei_event_bind_t
@@ -34,5 +39,12 @@ typedef struct ei_event_bind_t
  * @param   event   The event to handle
  */
 void handle_event(ei_event_t event);
+
+/**
+ * @brief   Returns the widget under the mouse cursor
+ *
+ * @return  The widget under the mouse cursor
+ */
+ei_widget_t ei_get_picking_widget();
 
 #endif
