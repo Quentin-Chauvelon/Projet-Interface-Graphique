@@ -69,6 +69,35 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
     return widget;
 }
 
+void ei_widget_destroy(ei_widget_t widget)
+{
+    ei_geometrymanager_unmap(widget);
+
+    // Destroy all the descendants
+    if (widget->children_head != NULL)
+    {
+        ei_widget_t current = widget->children_head;
+        ei_widget_t next_sibling = NULL;
+
+        while (current->next_sibling != NULL)
+        {
+            next_sibling = current->next_sibling;
+            ei_widget_destroy(current);
+            current = next_sibling;
+        }
+
+        ei_widget_destroy(current);
+    }
+
+    if (widget->destructor != NULL)
+    {
+        widget->destructor(widget);
+    }
+
+    widget->wclass->releasefunc(widget);
+    free(widget);
+}
+
 ei_widget_t ei_widget_pick(ei_point_t *where)
 {
     ei_surface_t offscreen_picking = ei_app_offscreen_picking_surface();

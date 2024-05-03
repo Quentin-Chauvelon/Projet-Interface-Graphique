@@ -28,15 +28,11 @@ void button_releasefunc(ei_widget_t widget)
     free(widget->children_tail);
     free(widget->next_sibling);
     free(widget->geom_params);
-    // free(widget->requested_size);
-    // free(widget->screen_location);
     free(widget->content_rect);
 
     ei_button_t *button = (ei_button_t *)widget;
-    // free(&button->color);
-    // free(&button->border_width);
-    // free(&button->corner_radius);
-    // free(&button->relief);
+    free(button->user_param);
+    free(button);
 }
 
 void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)

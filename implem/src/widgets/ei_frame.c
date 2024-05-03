@@ -26,9 +26,9 @@ void frame_releasefunc(ei_widget_t widget)
     free(widget->children_tail);
     free(widget->next_sibling);
     free(widget->geom_params);
-    // free(widget->requested_size);
-    // free(widget->screen_location);
     free(widget->content_rect);
+
+    free((ei_frame_t *)widget);
 }
 
 void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
