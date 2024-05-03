@@ -46,6 +46,8 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     ei_draw_polygon(pick_surface, point_array, 4, *widget->pick_color, clipper);
 
     free(point_array);
+
+    ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
 }
 
 void frame_setdefaultsfunc(ei_widget_t widget)

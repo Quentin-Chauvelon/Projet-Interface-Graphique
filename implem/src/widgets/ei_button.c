@@ -45,6 +45,8 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
     // but it would be less intuitive having to pass them while the button already has them.
     ei_draw_visible_button(button, surface, clipper);
     ei_draw_offscreen_button(button, pick_surface, clipper, 0, *widget->pick_color);
+
+    ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
 }
 
 void button_setdefaultsfunc(ei_widget_t widget)

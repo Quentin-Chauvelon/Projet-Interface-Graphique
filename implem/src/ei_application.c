@@ -44,7 +44,7 @@ void ei_app_run(void)
 
     while (main_loop_running)
     {
-        ei_widget_t current = root;
+        ei_widget_t current = ei_app_root_widget();
 
         if (event.type != ei_ev_mouse_move)
         {
@@ -59,9 +59,6 @@ void ei_app_run(void)
                     current->geom_params->manager->runfunc(current);
                 }
 
-                // Redraw the widget
-                current->wclass->drawfunc(current, window_surface, offscreen_picking, NULL);
-
                 if (current->next_sibling != NULL)
                 {
                     current = current->next_sibling;
@@ -75,6 +72,9 @@ void ei_app_run(void)
                     break;
                 }
             }
+
+            // Redraw the root widget
+            ei_app_root_widget()->wclass->drawfunc(ei_app_root_widget(), window_surface, offscreen_picking, NULL);
 
             hw_surface_unlock(window_surface);
             hw_surface_unlock(offscreen_picking);

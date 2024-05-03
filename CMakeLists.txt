@@ -81,6 +81,7 @@ set(LIB_EI_SOURCES
 	${SRC}/src/ei_utils.c
 	${SRC}/src/ei_event.c
 	${SRC}/src/ei_internal_callbacks.c
+	${SRC}/src/ei_implementation.c
 )
 
 add_library(ei STATIC			${LIB_EI_SOURCES})
