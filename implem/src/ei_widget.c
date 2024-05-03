@@ -48,12 +48,21 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
     if (parent != NULL)
     {
-        parent->children_head = widget;
+        if (parent->children_head == NULL)
+        {
+            parent->children_head = widget;
+            parent->children_tail = widget;
+        }
+        else
+        {
+            parent->children_tail->next_sibling = widget;
+            parent->children_tail = widget;
+        }
     }
 
     widget->geom_params = NULL;
-    widget->requested_size = ei_size(0, 0);
-    widget->screen_location = ei_rect(ei_point(0, 0), widget->requested_size);
+    widget->requested_size = ei_size_zero();
+    widget->screen_location = ei_rect_zero();
     widget->content_rect = &widget->screen_location;
 
     return widget;
