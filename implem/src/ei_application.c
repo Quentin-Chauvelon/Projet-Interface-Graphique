@@ -12,6 +12,7 @@
 #include "../implem/headers/ei_geometrymanager_ext.h"
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_frame.h"
+#include "../implem/headers/ei_internal_callbacks.h"
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
@@ -25,6 +26,8 @@ void ei_app_create(ei_size_t main_window_size, bool fullscreen)
     ei_widgetclass_register_all();
 
     ei_geometrymanager_register_all();
+
+    ei_bind_all_internal_callbacks();
 
     window_surface = hw_create_window(main_window_size, fullscreen);
 
@@ -44,31 +47,31 @@ void ei_app_run(void)
 
         if (event.type != ei_ev_mouse_move)
         {
-        hw_surface_lock(window_surface);
-        hw_surface_lock(offscreen_picking);
+            hw_surface_lock(window_surface);
+            hw_surface_lock(offscreen_picking);
 
-        while (true)
-        {
-            current->wclass->drawfunc(current, window_surface, offscreen_picking, NULL);
-
-            if (current->next_sibling != NULL)
+            while (true)
             {
-                current = current->next_sibling;
-            }
-            else if (current->children_head != NULL)
-            {
-                current = current->children_head;
-            }
-            else
-            {
-                break;
-            }
-        }
+                current->wclass->drawfunc(current, window_surface, offscreen_picking, NULL);
 
-        hw_surface_unlock(window_surface);
-        hw_surface_unlock(offscreen_picking);
+                if (current->next_sibling != NULL)
+                {
+                    current = current->next_sibling;
+                }
+                else if (current->children_head != NULL)
+                {
+                    current = current->children_head;
+                }
+                else
+                {
+                    break;
+                }
+            }
 
-        hw_surface_update_rects(window_surface, NULL);
+            hw_surface_unlock(window_surface);
+            hw_surface_unlock(offscreen_picking);
+
+            hw_surface_update_rects(window_surface, NULL);
         }
 
         hw_event_wait_next(&event);

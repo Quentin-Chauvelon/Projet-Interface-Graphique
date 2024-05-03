@@ -103,8 +103,12 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
     // would be overriden by the button itself anyway, so it would be useless to draw it)
     if (border_width > 0 && button->relief != ei_relief_none)
     {
-        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top), 185, (ei_color_t){200, 200, 200, 255}, clipper);
-        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom), 185, (ei_color_t){100, 100, 100, 255}, clipper);
+        // Invert the colors based on the relief (raised or sunken)
+        ei_color_t color1 = button->relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
+        ei_color_t color2 = button->relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
+
+        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top), 185, color1, clipper);
+        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom), 185, color2, clipper);
     }
 
     // Create a new smaller rectangle to account for the border width
