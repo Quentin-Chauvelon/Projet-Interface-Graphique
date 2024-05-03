@@ -42,6 +42,8 @@ void ei_app_run(void)
     {
         ei_widget_t current = root;
 
+        if (event.type != ei_ev_mouse_move)
+        {
         hw_surface_lock(window_surface);
         hw_surface_lock(offscreen_picking);
 
@@ -67,6 +69,7 @@ void ei_app_run(void)
         hw_surface_unlock(offscreen_picking);
 
         hw_surface_update_rects(window_surface, NULL);
+        }
 
         hw_event_wait_next(&event);
 
@@ -89,6 +92,11 @@ void ei_app_quit_request(void)
 ei_widget_t ei_app_root_widget(void)
 {
     return root;
+}
+
+ei_surface_t ei_app_root_surface(void)
+{
+    return window_surface;
 }
 
 ei_surface_t ei_app_offscreen_picking_surface(void)
