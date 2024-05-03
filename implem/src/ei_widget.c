@@ -98,6 +98,11 @@ void ei_widget_destroy(ei_widget_t widget)
     free(widget);
 }
 
+bool ei_widget_is_displayed(ei_widget_t widget)
+{
+    return widget->geom_params != NULL;
+}
+
 ei_widget_t ei_widget_pick(ei_point_t *where)
 {
     ei_surface_t offscreen_picking = ei_app_offscreen_picking_surface();
