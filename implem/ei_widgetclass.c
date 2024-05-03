@@ -2,7 +2,8 @@
 
 #include "../api/ei_widgetclass.h"
 #include "../implem/ei_widgetclass_ext.h"
-#include "../implem/ei_frame.h"
+#include "ei_frame.h"
+#include "../implem/ei_frame.c"
 #include "../implem/ei_button.h"
 #include "../implem/ei_implementation.h"
 

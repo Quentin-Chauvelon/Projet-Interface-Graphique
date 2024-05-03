@@ -6,6 +6,7 @@
 #include "hw_interface.h"
 #include "ei_widget_configure.h"
 #include "ei_placer.h"
+#include "../implem/ei_event.c"
 
 
 /*

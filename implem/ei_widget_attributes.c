@@ -1,12 +1,10 @@
-#ifndef EI_WIDGET_ATTRIBUTES_H
-#define EI_WIDGET_ATTRIBUTES_H
-
 #include "../api/ei_widget.h"
-#include "../api/._ei_widget_attributes.h"
+#include "../api/ei_widget_attributes.h"
+#include "ei_implementation.h"
 
 ei_widgetclass_t*	ei_widget_get_class	(ei_widget_t		widget)
 {
-    return (*widget).wclass;
+    return widget->wclass ;
 }
 
 const ei_color_t*	ei_widget_get_pick_color	(ei_widget_t		widget)
@@ -19,7 +17,7 @@ ei_widget_t 		ei_widget_get_parent		(ei_widget_t		widget)
     return (*widget).parent;
 }
 
-ei_widget_t 		ei_widget_get_first_child	(ei_widget_t		widget);
+ei_widget_t 		ei_widget_get_first_child	(ei_widget_t		widget)
 {
     return (* widget).children_head;
 }
@@ -31,7 +29,7 @@ ei_widget_t 		ei_widget_get_last_child	(ei_widget_t		widget)
 
 ei_widget_t 		ei_widget_get_next_sibling	(ei_widget_t		widget)
 {
-    return (*widget).next;
+    return (*widget).next_sibling;
 }
 
 void*			ei_widget_get_user_data		(ei_widget_t		widget)

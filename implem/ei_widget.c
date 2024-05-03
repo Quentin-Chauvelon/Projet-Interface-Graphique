@@ -2,6 +2,7 @@
 #include "../api/ei_widgetclass.h"
 #include "../implem/ei_implementation.h"
 #include "../api/ei_utils.h"
+#include "../implem/ei_widgetclass.c"
 
 ei_widget_t ei_widget_create(ei_const_string_t class_name,
                              ei_widget_t parent,

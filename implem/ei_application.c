@@ -8,6 +8,8 @@
 #include "../implem/ei_geometrymanager_ext.h"
 #include "../implem/ei_implementation.h"
 #include "../implem/ei_frame.h"
+#include "../implem/ei_widgetclass.c"
+#include "../implem/ei_geometrymanager.c"
 
 ei_widget_t root = NULL;
 ei_surface_t window_surface = NULL;
@@ -64,4 +66,9 @@ void ei_app_free(void)
 ei_widget_t ei_app_root_widget(void)
 {
     return root;
+}
+
+void ei_app_quit_request(void)
+{
+
 }
