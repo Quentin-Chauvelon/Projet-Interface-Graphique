@@ -36,6 +36,8 @@ typedef struct ei_impl_widget_t
 	ei_size_t requested_size;	 ///< See \ref ei_widget_get_requested_size.
 	ei_rect_t screen_location;	 ///< See \ref ei_widget_get_screen_location.
 	ei_rect_t *content_rect;	 ///< See ei_widget_get_content_rect. By defaults, points to the screen_location.
+	ei_size_t preferred_size;	 ///< The preferred size of the widget.
+
 } ei_impl_widget_t;
 
 /**
@@ -74,6 +76,15 @@ uint32_t ei_impl_map_rgba(ei_surface_t surface, ei_color_t color);
 typedef struct ei_impl_geom_param_t
 {
 	ei_geometrymanager_t *manager; ///< The geometry managers that manages this widget.
+	ei_anchor_t anchor;			   ///< The anchor where the widget is attached.
+	int x;						   ///< The x absolute position
+	int y;						   ///< The y absolute position
+	int width;					   ///< The width of the widget
+	int height;					   ///< The height of the widget
+	float rel_x;				   ///< The relative x position
+	float rel_y;				   ///< The relative y position
+	float rel_width;			   ///< The relative width of the widget
+	float rel_height;			   ///< The relative height of the widget
 } ei_impl_geom_param_t;
 
 #endif

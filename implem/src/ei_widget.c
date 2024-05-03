@@ -64,6 +64,7 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
     widget->requested_size = ei_size_zero();
     widget->screen_location = ei_rect_zero();
     widget->content_rect = &widget->screen_location;
+    widget->preferred_size = ei_size_zero();
 
     return widget;
 }

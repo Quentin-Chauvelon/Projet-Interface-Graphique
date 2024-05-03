@@ -53,6 +53,13 @@ void ei_app_run(void)
 
             while (true)
             {
+                // Recomputer the geometry of the widget
+                if (current->geom_params != NULL)
+                {
+                    current->geom_params->manager->runfunc(current);
+                }
+
+                // Redraw the widget
                 current->wclass->drawfunc(current, window_surface, offscreen_picking, NULL);
 
                 if (current->next_sibling != NULL)
@@ -86,6 +93,12 @@ void ei_app_free(void)
     free(root);
     hw_surface_free(offscreen_picking);
     hw_quit();
+}
+
+void ei_app_invalidate_rect(const ei_rect_t *rect)
+{
+    // TODO
+    printf("Not implemented yet!");
 }
 
 void ei_app_quit_request(void)
