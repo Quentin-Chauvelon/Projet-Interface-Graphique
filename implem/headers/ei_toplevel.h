@@ -1,20 +1,6 @@
-/**
- * @file	ei_frame.h
- *
- * @brief 	Definition of a frame widget class.
- *          Defines custom functions from \ref ei_widgetclass.h
- *
- * @see    \ref ei_widgetclass.h
- *
- * @authors Seydina BADIANE
- * @authors Christian BOSSE
- * @authors Quentin CHAUVELON
- */
+#ifndef EI_TOPLEVEL_H
+#define EI_TOPLEVEL_H
 
-#ifndef EI_FRAME_H
-#define EI_FRAME_H
-
-#include "../api/ei_types.h"
 #include "../implem/headers/ei_implementation.h"
 
 typedef struct
@@ -22,24 +8,20 @@ typedef struct
     ei_impl_widget_t widget;
     ei_color_t color;
     int border_width;
-    ei_relief_t relief;
-    ei_string_t text;
-    ei_font_t text_font;
-    ei_color_t text_color;
-    ei_anchor_t text_anchor;
-    ei_surface_t img;
-    ei_rect_ptr_t img_rect;
-    ei_anchor_t img_anchor;
-} ei_frame_t;
+    ei_string_t title;
+    bool closable;
+    ei_axis_set_t resizable;
+    ei_size_ptr_t min_size;
+} ei_toplevel_t;
 
 /**
  * \brief	A function that allocates a block of memory that is big enough to store the
- *		attributes of a frame.
+ *		attributes of a toplevel.
  *
  * @return			A block of memory big enough to represent a widget of this class,
  * 				with all bytes set to 0.
  */
-ei_widget_t frame_allocfunc();
+ei_widget_t toplevel_allocfunc();
 
 /**
  * \brief	A function that releases the memory used by a widget before it is destroyed.
@@ -49,10 +31,10 @@ ei_widget_t frame_allocfunc();
  *
  * @param	widget		The widget which resources are to be freed.
  */
-void frame_releasefunc(ei_widget_t widget);
+void toplevel_releasefunc(ei_widget_t widget);
 
 /**
- * \brief	A function that draws a frame.
+ * \brief	A function that draws a toplevel.
  * 		The function must also draw the children of the widget.
  *
  * @param	widget		A pointer to the widget instance to draw.
@@ -60,16 +42,16 @@ void frame_releasefunc(ei_widget_t widget);
  *				surface is stored in its "screen_location" field.
  * @param	pick_surface	The picking offscreen.
  * @param	clipper		If not NULL, the drawing is restricted within this rectangle
- *				(expressed in the surface reference frame).
+ *				(expressed in the surface reference toplevel).
  */
-void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
+void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
 
 /**
- * \brief	A function that sets the default values for a frame.
+ * \brief	A function that sets the default values for a toplevel.
  *
  * @param	widget		A pointer to the widget instance to initialize.
  */
-void frame_setdefaultsfunc(ei_widget_t widget);
+void toplevel_setdefaultsfunc(ei_widget_t widget);
 
 /**
  * \brief 	A function that is called to notify the widget that its geometry has been modified
@@ -78,6 +60,6 @@ void frame_setdefaultsfunc(ei_widget_t widget);
  *
  * @param	widget		The widget instance to notify of a geometry change.
  */
-void frame_geomnotifyfunc(ei_widget_t widget);
+void toplevel_geomnotifyfunc(ei_widget_t widget);
 
 #endif
