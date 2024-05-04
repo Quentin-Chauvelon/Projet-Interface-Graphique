@@ -16,6 +16,20 @@
 
 #include "../api/ei_types.h"
 
+typedef struct
+{
+    ei_impl_geom_param_t geom_param; ///< The common geom param of the geometry managers
+    ei_anchor_t anchor;              ///< The anchor where the widget is attached.
+    int x;                           ///< The x absolute position
+    int y;                           ///< The y absolute position
+    int width;                       ///< The width of the widget
+    int height;                      ///< The height of the widget
+    float rel_x;                     ///< The relative x position
+    float rel_y;                     ///< The relative y position
+    float rel_width;                 ///< The relative width of the widget
+    float rel_height;                ///< The relative height of the widget
+} ei_placer_t;
+
 /**
  * \brief	A function that runs the geometry computation for this widget.
  * 		    Must call \ref ei_geometry_run_finalize before returning.

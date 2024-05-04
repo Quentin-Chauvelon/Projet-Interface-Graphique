@@ -18,19 +18,22 @@ void ei_place(ei_widget_t widget,
     // If the widget has not been drawn yet, allocate memory and set the geom params for the widget
     if (widget->geom_params == NULL)
     {
-        ei_impl_geom_param_t *geom_params = malloc(ei_geom_param_size());
+        ei_placer_t *placer_geom_param = malloc(sizeof(ei_placer_t));
 
         char geometrymanager_name[20] = "placer";
-        geom_params->manager = ei_geometrymanager_from_name(geometrymanager_name);
-        geom_params->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
-        geom_params->x = x != NULL ? *x : 0;
-        geom_params->y = y != NULL ? *y : 0;
+        placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
+
+        placer_geom_param->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
+
+        placer_geom_param->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
+        placer_geom_param->x = x != NULL ? *x : 0;
+        placer_geom_param->y = y != NULL ? *y : 0;
 
         // If width is NULL and rel_width is NULL, use the requested width
         // If the requested width is NULL, use the default width
         if (width != NULL)
         {
-            geom_params->width = *width;
+            placer_geom_param->width = *width;
         }
         else
         {
@@ -38,16 +41,16 @@ void ei_place(ei_widget_t widget,
             {
                 if (widget->requested_size.width != 0)
                 {
-                    geom_params->width = widget->requested_size.width;
+                    placer_geom_param->width = widget->requested_size.width;
                 }
                 else
                 {
-                    geom_params->width = widget->preferred_size.width;
+                    placer_geom_param->width = widget->preferred_size.width;
                 }
             }
             else
             {
-                geom_params->width = 0;
+                placer_geom_param->width = 0;
             }
         }
 
@@ -55,7 +58,7 @@ void ei_place(ei_widget_t widget,
         // If the requested height is NULL, use the default height
         if (height != NULL)
         {
-            geom_params->height = *height;
+            placer_geom_param->height = *height;
         }
         else
         {
@@ -63,78 +66,84 @@ void ei_place(ei_widget_t widget,
             {
                 if (widget->requested_size.height != 0)
                 {
-                    geom_params->height = widget->requested_size.height;
+                    placer_geom_param->height = widget->requested_size.height;
                 }
                 else
                 {
-                    geom_params->height = widget->preferred_size.height;
+                    placer_geom_param->height = widget->preferred_size.height;
                 }
             }
             else
             {
-                geom_params->height = 0;
+                placer_geom_param->height = 0;
             }
         }
 
-        geom_params->rel_x = rel_x != NULL ? *rel_x : 0.0;
-        geom_params->rel_y = rel_y != NULL ? *rel_y : 0.0;
-        geom_params->rel_width = rel_width != NULL ? *rel_width : 0.0;
-        geom_params->rel_height = rel_height != NULL ? *rel_height : 0.0;
+        placer_geom_param->rel_x = rel_x != NULL ? *rel_x : 0.0;
+        placer_geom_param->rel_y = rel_y != NULL ? *rel_y : 0.0;
+        placer_geom_param->rel_width = rel_width != NULL ? *rel_width : 0.0;
+        placer_geom_param->rel_height = rel_height != NULL ? *rel_height : 0.0;
 
-        ei_widget_set_geom_params(widget, geom_params);
+        ei_widget_set_geom_params(widget, (ei_geom_param_t)placer_geom_param);
 
         return;
     }
 
+    ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
+
     // If the widget has already been drawn, update the geom params
     if (anchor != NULL)
     {
-        widget->geom_params->anchor = *anchor;
+        widget_geom_params->anchor = *anchor;
     }
 
     if (x != NULL)
     {
-        widget->geom_params->x = *x;
+        widget_geom_params->x = *x;
     }
 
     if (y != NULL)
     {
-        widget->geom_params->y = *y;
+        widget_geom_params->y = *y;
     }
 
     if (width != NULL)
     {
-        widget->geom_params->width = *width;
+        widget_geom_params->width = *width;
     }
 
     if (height != NULL)
     {
-        widget->geom_params->height = *height;
+        widget_geom_params->height = *height;
     }
 
     if (rel_x != NULL)
     {
-        widget->geom_params->rel_x = *rel_x;
+        widget_geom_params->rel_x = *rel_x;
     }
 
     if (rel_y != NULL)
     {
-        widget->geom_params->rel_y = *rel_y;
+        widget_geom_params->rel_y = *rel_y;
     }
 
     if (rel_width != NULL)
     {
-        widget->geom_params->rel_width = *rel_width;
+        widget_geom_params->rel_width = *rel_width;
     }
 
     if (rel_height != NULL)
     {
-        widget->geom_params->rel_height = *rel_height;
+        widget_geom_params->rel_height = *rel_height;
     }
+
+    ei_widget_set_geom_params(widget, (ei_geom_param_t)widget_geom_params);
 }
 
 void ei_placer_runfunc(ei_widget_t widget)
 {
-    widget->screen_location.top_left.x = widget->geom_params->x;
-    widget->screen_location.top_left.y = widget->geom_params->y;
+    ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
+
+    widget->screen_location.top_left.x = widget_geom_params->x;
+    widget->screen_location.top_left.y = widget_geom_params->y;
 }
