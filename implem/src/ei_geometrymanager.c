@@ -5,8 +5,10 @@
 #include "../api/ei_utils.h"
 #include "../api/ei_application.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_geometrymanager_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
+#include "../implem/headers/ei_utils_ext.h"
 
 // Keep a pointer to the first geometry manager registered
 // Other geometry managers are linked using the next pointer
@@ -19,9 +21,6 @@ size_t ei_geom_param_size()
 
 void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location)
 {
-    printf("old screen location: %d %d %d %d\n", widget->screen_location.top_left.x, widget->screen_location.top_left.y, widget->screen_location.size.width, widget->screen_location.size.height);
-    printf("new screen location: %d %d %d %d\n", new_screen_location->top_left.x, new_screen_location->top_left.y, new_screen_location->size.width, new_screen_location->size.height);
-
     // If the geometry computation did not result in any change of the geometry of the widget, return
     if (widget->screen_location.top_left.x == new_screen_location->top_left.x &&
         widget->screen_location.top_left.y == new_screen_location->top_left.y &&
@@ -35,8 +34,19 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
         return;
     }
 
-    ei_app_invalidate_rect(&widget->screen_location);
-    ei_app_invalidate_rect(new_screen_location);
+    // If the area of the intersection is at least 20% of both rectangles, invalidate the intersection.
+    // Otherwise, most of rectangles will be drawn twice.
+    if (get_intersection_percentage(widget->screen_location, *new_screen_location) >= RECTANGLES_MERGE_THRESHOLD)
+    {
+        DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", widget->screen_location.top_left.x, widget->screen_location.top_left.y, widget->screen_location.size.width, widget->screen_location.size.height, new_screen_location->top_left.x, new_screen_location->top_left.y, new_screen_location->size.width, new_screen_location->size.height) : 0;
+        ei_rect_t merged_rectange = merge_rectangles(widget->screen_location, *new_screen_location);
+        ei_app_invalidate_rect(&merged_rectange);
+    }
+    else
+    {
+        ei_app_invalidate_rect(&widget->screen_location);
+        ei_app_invalidate_rect(new_screen_location);
+    }
 
     widget->screen_location = *new_screen_location;
 

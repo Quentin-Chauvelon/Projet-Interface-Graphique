@@ -15,6 +15,7 @@
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 #include "../implem/headers/ei_widget_ext.h"
+#include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 
 ei_widget_t root = NULL;
@@ -131,13 +132,37 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         invalid_rects->rect = *rect;
         invalid_rects->next = NULL;
     }
-    // Otherwise, insert the rectangle at the head of the linked list so that we don't have to traverse the whole list
+    // Otherwise, insert the rectangle in the linked list
     else
     {
+        ei_linked_rect_t *current_invalid_rect = invalid_rects;
+        while (current_invalid_rect->next != NULL)
+        {
+            printf("current_invalid_rect %p\n", current_invalid_rect);
+            // If the rectangle is fully included in another rectangle, we don't need it
+            if (rect_included_in_rect(*rect, current_invalid_rect->rect))
+            {
+                return;
+            }
+
+            // If two rectangles have a big enough common area, merge them, overwrite the current rectangle in
+            // the linked list and return since we don't need the new rectangle anymore
+            if (get_intersection_percentage(*rect, current_invalid_rect->rect) >= RECTANGLES_MERGE_THRESHOLD)
+            {
+                DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
+                current_invalid_rect->rect = merge_rectangles(*rect, current_invalid_rect->rect);
+                return;
+            }
+
+            current_invalid_rect = current_invalid_rect->next;
+        }
+
         ei_linked_rect_t *invalid_rect = malloc(sizeof(ei_linked_rect_t));
         invalid_rect->rect = *rect;
-        invalid_rect->next = invalid_rects;
-        invalid_rects = invalid_rect;
+        invalid_rect->next = NULL;
+
+        // Link the rectangle to the last element of the linked list
+        current_invalid_rect->next = invalid_rect;
     }
 }
 

@@ -1,3 +1,4 @@
+#include "../api/ei_utils.h"
 #include "../implem/headers/ei_utils_ext.h"
 
 ei_color_t get_color_from_id(int id)
@@ -38,4 +39,60 @@ bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2)
            rect1.top_left.x + rect1.size.width > rect2.top_left.x &&
            rect1.top_left.y < rect2.top_left.y + rect2.size.height &&
            rect1.top_left.y + rect1.size.height > rect2.top_left.y;
+}
+
+bool rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2)
+{
+    // Check if the top left corner and the bottom right corner of rect1 are inside rect2.
+    // If they are, then rect1 is included in rect2
+    return rect1.top_left.x >= rect2.top_left.x &&
+           rect1.top_left.y >= rect2.top_left.y &&
+           rect1.top_left.x + rect1.size.width <= rect2.top_left.x + rect2.size.width &&
+           rect1.top_left.y + rect1.size.height <= rect2.top_left.y + rect2.size.height;
+}
+
+ei_rect_t get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2)
+{
+    // If the rectangles don't intersect, the intersection is a rectangle of size 0
+    if (!rect_intersects_rect(rect1, rect2))
+    {
+        return ei_rect_zero();
+    }
+
+    // Find the right most left coordinate and highest top coordinate
+    ei_point_t top_left = ei_point(
+        rect1.top_left.x > rect2.top_left.x ? rect1.top_left.x : rect2.top_left.x,
+        rect1.top_left.y > rect2.top_left.y ? rect1.top_left.y : rect2.top_left.y);
+
+    // Find the left most right coordinate and lowest bottom coordinate
+    ei_point_t bottom_right = ei_point(
+        (rect1.top_left.x + rect1.size.width) < (rect2.top_left.x + rect2.size.width) ? (rect1.top_left.x + rect1.size.width) : (rect2.top_left.x + rect2.size.width),
+        (rect1.top_left.y + rect1.size.height) < (rect2.top_left.y + rect2.size.height) ? (rect1.top_left.y + rect1.size.height) : (rect2.top_left.y + rect2.size.height));
+
+    return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
+}
+
+int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
+{
+    ei_rect_t intersection = get_intersection_rectangle(rect1, rect2);
+    int intersection_area = intersection.size.width * intersection.size.height;
+
+    // Calculate the total area of the two rectangles minus the intersection area
+    // We then return the percentage of the intersection area over that total area
+    return ((intersection_area * 100) / ((rect1.size.width * rect1.size.height + rect2.size.width * rect2.size.height) - intersection_area));
+}
+
+ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
+{
+    // This uses the same principle as get_intersection_rectangle() but with inverted conditions
+
+    ei_point_t top_left = ei_point(
+        rect1.top_left.x < rect2.top_left.x ? rect1.top_left.x : rect2.top_left.x,
+        rect1.top_left.y < rect2.top_left.y ? rect1.top_left.y : rect2.top_left.y);
+
+    ei_point_t bottom_right = ei_point(
+        (rect1.top_left.x + rect1.size.width) > (rect2.top_left.x + rect2.size.width) ? (rect1.top_left.x + rect1.size.width) : (rect2.top_left.x + rect2.size.width),
+        (rect1.top_left.y + rect1.size.height) > (rect2.top_left.y + rect2.size.height) ? (rect1.top_left.y + rect1.size.height) : (rect2.top_left.y + rect2.size.height));
+
+    return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
