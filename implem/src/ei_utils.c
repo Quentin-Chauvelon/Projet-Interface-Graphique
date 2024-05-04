@@ -24,3 +24,18 @@ int get_id_from_color(ei_color_t color)
     // This way, we can simply add the 3 components together to get the id.
     return (color.red << 16) + (color.green << 8) + color.blue;
 }
+
+bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2)
+{
+    // Inspired from https://stackoverflow.com/a/306332
+    // This works by checking if the left edge of rect1 is to the right edge of rect2,
+    // in which case the 2 rectangles don't intersect.
+    // We then apply the same principle for the other edges.
+    // If at least one of the checks is true, then the rectangles don't intersect.
+    // And so, by using De Morgan's law and inverting the conditions, we can find
+    // if the two rectangles intersect.
+    return rect1.top_left.x < rect2.top_left.x + rect2.size.width &&
+           rect1.top_left.x + rect1.size.width > rect2.top_left.x &&
+           rect1.top_left.y < rect2.top_left.y + rect2.size.height &&
+           rect1.top_left.y + rect1.size.height > rect2.top_left.y;
+}

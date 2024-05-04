@@ -36,4 +36,14 @@ ei_color_t get_color_from_id(int id);
  */
 int get_id_from_color(ei_color_t color);
 
+/**
+ * @brief   Returns if the two given rectangles intersect
+ *
+ * @param   rect1   The first rectangle
+ * @param   rect2   The second rectangle
+ *
+ * @return  True if the rectangles intersect, false otherwise
+ */
+bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2);
+
 #endif

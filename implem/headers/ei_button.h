@@ -68,4 +68,13 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
  */
 void button_setdefaultsfunc(ei_widget_t widget);
 
+/**
+ * \brief 	A function that is called to notify the widget that its geometry has been modified
+ *		    by its geometry manager. Can set to NULL in \ref ei_widgetclass_t.
+ *		    The new location can be retrieved by \ref ei_widget_get_screen_location.
+ *
+ * @param	widget		The widget instance to notify of a geometry change.
+ */
+void button_geomnotifyfunc(ei_widget_t widget);
+
 #endif

@@ -6,6 +6,8 @@
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_frame.h"
+#include "../implem/headers/ei_application_ext.h"
+#include "../implem/headers/ei_utils_ext.h"
 
 ei_widget_t frame_allocfunc()
 {
@@ -33,6 +35,13 @@ void frame_releasefunc(ei_widget_t widget)
 
 void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
+    if (clipper != NULL && !rect_intersects_rect(widget->screen_location, *clipper))
+    {
+        return;
+    }
+
+    DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
+
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
@@ -56,4 +65,9 @@ void frame_setdefaultsfunc(ei_widget_t widget)
 
     frame->widget = *widget;
     frame->color = (ei_color_t){0, 0, 0, 255};
+}
+
+void frame_geomnotifyfunc(ei_widget_t widget)
+{
+    // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
 }

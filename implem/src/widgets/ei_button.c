@@ -8,6 +8,8 @@
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_draw_ext.h"
+#include "../implem/headers/ei_application_ext.h"
+#include "../implem/headers/ei_utils_ext.h"
 
 ei_widget_t button_allocfunc()
 {
@@ -37,6 +39,13 @@ void button_releasefunc(ei_widget_t widget)
 
 void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
+    if (clipper != NULL && !rect_intersects_rect(widget->screen_location, *clipper))
+    {
+        return;
+    }
+
+    DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
+
     ei_button_t *button = (ei_button_t *)widget;
 
     // Use 2 separate functions to draw the button, since we have to force the border width and color
@@ -59,4 +68,9 @@ void button_setdefaultsfunc(ei_widget_t widget)
     button->relief = ei_relief_raised;
     button->callback = NULL;
     button->user_param = NULL;
+}
+
+void button_geomnotifyfunc(ei_widget_t widget)
+{
+    // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
 }

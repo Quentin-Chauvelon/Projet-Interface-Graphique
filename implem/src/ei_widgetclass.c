@@ -68,7 +68,7 @@ void ei_widgetclass_register_all()
     frame->releasefunc = &frame_releasefunc;
     frame->drawfunc = &frame_drawfunc;
     frame->setdefaultsfunc = &frame_setdefaultsfunc;
-    frame->geomnotifyfunc = NULL;
+    frame->geomnotifyfunc = &frame_geomnotifyfunc;
     frame->next = NULL;
 
     ei_widgetclass_t *button = malloc(sizeof(ei_widgetclass_t));
@@ -77,7 +77,7 @@ void ei_widgetclass_register_all()
     button->releasefunc = &button_releasefunc;
     button->drawfunc = &button_drawfunc;
     button->setdefaultsfunc = &button_setdefaultsfunc;
-    button->geomnotifyfunc = NULL;
+    button->geomnotifyfunc = &button_geomnotifyfunc;
     button->next = NULL;
 
     ei_widgetclass_register(frame);
