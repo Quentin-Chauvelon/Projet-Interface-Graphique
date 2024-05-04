@@ -24,8 +24,6 @@ void ei_place(ei_widget_t widget,
         placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
 
         placer_geom_param->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
-
-        placer_geom_param->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
         placer_geom_param->x = x != NULL ? *x : 0;
         placer_geom_param->y = y != NULL ? *y : 0;
 
@@ -92,50 +90,15 @@ void ei_place(ei_widget_t widget,
     ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
 
     // If the widget has already been drawn, update the geom params
-    if (anchor != NULL)
-    {
-        widget_geom_params->anchor = *anchor;
-    }
-
-    if (x != NULL)
-    {
-        widget_geom_params->x = *x;
-    }
-
-    if (y != NULL)
-    {
-        widget_geom_params->y = *y;
-    }
-
-    if (width != NULL)
-    {
-        widget_geom_params->width = *width;
-    }
-
-    if (height != NULL)
-    {
-        widget_geom_params->height = *height;
-    }
-
-    if (rel_x != NULL)
-    {
-        widget_geom_params->rel_x = *rel_x;
-    }
-
-    if (rel_y != NULL)
-    {
-        widget_geom_params->rel_y = *rel_y;
-    }
-
-    if (rel_width != NULL)
-    {
-        widget_geom_params->rel_width = *rel_width;
-    }
-
-    if (rel_height != NULL)
-    {
-        widget_geom_params->rel_height = *rel_height;
-    }
+    widget_geom_params->anchor = anchor != NULL ? *anchor : ei_anc_northwest;
+    widget_geom_params->x = x != NULL ? *x : 0;
+    widget_geom_params->y = y != NULL ? *y : 0;
+    widget_geom_params->width = width != NULL ? *width : 0;
+    widget_geom_params->height = height != NULL ? *height : 0;
+    widget_geom_params->rel_x = rel_x != NULL ? *rel_x : 0.0;
+    widget_geom_params->rel_y = rel_y != NULL ? *rel_y : 0.0;
+    widget_geom_params->rel_width = rel_width != NULL ? *rel_width : 0.0;
+    widget_geom_params->rel_height = rel_height != NULL ? *rel_height : 0.0;
 
     ei_widget_set_geom_params(widget, (ei_geom_param_t)widget_geom_params);
 }
