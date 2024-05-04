@@ -18,17 +18,23 @@ void		ei_bind			(ei_eventtype_t		eventtype,
 
     if (tag!=NULL) //if it's a located event
     {
-        
+        //we consider in a first time that the same type of widget are at the same level in the tree
         ei_widget_t current = ei_widget_get_first_child((ei_widget_t) root );
         
         while (true){
             if (tag == (ei_tag_t) (ei_widget_get_class(current) -> name ))
             {
                 ei_widget_t widget =current;
+                
                 while (true){
-                    callback((ei_widget_t) current , & eventtype , (ei_user_param_t) user_param);
+                    if (widget !=NULL){
+                        callback((ei_widget_t) current , & eventtype , (ei_user_param_t) user_param);
+                    }
+                    widget=ei_widget_get_next_sibling(widget);
                 }
             }
+
+            current=ei_widget_get_first_child(current);
         }
     }
 }
