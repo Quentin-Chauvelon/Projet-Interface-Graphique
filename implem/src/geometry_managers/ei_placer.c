@@ -22,18 +22,18 @@ static int ei_placer_get_y_default_value()
 
 static int ei_placer_get_width_default_value(ei_widget_t widget, int *width, float *rel_width)
 {
-        // If width is NULL and rel_width is NULL, use the requested width
-        // If the requested width is NULL, use the default width
-        if (width != NULL)
-        {
+    // If width is NULL and rel_width is NULL, use the requested width
+    // If the requested width is NULL, use the default width
+    if (width != NULL)
+    {
         return *width;
-        }
-        else
+    }
+    else
+    {
+        if (rel_width == NULL)
         {
-            if (rel_width == NULL)
+            if (widget->requested_size.width != 0)
             {
-                if (widget->requested_size.width != 0)
-                {
                 return widget->requested_size.width;
             }
             else
@@ -50,18 +50,18 @@ static int ei_placer_get_width_default_value(ei_widget_t widget, int *width, flo
 
 static int ei_placer_get_height_default_value(ei_widget_t widget, int *height, float *rel_height)
 {
-        // If height is NULL and rel_height is NULL, use the requested height
-        // If the requested height is NULL, use the default height
-        if (height != NULL)
-        {
+    // If height is NULL and rel_height is NULL, use the requested height
+    // If the requested height is NULL, use the default height
+    if (height != NULL)
+    {
         return *height;
-        }
-        else
+    }
+    else
+    {
+        if (rel_height == NULL)
         {
-            if (rel_height == NULL)
+            if (widget->requested_size.height != 0)
             {
-                if (widget->requested_size.height != 0)
-                {
                 return widget->requested_size.height;
             }
             else
@@ -72,8 +72,8 @@ static int ei_placer_get_height_default_value(ei_widget_t widget, int *height, f
         else
         {
             return 0;
-            }
         }
+    }
 }
 
 static float ei_placer_get_rel_x_default_value()
@@ -136,8 +136,17 @@ void ei_place(ei_widget_t widget,
 
 void ei_placer_runfunc(ei_widget_t widget)
 {
+    DEBUG ? printf("Placing widget %d\n", widget->pick_id) : 0;
+
     ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
 
-    widget->screen_location.top_left.x = widget_geom_params->x;
-    widget->screen_location.top_left.y = widget_geom_params->y;
+    ei_rect_t new_screen_location = ei_rect_zero();
+
+    new_screen_location.top_left.x = widget_geom_params->x;
+    new_screen_location.top_left.y = widget_geom_params->y;
+    new_screen_location.size.width = widget_geom_params->width;
+    new_screen_location.size.height = widget_geom_params->height;
+
+    // Must be the last function call before returning
+    ei_geometry_run_finalize(widget, &new_screen_location);
 }
