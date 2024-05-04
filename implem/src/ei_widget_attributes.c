@@ -1,10 +1,11 @@
 #include "../api/ei_widget.h"
-#include "../implem/headers/ei_implementation.h"
+#include "../api/ei_types.h"
 #include "../api/ei_widget_attributes.h"
+#include "../implem/headers/ei_implementation.h"
 
 ei_widgetclass_t *ei_widget_get_class(ei_widget_t widget)
 {
-    return (*widget).wclass;
+    return widget->wclass;
 }
 
 const ei_color_t *ei_widget_get_pick_color(ei_widget_t widget)
