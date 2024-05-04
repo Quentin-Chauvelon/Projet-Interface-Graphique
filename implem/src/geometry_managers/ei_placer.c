@@ -120,6 +120,10 @@ void ei_place(ei_widget_t widget,
         placer_geom_param = (ei_placer_t *)ei_widget_get_geom_params(widget);
     }
 
+    // Update the geometry manager handling the widget
+    char geometrymanager_name[20] = "placer";
+    placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
+
     // Set the geom params to the given parameter if not NULL or the default value otherwise
     placer_geom_param->anchor = anchor != NULL ? *anchor : ei_placer_get_anchor_default_value();
     placer_geom_param->x = x != NULL ? *x : ei_placer_get_x_default_value();
