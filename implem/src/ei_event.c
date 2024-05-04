@@ -63,15 +63,44 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
 }
 
 /**
+ * @brief Calls the callback function for the given binded event
+ *        It also updates the widget's geometry after calling the callback function
+ *        in case the callback changed the widget's geometry.
+ *
+ * @param callback      The callback function to call
+ * @param widget        The widget to pass to the callback function
+ * @param event         The event to pass to the callback function
+ * @param user_param    The user_param to pass to the callback function
+ *
+ * @return true if the callback returned true (was handled), false otherwise
+ */
+static bool call_callback_function(ei_callback_t callback, ei_widget_t widget, ei_event_t event, void *user_param)
+{
+    // Make a copy of the widget since the event might be unbinded in the callback function
+    // and so, the widget will point to a random memory address
+    ei_widget_t widget_copy = widget;
+
+    // The callback must be called before computing the geometry since it might change the widget's geometry
+    bool handled = callback(widget, &event, user_param);
+
+    if (widget_copy->geom_params != NULL)
+    {
+        widget_copy->geom_params->manager->runfunc(widget_copy);
+    }
+
+    return handled;
+}
+
+/**
  * @brief Handle an event related to a widget
  *
- * @param binded_event The event for which to call the callback function (binded via \ref ei_bind)
- * @param event The last raised event information
+ * @param binded_event  The event for which to call the callback function (binded via \ref ei_bind)
+ * @param event         The last raised event information
  * @param filter_widget If not NULL, only call the callback function if the event's widget is the same as this parameter.
  *                      This is primarly used to filter mouse events that require picking (and should only be called on
  *                      the widget beneath the mouse cursor). If NULL, the callback function will be called the widget
  *
- * @return true if the event returned true (was handled), false otherwise
+ * @return true if the callback returned true (was handled), false otherwise
  */
 static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
 {
@@ -81,14 +110,14 @@ static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event,
         return false;
     }
 
-    return binded_event->callback(binded_event->widget, &event, binded_event->user_param);
+    return call_callback_function(binded_event->callback, binded_event->widget, event, binded_event->user_param);
 }
 
 /**
  * @brief Handle an event related to a tag
  *
- * @param binded_event The event for which to call the callback function (binded via \ref ei_bind)
- * @param event The last raised event information
+ * @param binded_event  The event for which to call the callback function (binded via \ref ei_bind)
+ * @param event         The last raised event information
  * @param filter_widget if not NULL, only call the callback function if the event's widget is the same as this parameter
  *                      This is primarly used to filter mouse events that require picking (and should only be called on
  *                      the widget beneath the mouse cursor). If NULL, the callback function will be called on all widgets
@@ -107,11 +136,10 @@ static bool handle_tag_event(ei_event_bind_t *binded_event, ei_event_t event, ei
         // If the widget is not the same as the filter widget, if there is one, continue to the next widget
         if (filter_widget == NULL || widget == filter_widget)
         {
-            // printf("widget->wclass->name: %s\n", widget->wclass->name);
             // If the tag is "all" or the tag is the same as the widget class name (button, frame, ...), call the callback function
             if (strcmp(binded_event->tag, "all") == 0 || strcmp(binded_event->tag, widget->wclass->name) == 0)
             {
-                handled = binded_event->callback(widget, &event, binded_event->user_param) || handled;
+                handled = handled || call_callback_function(binded_event->callback, widget, event, binded_event->user_param);
             }
         }
 
@@ -148,7 +176,7 @@ static bool handle_mouse_button_down_event(ei_event_t event)
 
         if (button->callback != NULL)
         {
-            return button->callback(picking_widget, &event, button->user_param);
+            return call_callback_function(button->callback, picking_widget, event, button->user_param);
         }
     }
 
