@@ -192,18 +192,18 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     return NULL;
 }
 
-void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color)
+void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t color, ei_relief_t relief, const ei_rect_t *clipper)
 {
     // Draw the relief if there is one and if the border width is not 0 (otherwise it
     // would be overriden by the button itself anyway, so it would be useless to draw it)
-    if (border_width > 0 && button->frame_appearance.relief != ei_relief_none)
+    if (border_width > 0 && relief != ei_relief_none)
     {
         // Invert the colors based on the relief (raised or sunken)
-        ei_color_t color1 = button->frame_appearance.relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
-        ei_color_t color2 = button->frame_appearance.relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
+        ei_color_t color1 = relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
+        ei_color_t color2 = relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
 
-        ei_point_t *top_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top);
-        ei_point_t *bottom_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom);
+        ei_point_t *top_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_top);
+        ei_point_t *bottom_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_bottom);
 
         // If malloc failed, return
         if (top_point_array == NULL || bottom_point_array == NULL)
@@ -229,14 +229,14 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
         return;
     }
 
-    border_width_rect->top_left = (ei_point_t){button->widget.screen_location.top_left.x + border_width, button->widget.screen_location.top_left.y + border_width};
-    border_width_rect->size = (ei_size_t){button->widget.screen_location.size.width - 2 * border_width, button->widget.screen_location.size.height - 2 * border_width};
+    border_width_rect->top_left = (ei_point_t){screen_location.top_left.x + border_width, screen_location.top_left.y + border_width};
+    border_width_rect->size = (ei_size_t){screen_location.size.width - 2 * border_width, screen_location.size.height - 2 * border_width};
 
     // If relief is none, we don't want to take the border width into account,
     // otherwise the button would be smaller than what it should be
-    ei_rect_t inner_rectangle = button->frame_appearance.relief == ei_relief_none ? button->widget.screen_location : *border_width_rect;
+    ei_rect_t inner_rectangle = relief == ei_relief_none ? screen_location : *border_width_rect;
 
-    ei_point_t *point_array = rounded_frame(inner_rectangle, button->corner_radius, ei_rounded_frame_full);
+    ei_point_t *point_array = rounded_frame(inner_rectangle, corner_radius, ei_rounded_frame_full);
 
     // If malloc failed, return
     if (point_array == NULL)

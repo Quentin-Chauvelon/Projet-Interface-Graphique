@@ -42,45 +42,19 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
 ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
- * @brief   Draws a button.
- *          The button takes a border width and a color as parameters so that it can be
- *          customized without having to change the button values.
+ * @brief   Draws a rounded frame.
+ *          The function takes a number of parameters to allow for easy customization of the frame
+ *          which allows us to draw all widgets (frames, buttons, toplevels, entries...)
  *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
- * @param   border_width The width of the border of the button.
- * @param   color The color of the button.
+ * @param   surface         Where to draw the rounded frame. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   screen_location The location where to draw the rounded frame.
+ * @param   border_width    The width of the border of the rounded frame.
+ * @param   corner_radius   The radius of the corners of the rounded frame.
+ * @param   color           The color of the rounded frame.
+ * @param   relief          The relief of the rounded frame.
+ * @param   clipper         If not NULL, the drawing is restricted within this rectangle.
  */
-void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color);
-
-/**
- * @brief   Draws a visible button.
- *          Wrapper for \ref ei_draw_button that uses the button's values.
- *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
- */
-static inline void ei_draw_visible_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper)
-{
-    ei_draw_button(button, surface, clipper, button->widget_appearance.border_width, button->widget_appearance.color);
-}
-
-/**
- * @brief   Draws an offscreen button.
- *          Wrapper for \ref ei_draw_button that uses the given border width and color.
- *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
- * @param   border_width The width of the border of the button.
- * @param   color The color of the button.
- */
-static inline void ei_draw_offscreen_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color)
-{
-    ei_draw_button(button, surface, clipper, border_width, color);
-}
+void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t color, ei_relief_t relief, const ei_rect_t *clipper);
 
 /**
  * @brief   Calculates the number of points needed to draw an arc based on the given start and end angles.

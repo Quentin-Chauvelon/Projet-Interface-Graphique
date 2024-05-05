@@ -47,7 +47,7 @@ void ei_app_run(void)
     // Only used for debugging
     int main_loop_count = 0;
 
-    ei_event_t event;
+    ei_event_t *event = (ei_event_t *)malloc(sizeof(struct ei_event_t));
 
     // Invalidate the root widget once to draw the whole screen
     ei_app_invalidate_rect(&ei_app_root_widget()->screen_location);
@@ -108,10 +108,12 @@ void ei_app_run(void)
         }
         invalid_rects = NULL;
 
-        hw_event_wait_next(&event);
+        hw_event_wait_next(event);
 
-        handle_event(event);
+        handle_event(*event);
     }
+
+    free(event);
 }
 
 void ei_app_free(void)
@@ -130,8 +132,6 @@ void ei_app_free(void)
 
 void ei_app_invalidate_rect(const ei_rect_t *rect)
 {
-    DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
-
     // If the linked list is empty, add the first element
     if (invalid_rects == NULL)
     {
@@ -144,6 +144,8 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             return;
         }
 
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
+
         invalid_rects->rect = *rect;
         invalid_rects->next = NULL;
     }
@@ -151,7 +153,7 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
     else
     {
         ei_linked_rect_t *current_invalid_rect = invalid_rects;
-        while (current_invalid_rect->next != NULL)
+        while (true)
         {
             // If the rectangle is fully included in another rectangle, we don't need it
             if (rect_included_in_rect(*rect, current_invalid_rect->rect))
@@ -168,6 +170,11 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
                 return;
             }
 
+            if (current_invalid_rect->next == NULL)
+            {
+                break;
+            }
+
             current_invalid_rect = current_invalid_rect->next;
         }
 
@@ -179,6 +186,8 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
             return;
         }
+
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
 
         invalid_rect->rect = *rect;
         invalid_rect->next = NULL;
