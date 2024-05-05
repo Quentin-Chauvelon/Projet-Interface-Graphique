@@ -76,10 +76,17 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
 {
     ei_rect_t intersection = get_intersection_rectangle(rect1, rect2);
     int intersection_area = intersection.size.width * intersection.size.height;
+    int area_rect1 = rect1.size.width * rect1.size.height;
+    int area_rect2 = rect2.size.width * rect2.size.height;
+
+    if (area_rect1 == 0 || area_rect2 == 0)
+    {
+        return 0;
+    }
 
     // Calculate the total area of the two rectangles minus the intersection area
     // We then return the percentage of the intersection area over that total area
-    return ((intersection_area * 100) / ((rect1.size.width * rect1.size.height + rect2.size.width * rect2.size.height) - intersection_area));
+    return ((intersection_area * 100) / ((area_rect1 + area_rect2) - intersection_area));
 }
 
 ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
