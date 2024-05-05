@@ -63,6 +63,14 @@ ei_widgetclass_t *ei_widgetclass_from_name(ei_const_string_t name)
 void ei_widgetclass_register_all()
 {
     ei_widgetclass_t *frame = malloc(sizeof(ei_widgetclass_t));
+
+    // If malloc failed, return
+    if (frame == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the frame widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     strcpy(frame->name, "frame");
     frame->allocfunc = &frame_allocfunc;
     frame->releasefunc = &frame_releasefunc;
@@ -72,6 +80,14 @@ void ei_widgetclass_register_all()
     frame->next = NULL;
 
     ei_widgetclass_t *button = malloc(sizeof(ei_widgetclass_t));
+
+    // If malloc failed, return
+    if (button == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the button widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     strcpy(button->name, "button");
     button->allocfunc = &button_allocfunc;
     button->releasefunc = &button_releasefunc;

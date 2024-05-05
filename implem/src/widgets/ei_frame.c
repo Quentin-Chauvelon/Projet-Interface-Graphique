@@ -12,6 +12,14 @@
 ei_widget_t frame_allocfunc()
 {
     ei_frame_t *frame = malloc(sizeof(ei_frame_t));
+
+    // If malloc failed, exit since the program will crash if the user tries to use the frame
+    if (frame == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the frame widget.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     memset(frame, 0, sizeof(ei_frame_t));
 
     return (ei_widget_t)frame;
@@ -47,6 +55,13 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
+
+    // If malloc failed, return
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw the frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
 
     point_array[0] = widget->screen_location.top_left;
     point_array[1] = ei_point(widget->screen_location.top_left.x + widget->screen_location.size.width, widget->screen_location.top_left.y);

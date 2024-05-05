@@ -19,6 +19,14 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
     // This way, if the number of points in the arc is less than the number of points we allocated,
     // the remaining points will be (0, 0)
     ei_point_t *point_array = calloc(nb_points, sizeof(ei_point_t));
+
+    // If calloc failed, return NULL
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw arc.\n.\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return NULL;
+    }
+
     int point_array_index = 0;
 
     // Calculate the position of the point for every degree between start_angle and end_angle
@@ -48,15 +56,43 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
 
         ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
 
+        // If malloc failed, return NULL
+        if (point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return NULL;
+        }
+
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        memcpy(point_array, arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270), nb_points_arc_1 * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_arc_1, arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 315), nb_points_arc_2 * sizeof(ei_point_t));
+        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270);
+        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 315);
+        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 135, 180);
+
+        // If calloc failed on one of the arcs, return NULL
+        if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+
+            // Free all arcs in case only one of them couldn't be allocated
+            free(arc_1);
+            free(arc_2);
+            free(arc_3);
+
+            return NULL;
+        }
+
+        memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
         // The two following points are used to get the shape defined in the subject (figure A.1 d))
         point_array[nb_points_arc_1 + nb_points_arc_2] = (ei_point_t){rect.top_left.x + rect.size.width - h, rect.top_left.y + h};
         point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = (ei_point_t){rect.top_left.x + h, rect.top_left.y + rect.size.height - h};
-        memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 135, 180), nb_points_arc_3 * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
+
+        free(arc_1);
+        free(arc_2);
+        free(arc_3);
 
         return point_array;
     }
@@ -68,15 +104,43 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
 
         ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
 
+        // If malloc failed, return NULL
+        if (point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return NULL;
+        }
+
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        memcpy(point_array, arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90), nb_points_arc_1 * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_arc_1, arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 135), nb_points_arc_2 * sizeof(ei_point_t));
+        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90);
+        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 135);
+        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 315, 360);
+
+        // If calloc failed on one of the arcs, return NULL
+        if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+
+            // Free all arcs in case only one of them couldn't be allocated
+            free(arc_1);
+            free(arc_2);
+            free(arc_3);
+
+            return NULL;
+        }
+
+        memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
         // The two following points are used to get the shape defined in the subject (figure A.1 d))
         point_array[nb_points_arc_1 + nb_points_arc_2] = (ei_point_t){rect.top_left.x + h, rect.top_left.y + rect.size.height - h};
         point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = (ei_point_t){rect.top_left.x + rect.size.width - h, rect.top_left.y + h};
-        memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 315, 360), nb_points_arc_3 * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
+
+        free(arc_1);
+        free(arc_2);
+        free(arc_3);
 
         return point_array;
     }
@@ -86,10 +150,41 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
 
         ei_point_t *point_array = malloc(nb_points_per_arc * 4 * sizeof(ei_point_t));
 
-        memcpy(point_array, arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270), nb_points_per_arc * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_per_arc, arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 360), nb_points_per_arc * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_per_arc * 2, arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90), nb_points_per_arc * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_per_arc * 3, arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 180), nb_points_per_arc * sizeof(ei_point_t));
+        // If alloc failed, return NULL
+        if (point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return NULL;
+        }
+
+        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270);
+        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 360);
+        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90);
+        ei_point_t *arc_4 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 180);
+
+        // If calloc failed on one of the arcs, return NULL
+        if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL || arc_4 == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+
+            // Free all arcs in case only one of them couldn't be allocated
+            free(arc_1);
+            free(arc_2);
+            free(arc_3);
+            free(arc_4);
+
+            return NULL;
+        }
+
+        memcpy(point_array, arc_1, nb_points_per_arc * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_per_arc, arc_2, nb_points_per_arc * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_per_arc * 2, arc_3, nb_points_per_arc * sizeof(ei_point_t));
+        memcpy(point_array + nb_points_per_arc * 3, arc_4, nb_points_per_arc * sizeof(ei_point_t));
+
+        free(arc_1);
+        free(arc_2);
+        free(arc_3);
+        free(arc_4);
 
         return point_array;
     }
@@ -107,20 +202,52 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
         ei_color_t color1 = button->relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
         ei_color_t color2 = button->relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
 
-        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top), 185, color1, clipper);
-        ei_draw_polygon(surface, rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom), 185, color2, clipper);
+        ei_point_t *top_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top);
+        ei_point_t *bottom_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom);
+
+        // If malloc failed, return
+        if (top_point_array == NULL || bottom_point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        ei_draw_polygon(surface, top_point_array, 185, color1, clipper);
+        ei_draw_polygon(surface, bottom_point_array, 185, color2, clipper);
+
+        free(top_point_array);
+        free(bottom_point_array);
     }
 
     // Create a new smaller rectangle to account for the border width
     ei_rect_t *border_width_rect = malloc(sizeof(ei_rect_t));
+
+    // If malloc failed, return
+    if (border_width_rect == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     border_width_rect->top_left = (ei_point_t){button->widget.screen_location.top_left.x + border_width, button->widget.screen_location.top_left.y + border_width};
     border_width_rect->size = (ei_size_t){button->widget.screen_location.size.width - 2 * border_width, button->widget.screen_location.size.height - 2 * border_width};
 
     // If relief is none, we don't want to take the border width into account,
     // otherwise the button would be smaller than what it should be
     ei_rect_t inner_rectangle = button->relief == ei_relief_none ? button->widget.screen_location : *border_width_rect;
-    ei_draw_polygon(surface, rounded_frame(inner_rectangle, button->corner_radius, ei_rounded_frame_full), 364, color, clipper);
 
+    ei_point_t *point_array = rounded_frame(inner_rectangle, button->corner_radius, ei_rounded_frame_full);
+
+    // If malloc failed, return
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    ei_draw_polygon(surface, point_array, 364, color, clipper);
+
+    free(point_array);
     free(border_width_rect);
 }
 

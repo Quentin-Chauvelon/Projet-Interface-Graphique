@@ -14,6 +14,14 @@
 ei_widget_t button_allocfunc()
 {
     ei_button_t *button = malloc(sizeof(ei_button_t));
+
+    // If malloc failed, exit since the program will crash if the user tries to use the button
+    if (button == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the button widget.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     memset(button, 0, sizeof(ei_button_t));
 
     return (ei_widget_t)button;

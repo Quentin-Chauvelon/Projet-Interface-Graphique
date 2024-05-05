@@ -130,6 +130,14 @@ void ei_geometrymanager_unmap(ei_widget_t widget)
 void ei_geometrymanager_register_all()
 {
     ei_geometrymanager_t *placer = malloc(sizeof(ei_geometrymanager_t));
+
+    // If malloc failed, return
+    if (placer == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to register geometry manager.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     strcpy(placer->name, "placer");
     placer->runfunc = &ei_placer_runfunc;
     placer->releasefunc = &ei_placer_releasefunc;

@@ -19,8 +19,9 @@ ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, e
     {
         if (!TESTING)
         {
-            printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\n", __func__, __FILE__, __LINE__);
+            printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         }
+
         return NULL;
     }
 
@@ -31,11 +32,26 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 {
     ei_widgetclass_t *wclass = ei_widgetclass_from_name(class_name);
 
+    // If the widget class doesn't exist, exit since the program can't run without it
+    if (wclass == NULL)
+    {
+        printf("\033[0;31mError: the widget class %s doesn't exist.\n\t at %s (%s:%d)\033[0m\n", class_name, __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     ei_widget_t widget = wclass->allocfunc();
     wclass->setdefaultsfunc(widget);
 
     widget->pick_id = pick_id++;
     widget->pick_color = malloc(sizeof(ei_color_t));
+
+    // If malloc failed, exit since the program can't run without the pick color
+    if (widget->pick_color == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the widget's pick color.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     *(widget->pick_color) = get_color_from_id(widget->pick_id);
 
     widget->wclass = wclass;

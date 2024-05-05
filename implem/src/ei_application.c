@@ -136,6 +136,14 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
     if (invalid_rects == NULL)
     {
         invalid_rects = malloc(sizeof(ei_linked_rect_t));
+
+        // If malloc failed, return
+        if (invalid_rects == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
         invalid_rects->rect = *rect;
         invalid_rects->next = NULL;
     }
@@ -164,6 +172,14 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         }
 
         ei_linked_rect_t *invalid_rect = malloc(sizeof(ei_linked_rect_t));
+
+        // If malloc failed, return
+        if (invalid_rect == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
         invalid_rect->rect = *rect;
         invalid_rect->next = NULL;
 

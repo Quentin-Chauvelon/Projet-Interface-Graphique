@@ -113,6 +113,13 @@ void ei_place(ei_widget_t widget,
     if (!ei_widget_is_displayed(widget))
     {
         placer_geom_param = malloc(sizeof(ei_placer_t));
+
+        // If malloc failed, return
+        if (placer_geom_param == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for the widget's placer geom params.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
     }
     // Otherwise, get the geom params of the widget
     else
@@ -121,8 +128,16 @@ void ei_place(ei_widget_t widget,
     }
 
     // Update the geometry manager handling the widget
-    char geometrymanager_name[20] = "placer";
+    char geometrymanager_name[20] = "place";
     placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
+
+    // If the widget class doesn't exist, return
+    if (placer_geom_param->geom_param.manager == NULL)
+    {
+        free(placer_geom_param);
+        printf("\033[0;33mWarning: the geometry manager %s doesn't exist.\n\t at %s (%s:%d)\033[0m\n", geometrymanager_name, __func__, __FILE__, __LINE__);
+        return;
+    }
 
     // Set the geom params to the given parameter if not NULL or the default value otherwise
     placer_geom_param->anchor = anchor != NULL ? *anchor : ei_placer_get_anchor_default_value();
