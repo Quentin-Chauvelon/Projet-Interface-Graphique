@@ -6,8 +6,7 @@
 typedef struct
 {
     ei_impl_widget_t widget;
-    ei_color_t color;
-    int border_width;
+    ei_widget_appearance_t widget_appearance; // Appearance fields common to frames, buttons, toplevels, and entries
     ei_string_t title;
     bool closable;
     ei_axis_set_t resizable;

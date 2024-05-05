@@ -196,11 +196,11 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
 {
     // Draw the relief if there is one and if the border width is not 0 (otherwise it
     // would be overriden by the button itself anyway, so it would be useless to draw it)
-    if (border_width > 0 && button->relief != ei_relief_none)
+    if (border_width > 0 && button->frame_appearance.relief != ei_relief_none)
     {
         // Invert the colors based on the relief (raised or sunken)
-        ei_color_t color1 = button->relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
-        ei_color_t color2 = button->relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
+        ei_color_t color1 = button->frame_appearance.relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
+        ei_color_t color2 = button->frame_appearance.relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
 
         ei_point_t *top_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_top);
         ei_point_t *bottom_point_array = rounded_frame(button->widget.screen_location, button->corner_radius, ei_rounded_frame_bottom);
@@ -234,7 +234,7 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
 
     // If relief is none, we don't want to take the border width into account,
     // otherwise the button would be smaller than what it should be
-    ei_rect_t inner_rectangle = button->relief == ei_relief_none ? button->widget.screen_location : *border_width_rect;
+    ei_rect_t inner_rectangle = button->frame_appearance.relief == ei_relief_none ? button->widget.screen_location : *border_width_rect;
 
     ei_point_t *point_array = rounded_frame(inner_rectangle, button->corner_radius, ei_rounded_frame_full);
 

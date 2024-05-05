@@ -17,6 +17,46 @@
 #include "../api/ei_types.h"
 
 /**
+ * \brief	Text properties.
+ */
+typedef struct ei_text_properties_t
+{
+    ei_string_t label;  ///< The text of the widget.
+    ei_font_t font;     ///< The font of the text.
+    ei_color_t color;   ///< The color of the text.
+    ei_anchor_t anchor; ///< The anchor of the text.
+} ei_text_properties_t;
+
+/**
+ * \brief	Image properties.
+ */
+typedef struct ei_image_properties_t
+{
+    ei_surface_t data;  ///< The image of the widget.
+    ei_rect_t *rect;    ///< The rectangle of the image.
+    ei_anchor_t anchor; ///< The anchor of the image.
+} ei_image_properties_t;
+
+/**
+ * \brief	Fields common to frames, buttons, toplevels, and entries.
+ */
+typedef struct ei_widget_appearance_t
+{
+    ei_color_t color; ///< The background color of the widget.
+    int border_width; ///< The width of the border of the widget.
+} ei_widget_appearance_t;
+
+/**
+ * \brief	Properties common to a frame and a button, mainly related to the appearance.
+ */
+typedef struct ei_frame_appearance_t
+{
+    ei_relief_t relief;          ///< The relief of the widget.
+    ei_text_properties_t text;   ///< The properties of the text.
+    ei_image_properties_t image; ///< The properties of the image.
+} ei_frame_appearance_t;
+
+/**
  * @brief	Creates a new instance of a widget of some particular class, as a descendant of
  *		    an existing widget. This function is called by \ref ei_widget_create.
  *          The main difference is that this function allows for parent to be NULL (used for the root widget).

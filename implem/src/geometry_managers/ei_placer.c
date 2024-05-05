@@ -128,7 +128,7 @@ void ei_place(ei_widget_t widget,
     }
 
     // Update the geometry manager handling the widget
-    char geometrymanager_name[20] = "place";
+    char geometrymanager_name[20] = "placer";
     placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
 
     // If the widget class doesn't exist, return

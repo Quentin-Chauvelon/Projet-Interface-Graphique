@@ -29,14 +29,14 @@ void frame_releasefunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
-    if (frame->img != NULL)
+    if (ei_frame_get_image_data(frame) != NULL)
     {
-        free(frame->img);
+        free(ei_frame_get_image_data(frame));
     }
 
-    if (frame->img_rect != NULL)
+    if (ei_frame_get_image_rect(frame) != NULL)
     {
-        free(frame->img_rect);
+        free(ei_frame_get_image_rect(frame));
     }
 
     free(frame);
@@ -68,7 +68,7 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     point_array[2] = ei_point(widget->screen_location.top_left.x + widget->screen_location.size.width, widget->screen_location.top_left.y + widget->screen_location.size.height);
     point_array[3] = ei_point(widget->screen_location.top_left.x, widget->screen_location.top_left.y + widget->screen_location.size.height);
 
-    ei_draw_polygon(surface, point_array, 4, frame->color, clipper);
+    ei_draw_polygon(surface, point_array, 4, ei_frame_get_color(frame), clipper);
     ei_draw_polygon(pick_surface, point_array, 4, *widget->pick_color, clipper);
 
     free(point_array);
@@ -81,10 +81,122 @@ void frame_setdefaultsfunc(ei_widget_t widget)
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     frame->widget = *widget;
-    frame->color = (ei_color_t){0, 0, 0, 255};
+    ei_frame_set_color(frame, (ei_color_t){0, 0, 0, 255});
 }
 
 void frame_geomnotifyfunc(ei_widget_t widget)
 {
     // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
+}
+
+ei_color_t ei_frame_get_color(ei_frame_t *frame)
+{
+    return frame->widget_appearance.color;
+}
+
+int ei_frame_get_border_width(ei_frame_t *frame)
+{
+    return frame->widget_appearance.border_width;
+}
+
+ei_relief_t ei_frame_get_relief(ei_frame_t *frame)
+{
+    return frame->frame_appearance.relief;
+}
+
+ei_string_t ei_frame_get_text_label(ei_frame_t *frame)
+{
+    return frame->frame_appearance.text.label;
+}
+
+ei_font_t ei_frame_get_text_font(ei_frame_t *frame)
+{
+    return frame->frame_appearance.text.font;
+}
+
+ei_color_t ei_frame_get_text_color(ei_frame_t *frame)
+{
+    return frame->frame_appearance.text.color;
+}
+
+ei_anchor_t ei_frame_get_text_anchor(ei_frame_t *frame)
+{
+    return frame->frame_appearance.text.anchor;
+}
+
+ei_surface_t ei_frame_get_image_data(ei_frame_t *frame)
+{
+    return frame->frame_appearance.image.rect;
+}
+
+ei_rect_t *ei_frame_get_image_rect(ei_frame_t *frame)
+{
+    return frame->frame_appearance.image.rect;
+}
+
+ei_anchor_t ei_frame_get_image_anchor(ei_frame_t *frame)
+{
+    return frame->frame_appearance.image.anchor;
+}
+
+ei_size_t *ei_frame_get_natural_size(ei_frame_t *frame)
+{
+    if (&frame->widget == ei_app_root_widget())
+    {
+        return &frame->widget.screen_location.size;
+    }
+    else
+    {
+        return &frame->widget.requested_size;
+    }
+}
+
+void ei_frame_set_color(ei_frame_t *frame, ei_color_t color)
+{
+    frame->widget_appearance.color = color;
+}
+
+void ei_frame_set_border_width(ei_frame_t *frame, int border_width)
+{
+    frame->widget_appearance.border_width = border_width;
+}
+
+void ei_frame_set_relief(ei_frame_t *frame, ei_relief_t relief)
+{
+    frame->frame_appearance.relief = relief;
+}
+
+void ei_frame_set_text_label(ei_frame_t *frame, ei_string_t text)
+{
+    frame->frame_appearance.text.label = text;
+}
+
+void ei_frame_set_text_font(ei_frame_t *frame, ei_font_t text_font)
+{
+    frame->frame_appearance.text.font = text_font;
+}
+
+void ei_frame_set_text_color(ei_frame_t *frame, ei_color_t text_color)
+{
+    frame->frame_appearance.text.color = text_color;
+}
+
+void ei_frame_set_text_anchor(ei_frame_t *frame, ei_anchor_t text_anchor)
+{
+    frame->frame_appearance.text.anchor = text_anchor;
+}
+
+void ei_frame_set_image_data(ei_frame_t *frame, ei_surface_t image)
+{
+    frame->frame_appearance.image.data = image;
+}
+
+void ei_frame_set_image_rect(ei_frame_t *frame, ei_rect_t *image_rect)
+{
+    frame->frame_appearance.image.rect = image_rect;
+}
+
+void ei_frame_set_image_anchor(ei_frame_t *frame, ei_anchor_t image_anchor)
+{
+    frame->frame_appearance.image.anchor = image_anchor;
 }

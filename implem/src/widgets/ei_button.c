@@ -31,14 +31,14 @@ void button_releasefunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
-    if (button->img != NULL)
+    if (button->frame_appearance.image.data != NULL)
     {
-        free(button->img);
+        free(button->frame_appearance.image.data);
     }
 
-    if (button->img_rect != NULL)
+    if (button->frame_appearance.image.rect != NULL)
     {
-        free(button->img_rect);
+        free(button->frame_appearance.image.rect);
     }
 
     if (button->user_param != NULL)
@@ -75,10 +75,10 @@ void button_setdefaultsfunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
-    button->color = (ei_color_t){0, 0, 0, 255};
-    button->border_width = k_default_button_border_width;
+    button->widget_appearance.color = (ei_color_t){0, 0, 0, 255};
+    button->widget_appearance.border_width = k_default_button_border_width;
     button->corner_radius = k_default_button_corner_radius;
-    button->relief = ei_relief_raised;
+    button->frame_appearance.relief = ei_relief_raised;
     button->callback = NULL;
     button->user_param = NULL;
 }

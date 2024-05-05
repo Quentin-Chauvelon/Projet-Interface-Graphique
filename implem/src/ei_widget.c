@@ -9,8 +9,6 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_widget_ext.h"
 
-#include "../implem/headers/ei_button.h"
-
 int pick_id = 0;
 
 ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor)

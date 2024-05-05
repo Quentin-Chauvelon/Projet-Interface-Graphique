@@ -7,7 +7,7 @@
 static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
     ei_button_t *button = (ei_button_t *)widget;
-    button->relief = ei_relief_sunken;
+    button->frame_appearance.relief = ei_relief_sunken;
 
     // Bind the button release and move event
     // The button should be released if the user releases the mouse button
@@ -21,7 +21,7 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
 static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
     ei_button_t *button = (ei_button_t *)widget;
-    button->relief = ei_relief_raised;
+    button->frame_appearance.relief = ei_relief_raised;
 
     // Unbind the button release and move event
     ei_unbind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);

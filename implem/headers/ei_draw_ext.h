@@ -64,7 +64,7 @@ void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *
  */
 static inline void ei_draw_visible_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper)
 {
-    ei_draw_button(button, surface, clipper, button->border_width, button->color);
+    ei_draw_button(button, surface, clipper, button->widget_appearance.border_width, button->widget_appearance.color);
 }
 
 /**
