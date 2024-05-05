@@ -91,4 +91,14 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2);
  */
 ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2);
 
+/**
+ * @brief   Compares two sizes for equality
+ *
+ * @param   size1   The first size
+ * @param   size2   The second size
+ *
+ * @return  Returns true if the sizes are equal, false otherwise
+ */
+bool equal_sizes(ei_size_t size1, ei_size_t size2);
+
 #endif

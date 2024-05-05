@@ -103,3 +103,8 @@ ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
 
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
+
+bool equal_sizes(ei_size_t size1, ei_size_t size2)
+{
+    return size1.width == size2.width && size1.height == size2.height;
+}

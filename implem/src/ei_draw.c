@@ -5,6 +5,7 @@
 #include "../api/hw_interface.h"
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_utils_ext.h"
 
 // Redefine M_PI if it is not defined since we didn't manage to use M_PI from the math or SDL libraries
 #ifndef M_PI
@@ -254,4 +255,29 @@ void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int 
 int ei_get_nb_points_in_arc(int start_angle, int end_angle)
 {
     return abs(end_angle - start_angle) + 1;
+}
+
+int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
+{
+    // If the surfaces don't have the same size, return 1
+    if (!equal_sizes(hw_surface_get_size(source), hw_surface_get_size(destination)))
+    {
+        return 1;
+    }
+
+    ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
+    ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
+
+    // If the surfaces after clipping don't have the same size, return 1
+    if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
+    {
+        return 1;
+    }
+
+    if (src_rect == NULL && dst_rect == NULL)
+    {
+        memcpy(hw_surface_get_buffer(destination), hw_surface_get_buffer(source), dst_size_after_clipping.width * dst_size_after_clipping.height * sizeof(ei_color_t));
+    }
+
+    return 0;
 }
