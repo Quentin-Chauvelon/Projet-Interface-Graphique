@@ -83,3 +83,16 @@ void ei_widgetclass_register_all()
     ei_widgetclass_register(frame);
     ei_widgetclass_register(button);
 }
+
+void ei_widgetclass_free_all()
+{
+    ei_widgetclass_t *current = first_widgetclass;
+    ei_widgetclass_t *next;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+}

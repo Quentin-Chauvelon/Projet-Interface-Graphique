@@ -62,6 +62,19 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
     }
 }
 
+void ei_unbind_all_events()
+{
+    ei_event_bind_t *current = first_event_bind;
+    ei_event_bind_t *next = NULL;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+}
+
 /**
  * @brief Calls the callback function for the given binded event
  *        It also updates the widget's geometry after calling the callback function

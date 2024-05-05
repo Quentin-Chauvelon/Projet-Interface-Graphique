@@ -47,4 +47,9 @@ void handle_event(ei_event_t event);
  */
 ei_widget_t ei_get_picking_widget();
 
+/**
+ * @brief   Unbinds all the events. Must be called by \ref ei_app_free
+ */
+void ei_unbind_all_events();
+
 #endif

@@ -138,6 +138,19 @@ void ei_geometrymanager_register_all()
     ei_geometrymanager_register(placer);
 }
 
+void ei_geometrymanager_free_all()
+{
+    ei_geometrymanager_t *current = first_geometrymanager;
+    ei_geometrymanager_t *next = NULL;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+}
+
 ei_geometrymanager_t *ei_widget_get_geom_manager(ei_widget_t widget)
 {
     return widget->geom_params->manager;
