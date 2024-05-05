@@ -19,18 +19,20 @@ ei_widget_t frame_allocfunc()
 
 void frame_releasefunc(ei_widget_t widget)
 {
-    free(widget->wclass);
-    free(widget->pick_color);
-    free(widget->user_data);
-    free(widget->destructor);
-    free(widget->parent);
-    free(widget->children_head);
-    free(widget->children_tail);
-    free(widget->next_sibling);
-    free(widget->geom_params);
-    free(widget->content_rect);
+    ei_frame_t *frame = (ei_frame_t *)widget;
 
-    free((ei_frame_t *)widget);
+    if (frame->img != NULL)
+    {
+        free(frame->img);
+    }
+
+    if (frame->img_rect != NULL)
+    {
+        free(frame->img_rect);
+    }
+
+    free(frame);
+    frame = NULL;
 }
 
 void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)

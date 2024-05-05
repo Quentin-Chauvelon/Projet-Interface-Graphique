@@ -154,3 +154,7 @@ void ei_placer_runfunc(ei_widget_t widget)
     // Must be the last function call before returning
     ei_geometry_run_finalize(widget, &new_screen_location);
 }
+
+void ei_placer_releasefunc(ei_widget_t widget)
+{
+}

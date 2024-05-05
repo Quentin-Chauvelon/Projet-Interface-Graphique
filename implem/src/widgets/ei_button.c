@@ -21,20 +21,25 @@ ei_widget_t button_allocfunc()
 
 void button_releasefunc(ei_widget_t widget)
 {
-    free(widget->wclass);
-    free(widget->pick_color);
-    free(widget->user_data);
-    free(widget->destructor);
-    free(widget->parent);
-    free(widget->children_head);
-    free(widget->children_tail);
-    free(widget->next_sibling);
-    free(widget->geom_params);
-    free(widget->content_rect);
-
     ei_button_t *button = (ei_button_t *)widget;
-    free(button->user_param);
+
+    if (button->img != NULL)
+    {
+        free(button->img);
+    }
+
+    if (button->img_rect != NULL)
+    {
+        free(button->img_rect);
+    }
+
+    if (button->user_param != NULL)
+    {
+        free(button->user_param);
+    }
+
     free(button);
+    button = NULL;
 }
 
 void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)

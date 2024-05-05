@@ -18,11 +18,11 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 
-ei_widget_t root = NULL;
-ei_surface_t window_surface = NULL;
-ei_surface_t offscreen_picking = NULL;
-bool main_loop_running = true;
-ei_linked_rect_t *invalid_rects = NULL;
+static ei_widget_t root = NULL;
+static ei_surface_t window_surface = NULL;
+static ei_surface_t offscreen_picking = NULL;
+static bool main_loop_running = true;
+static ei_linked_rect_t *invalid_rects = NULL;
 
 void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 {
@@ -116,7 +116,8 @@ void ei_app_run(void)
 
 void ei_app_free(void)
 {
-    free(root);
+    ei_widget_destroy(ei_app_root_widget());
+
     hw_surface_free(offscreen_picking);
     hw_quit();
 }
@@ -138,7 +139,6 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         ei_linked_rect_t *current_invalid_rect = invalid_rects;
         while (current_invalid_rect->next != NULL)
         {
-            printf("current_invalid_rect %p\n", current_invalid_rect);
             // If the rectangle is fully included in another rectangle, we don't need it
             if (rect_included_in_rect(*rect, current_invalid_rect->rect))
             {
@@ -184,4 +184,9 @@ ei_surface_t ei_app_root_surface(void)
 ei_surface_t ei_app_offscreen_picking_surface(void)
 {
     return offscreen_picking;
+}
+
+bool ei_is_app_running(void)
+{
+    return main_loop_running;
 }

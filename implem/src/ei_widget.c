@@ -9,6 +9,8 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_widget_ext.h"
 
+#include "../implem/headers/ei_button.h"
+
 int pick_id = 0;
 
 ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor)
@@ -38,8 +40,23 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
     widget->wclass = wclass;
 
-    widget->user_data = &user_data;
-    widget->destructor = destructor;
+    if (user_data != NULL)
+    {
+        widget->user_data = &user_data;
+    }
+    else
+    {
+        widget->user_data = NULL;
+    }
+
+    if (destructor != NULL)
+    {
+        widget->destructor = destructor;
+    }
+    else
+    {
+        widget->destructor = NULL;
+    }
 
     widget->parent = parent;
     widget->children_head = NULL;
@@ -71,7 +88,48 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
 void ei_widget_destroy(ei_widget_t widget)
 {
+    // If the widget being destroyed is the root widget and the app is still running, quit the application
+    if (widget == ei_app_root_widget() && ei_is_app_running())
+    {
+        ei_app_quit_request();
+        return;
+    }
+
     ei_geometrymanager_unmap(widget);
+
+    // If it is not the root widget
+    if (widget->parent != NULL)
+    {
+        // Remove the widget from the widget tree
+        // If it is the first children, point to the next sibling
+        if (widget->parent->children_head == widget)
+        {
+            widget->parent->children_head = widget->next_sibling;
+        }
+        // If it is not the first children, find the previous widget and point to the next sibling
+        else
+        {
+            ei_widget_t current = widget->parent->children_head;
+            while (current->next_sibling != widget)
+            {
+                current = current->next_sibling;
+            }
+
+            current->next_sibling = widget->next_sibling;
+
+            // If it is the last child, point the tail to the previous widget
+            if (widget->parent->children_tail == widget)
+            {
+                widget->parent->children_tail = current;
+            }
+        }
+
+        // If it is the last child, remove the pointer to the tail
+        if (widget->parent->children_tail == widget)
+        {
+            widget->parent->children_tail = NULL;
+        }
+    }
 
     // Destroy all the descendants
     if (widget->children_head != NULL)
@@ -94,8 +152,22 @@ void ei_widget_destroy(ei_widget_t widget)
         widget->destructor(widget);
     }
 
+    // Don't free the geom_params field since it has already be freed in the geometry manager's unmap function
+
+    free(widget->pick_color);
+
+    if (widget->user_data != NULL)
+    {
+        free(widget->user_data);
+    }
+
+    if (widget->destructor != NULL)
+    {
+        free(widget->destructor);
+    }
+
     widget->wclass->releasefunc(widget);
-    free(widget);
+    widget = NULL;
 }
 
 bool ei_widget_is_displayed(ei_widget_t widget)

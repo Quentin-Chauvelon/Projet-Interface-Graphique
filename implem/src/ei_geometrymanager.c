@@ -120,6 +120,7 @@ void ei_geometrymanager_unmap(ei_widget_t widget)
     widget->geom_params->manager->releasefunc(widget);
 
     free(widget->geom_params);
+    widget->geom_params = NULL;
 
     ei_app_invalidate_rect(&widget->screen_location);
 
@@ -131,7 +132,7 @@ void ei_geometrymanager_register_all()
     ei_geometrymanager_t *placer = malloc(sizeof(ei_geometrymanager_t));
     strcpy(placer->name, "placer");
     placer->runfunc = &ei_placer_runfunc;
-    placer->releasefunc = NULL;
+    placer->releasefunc = &ei_placer_releasefunc;
     placer->next = NULL;
 
     ei_geometrymanager_register(placer);
