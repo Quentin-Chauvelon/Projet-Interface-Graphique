@@ -128,3 +128,28 @@ int ei_get_nb_points_in_arc(int start_angle, int end_angle)
 {
     return abs(end_angle - start_angle) + 1;
 }
+
+void	ei_fill	(ei_surface_t	surface, const ei_color_t*	color, const ei_rect_t*	clipper)
+{
+    //building of a square whith the specified surface if clipper is None
+    ei_rect_t rec=hw_surface_get_rect( (ei_surface_t) surface);
+    ei_size_t dim= rec.size;
+    int h= dim.height;
+    int l=dim.width;
+
+    //We create a rect from the top-left of the surface
+    ei_point_t *point_array = malloc(4*sizeof(ei_point_t));
+    ei_point_t *p=point_array;
+
+    *point_array= (ei_point_t) rec.top_left;
+    point_array++;
+    *point_array= (ei_point_t) {rec.top_left.x , rec.top_left.y+h};
+    point_array++;
+    *point_array= (ei_point_t) {rec.top_left.x+l , rec.top_left.y+h};
+    point_array++;
+    *point_array= (ei_point_t) {rec.top_left.x+l, rec.top_left.y};
+
+    ei_draw_polygon(surface, p,4,*color, clipper);
+
+    //free(p);
+}
