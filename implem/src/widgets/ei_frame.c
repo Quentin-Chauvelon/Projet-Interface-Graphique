@@ -35,11 +35,6 @@ void frame_releasefunc(ei_widget_t widget)
         free(ei_frame_get_image_data(frame));
     }
 
-    if (ei_frame_get_image_rect(frame) != NULL)
-    {
-        free(ei_frame_get_image_rect(frame));
-    }
-
     free(frame);
     frame = NULL;
 }
@@ -70,7 +65,15 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
         ei_draw_text(surface, &where, frame->frame_appearance.text.label, frame->frame_appearance.text.font, frame->frame_appearance.text.color, clipper);
     }
 
-    // Draw the frame on the offscree picking surface
+    // Draw the image
+    if (frame->frame_appearance.image.data != NULL)
+    {
+        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, frame->frame_appearance.image.rect == NULL ? hw_surface_get_size(frame->frame_appearance.image.data) : frame->frame_appearance.image.rect->size, frame->frame_appearance.image.anchor);
+
+        ei_draw_image(surface, frame->frame_appearance.image.data, frame->frame_appearance.image.rect, &where, clipper);
+    }
+
+    // Draw the frame on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, 0, *widget->pick_color, ei_relief_none, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
@@ -126,7 +129,7 @@ ei_anchor_t ei_frame_get_text_anchor(ei_frame_t *frame)
 
 ei_surface_t ei_frame_get_image_data(ei_frame_t *frame)
 {
-    return frame->frame_appearance.image.rect;
+    return frame->frame_appearance.image.data;
 }
 
 ei_rect_t *ei_frame_get_image_rect(ei_frame_t *frame)

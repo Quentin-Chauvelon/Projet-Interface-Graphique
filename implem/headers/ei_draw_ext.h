@@ -66,4 +66,18 @@ void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int 
  */
 int ei_get_nb_points_in_arc(int start_angle, int end_angle);
 
+/**
+ * \brief   Draws image.
+ *
+ * @param   surface 	    Where to draw the image. The surface must be *locked* by
+ *				            \ref hw_surface_lock.
+ * @param   image		    The surface containing the image. Can't be NULL.
+ * @param   image_subpart	If not NULL, the rectangle defines a subpart of "img" to use as the
+ *				            image displayed
+ * @param   where		    Coordinates, in the surface, where to anchor the top-left corner of
+ *		            	    the image.
+ * @param   clipper		    If not NULL, the drawing is restricted within this rectangle.
+ */
+void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_subpart, const ei_point_t *where, const ei_rect_t *clipper);
+
 #endif

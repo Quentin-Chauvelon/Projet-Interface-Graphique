@@ -36,11 +36,6 @@ void button_releasefunc(ei_widget_t widget)
         free(button->frame_appearance.image.data);
     }
 
-    if (button->frame_appearance.image.rect != NULL)
-    {
-        free(button->frame_appearance.image.rect);
-    }
-
     if (button->user_param != NULL)
     {
         free(button->user_param);
@@ -74,6 +69,14 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
         ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), button->frame_appearance.text.anchor);
 
         ei_draw_text(surface, &where, button->frame_appearance.text.label, button->frame_appearance.text.font, button->frame_appearance.text.color, clipper);
+    }
+
+    // Draw the image
+    if (button->frame_appearance.image.data != NULL)
+    {
+        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, button->frame_appearance.image.rect == NULL ? hw_surface_get_size(button->frame_appearance.image.data) : button->frame_appearance.image.rect->size, button->frame_appearance.image.anchor);
+
+        ei_draw_image(surface, button->frame_appearance.image.data, button->frame_appearance.image.rect, &where, clipper);
     }
 
     // Draw the button on the offscreen picking surface

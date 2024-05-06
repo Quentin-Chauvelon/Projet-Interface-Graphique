@@ -263,10 +263,6 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
     ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
     ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
 
-    printf("src_size_after_clipping: %d %d\n", src_size_after_clipping.width, src_size_after_clipping.height);
-    printf("dst_size_after_clipping: %d %d\n", dst_size_after_clipping.width, dst_size_after_clipping.height);
-    printf("dst_rect: %d %d %d %d\n", dst_rect->top_left.x, dst_rect->top_left.y, dst_rect->size.width, dst_rect->size.height);
-
     // If the surfaces after clipping don't have the same size, return 1
     if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
@@ -343,11 +339,35 @@ void ei_draw_text(ei_surface_t surface, const ei_point_t *where, ei_const_string
         text_surface_rect = get_intersection_rectangle(ei_rect(*where, hw_surface_get_size(text_surface)), *clipper);
     }
 
-    printf("text_surface_rect: %d %d %d %d\n", text_surface_rect.top_left.x, text_surface_rect.top_left.y, text_surface_rect.size.width, text_surface_rect.size.height);
-
     hw_surface_lock(text_surface);
     ei_copy_surface(surface, &text_surface_rect, text_surface, NULL, true);
     hw_surface_unlock(text_surface);
 
     hw_surface_free(text_surface);
+}
+
+void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_subpart, const ei_point_t *where, const ei_rect_t *clipper)
+{
+    // If the subpart is not NULL, limit the surface to the size of the subpart, otherwise use the whole image
+    ei_rect_t *image_subpart_clipped = malloc(sizeof(ei_rect_t));
+    image_subpart_clipped->top_left = image_subpart != NULL ? image_subpart->top_left : ei_point_zero();
+    image_subpart_clipped->size = image_subpart != NULL ? image_subpart->size : hw_surface_get_size(image);
+
+    ei_rect_t image_rect = ei_rect(*where, image_subpart_clipped->size);
+
+    // If the clipper is not NULL, limit the surface to the intersection of the size of the text and the clipper
+    if (clipper != NULL)
+    {
+        image_rect = get_intersection_rectangle(image_rect, *clipper);
+    }
+
+    // Limit the size of the subpart to the size of the image,
+    // so that the subpart also takes into account the clipper
+    image_subpart_clipped->size = image_rect.size;
+
+    hw_surface_lock(image);
+    ei_copy_surface(surface, &image_rect, image, image_subpart_clipped, true);
+    hw_surface_unlock(image);
+
+    free(image_subpart_clipped);
 }
