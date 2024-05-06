@@ -193,7 +193,11 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
 {
     ei_surface_t offscreen_picking = ei_app_offscreen_picking_surface();
 
+    hw_surface_lock(offscreen_picking);
+
     uint8_t *buffer = hw_surface_get_buffer(offscreen_picking);
+
+    hw_surface_unlock(offscreen_picking);
 
     // Each pixel is stored on 4 consecutive bytes with one byte for each component, with
     // the order depending on hw_surface_get_channel_indices.
