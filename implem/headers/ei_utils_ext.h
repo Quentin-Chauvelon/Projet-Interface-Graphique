@@ -101,4 +101,15 @@ ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2);
  */
 bool equal_sizes(ei_size_t size1, ei_size_t size2);
 
+/**
+ * @brief   Returns the position of a child in its parent based on the given anchor
+ *
+ * @param   parent  The parent rectangle
+ * @param   child   The child size
+ * @param   anchor  The anchor
+ *
+ * @return  The position of the child in its parent based on the given anchor
+ */
+ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor);
+
 #endif

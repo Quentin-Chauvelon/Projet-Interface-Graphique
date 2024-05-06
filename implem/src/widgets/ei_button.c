@@ -61,7 +61,22 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
 
     ei_button_t *button = (ei_button_t *)widget;
 
+    // Draw the visible button
     ei_draw_rounded_frame(surface, widget->screen_location, button->widget_appearance.border_width, button->corner_radius, button->widget_appearance.color, button->frame_appearance.relief, clipper);
+
+    // Draw the text
+    if (button->frame_appearance.text.label != NULL)
+    {
+        int width = 0;
+        int height = 0;
+        hw_text_compute_size(button->frame_appearance.text.label, button->frame_appearance.text.font, &width, &height);
+
+        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), button->frame_appearance.text.anchor);
+
+        ei_draw_text(surface, &where, button->frame_appearance.text.label, button->frame_appearance.text.font, button->frame_appearance.text.color, clipper);
+    }
+
+    // Draw the button on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, button->corner_radius, *widget->pick_color, ei_relief_none, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);

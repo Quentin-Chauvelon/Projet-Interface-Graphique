@@ -108,3 +108,30 @@ bool equal_sizes(ei_size_t size1, ei_size_t size2)
 {
     return size1.width == size2.width && size1.height == size2.height;
 }
+
+ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor)
+{
+    switch (anchor)
+    {
+    case ei_anc_center:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_north:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y);
+    case ei_anc_northeast:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y);
+    case ei_anc_east:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_southeast:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_south:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_southwest:
+        return ei_point(parent.top_left.x, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_west:
+        return ei_point(parent.top_left.x, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_northwest:
+        return ei_point(parent.top_left.x, parent.top_left.y);
+    default:
+        return ei_point(parent.top_left.x, parent.top_left.y);
+    }
+}
