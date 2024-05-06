@@ -259,25 +259,65 @@ int ei_get_nb_points_in_arc(int start_angle, int end_angle)
 
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
 {
-    // If the surfaces don't have the same size, return 1
-    if (!equal_sizes(hw_surface_get_size(source), hw_surface_get_size(destination)))
-    {
-        return 1;
-    }
-
     ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
     ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
 
     // If the surfaces after clipping don't have the same size, return 1
     if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
+        printf("\033[0;33mWarning: The source and destination areas must have the same size to copy.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         return 1;
     }
 
-    if (src_rect == NULL && dst_rect == NULL)
+    // Calculate the rectangles represensenting the areas to copy/paste after clipping
+    src_rect = src_rect != NULL ? src_rect : &(ei_rect_t){ei_point_zero(), src_size_after_clipping};
+    dst_rect = dst_rect != NULL ? dst_rect : &(ei_rect_t){ei_point_zero(), dst_size_after_clipping};
+
+    ei_size_t src_size = hw_surface_get_size(source);
+    ei_size_t dst_size = hw_surface_get_size(destination);
+
+    // Since get_buffer returns a pointer to the first pixel, we need to calculate the offset
+    // needed to get a pointer to the pixel in the top left of the rectangle after clipping.
+    // To do this, we can simply move the pointer by the number of lines before the rectangle * the width of the surface,
+    // which gives us a pointer to the first pixel of the correct line, and so, we only need to move by the number of columns
+    // before the rectangle. Since a color has 4 components, we also need to multiply the result by the size of the color (4)
+    uint8_t *src_top_left_pixel = hw_surface_get_buffer(source) + (src_rect->top_left.y * src_size.width + src_rect->top_left.x) * sizeof(ei_color_t);
+    uint8_t *dst_top_left_pixel = hw_surface_get_buffer(destination) + (dst_rect->top_left.y * dst_size.width + dst_rect->top_left.x) * sizeof(ei_color_t);
+
+    int src_line_length = src_size.width * sizeof(ei_color_t);
+    int dst_line_length = dst_size.width * sizeof(ei_color_t);
+
+    // Iterate over each pixel to copy
+    for (int y = 0; y < src_size_after_clipping.height; y++)
     {
-        memcpy(hw_surface_get_buffer(destination), hw_surface_get_buffer(source), dst_size_after_clipping.width * dst_size_after_clipping.height * sizeof(ei_color_t));
+        // memcpy(hw_surface_get_buffer(destination) + dst_offset + y * dst_line_length, hw_surface_get_buffer(source) + src_offset + y * src_line_length, dst_size_after_clipping.width * sizeof(ei_color_t));
+        for (int x = 0; x < src_size_after_clipping.width * sizeof(ei_color_t); x += 4)
+        {
+            // Get a pointer to the first component of the pixel
+            uint8_t *src_buffer = src_top_left_pixel + y * src_line_length + x;
+            uint8_t *dst_buffer = dst_top_left_pixel + y * dst_line_length + x;
+
+            // If alpha is true, compute a combination of source and destination pixels weighted by the source alpha channel
+            if (alpha)
+            {
+                dst_buffer[0] = (src_buffer[3] * src_buffer[0] + (255 - src_buffer[3]) * dst_buffer[0]) / 255;
+                dst_buffer[1] = (src_buffer[3] * src_buffer[1] + (255 - src_buffer[3]) * dst_buffer[1]) / 255;
+                dst_buffer[2] = (src_buffer[3] * src_buffer[2] + (255 - src_buffer[3]) * dst_buffer[2]) / 255;
+                dst_buffer[3] = 255;
+            }
+            // Otherwise, we can simply copy the 4 components
+            else
+            {
+                dst_buffer[0] = src_buffer[0];
+                dst_buffer[1] = src_buffer[1];
+                dst_buffer[2] = src_buffer[2];
+                dst_buffer[3] = src_buffer[3];
+            }
+        }
     }
+
+    // Reset origin
+    hw_surface_set_origin(destination, ei_point_zero());
 
     return 0;
 }
