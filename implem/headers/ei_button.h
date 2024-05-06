@@ -84,6 +84,6 @@ void button_geomnotifyfunc(ei_widget_t widget);
  *
  * @return  The natural size of the button.
  */
-ei_size_t *ei_button_get_natural_size(ei_button_t *button);
+ei_size_t ei_button_get_natural_size(ei_button_t *button);
 
 #endif

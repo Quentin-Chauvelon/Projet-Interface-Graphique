@@ -170,7 +170,7 @@ ei_anchor_t ei_frame_get_image_anchor(ei_frame_t *frame);
  *
  * @return  The natural size of the frame.
  */
-ei_size_t *ei_frame_get_natural_size(ei_frame_t *frame);
+ei_size_t ei_frame_get_natural_size(ei_frame_t *frame);
 
 /**
  * @brief   Sets the color of a frame.

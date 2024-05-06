@@ -142,16 +142,40 @@ ei_anchor_t ei_frame_get_image_anchor(ei_frame_t *frame)
     return frame->frame_appearance.image.anchor;
 }
 
-ei_size_t *ei_frame_get_natural_size(ei_frame_t *frame)
+ei_size_t ei_frame_get_natural_size(ei_frame_t *frame)
 {
     if (&frame->widget == ei_app_root_widget())
     {
-        return &frame->widget.screen_location.size;
+        return frame->widget.screen_location.size;
     }
-    else
+
+    ei_size_t size = ei_size_zero();
+
+    if (frame->widget_appearance.border_width > 0)
     {
-        return &frame->widget.requested_size;
+        size.width += frame->widget_appearance.border_width * 2;
+        size.height += frame->widget_appearance.border_width * 2;
     }
+
+    if (frame->frame_appearance.text.label != NULL)
+    {
+        int width = 0;
+        int height = 0;
+        hw_text_compute_size(frame->frame_appearance.text.label, frame->frame_appearance.text.font, &width, &height);
+
+        size.width += width;
+        size.height += height;
+    }
+
+    if (frame->frame_appearance.image.data != NULL)
+    {
+        ei_size_t image_size = frame->frame_appearance.image.rect == NULL ? hw_surface_get_size(frame->frame_appearance.image.data) : frame->frame_appearance.image.rect->size;
+
+        size.width += image_size.width;
+        size.height += image_size.height;
+    }
+
+    return size;
 }
 
 void ei_frame_set_color(ei_frame_t *frame, ei_color_t color)

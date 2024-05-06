@@ -76,7 +76,7 @@ void ei_frame_configure(ei_widget_t widget,
     img_rect != NULL ? ei_frame_set_image_rect(frame, *img_rect) : ei_frame_set_image_rect(frame, NULL);
     img_anchor != NULL &&*img_anchor != ei_anc_none ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
 
-    widget->requested_size = requested_size != NULL ? *requested_size : *ei_frame_get_natural_size(frame);
+    widget->requested_size = requested_size != NULL ? *requested_size : ei_frame_get_natural_size(frame);
     widget->screen_location.size = widget->requested_size;
 }
 
@@ -134,7 +134,7 @@ void ei_button_configure(ei_widget_t widget,
     button->callback = callback != NULL ? *callback : NULL;
     button->user_param = user_param != NULL ? *user_param : NULL;
 
-    widget->requested_size = requested_size != NULL ? *requested_size : *ei_button_get_natural_size(button);
+    widget->requested_size = requested_size != NULL ? *requested_size : ei_button_get_natural_size(button);
     widget->screen_location.size = widget->requested_size;
 }
 

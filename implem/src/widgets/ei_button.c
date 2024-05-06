@@ -102,7 +102,33 @@ void button_geomnotifyfunc(ei_widget_t widget)
     // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
 }
 
-ei_size_t *ei_button_get_natural_size(ei_button_t *button)
+ei_size_t ei_button_get_natural_size(ei_button_t *button)
 {
-    return &button->widget.requested_size;
+    ei_size_t size = ei_size_zero();
+
+    if (button->widget_appearance.border_width > 0)
+    {
+        size.width += button->widget_appearance.border_width * 2;
+        size.height += button->widget_appearance.border_width * 2;
+    }
+
+    if (button->frame_appearance.text.label != NULL)
+    {
+        int width = 0;
+        int height = 0;
+        hw_text_compute_size(button->frame_appearance.text.label, button->frame_appearance.text.font, &width, &height);
+
+        size.width += width;
+        size.height += height;
+    }
+
+    if (button->frame_appearance.image.data != NULL)
+    {
+        ei_size_t image_size = button->frame_appearance.image.rect == NULL ? hw_surface_get_size(button->frame_appearance.image.data) : button->frame_appearance.image.rect->size;
+
+        size.width += image_size.width;
+        size.height += image_size.height;
+    }
+
+    return size;
 }
