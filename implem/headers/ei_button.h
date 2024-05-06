@@ -77,6 +77,13 @@ void button_setdefaultsfunc(ei_widget_t widget);
  */
 void button_geomnotifyfunc(ei_widget_t widget);
 
-void get_button_color(ei_button_t *button);
+/**
+ * @brief   Returns the natural size of a button
+ *
+ * @param   button   The button to return the natural size for.
+ *
+ * @return  The natural size of the button.
+ */
+ei_size_t *ei_button_get_natural_size(ei_button_t *button);
 
 #endif

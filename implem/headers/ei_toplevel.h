@@ -1,12 +1,15 @@
 #ifndef EI_TOPLEVEL_H
 #define EI_TOPLEVEL_H
 
+#include "../api/ei_types.h"
+#include "../api/hw_interface.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_widget_ext.h"
 
 typedef struct
 {
     ei_impl_widget_t widget;
-    ei_widget_appearance_t widget_appearance; // Appearance fields common to frames, buttons, toplevels, and entries
+    ei_widget_appearance_t widget_appearance; // Appearance fields common to frames, toplevels, toplevels, and entries
     ei_string_t title;
     bool closable;
     ei_axis_set_t resizable;
@@ -60,5 +63,14 @@ void toplevel_setdefaultsfunc(ei_widget_t widget);
  * @param	widget		The widget instance to notify of a geometry change.
  */
 void toplevel_geomnotifyfunc(ei_widget_t widget);
+
+/**
+ * @brief   Returns the natural size of a toplevel
+ *
+ * @param   toplevel   The toplevel to return the natural size for.
+ *
+ * @return  The natural size of the toplevel.
+ */
+ei_size_t *ei_toplevel_get_natural_size(ei_toplevel_t *toplevel);
 
 #endif

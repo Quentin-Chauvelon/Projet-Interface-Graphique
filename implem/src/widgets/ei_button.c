@@ -83,3 +83,8 @@ void button_geomnotifyfunc(ei_widget_t widget)
 {
     // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
 }
+
+ei_size_t *ei_button_get_natural_size(ei_button_t *button)
+{
+    return &button->widget.requested_size;
+}
