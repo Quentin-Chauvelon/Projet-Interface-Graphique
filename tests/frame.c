@@ -24,10 +24,6 @@ int main(int argc, char** argv)
 					 	&(ei_relief_t){ei_relief_raised}, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 	ei_place_xy			(frame, 150, 200);
 
-	/*test of fill*/
-	ei_surface_t surface=hw_surface_create( ei_app_root_surface() ,(ei_size_t) {300,200},false );
-	ei_fill((ei_surface_t) surface, &(ei_color_t) {0x99, 0x44, 0x50, 0xff}, &(ei_rect_t ) {(ei_point_t) {150,200} ,(ei_size_t){300,200} } );
-
 	/* Run the application's main loop. */
 	ei_app_run();
 

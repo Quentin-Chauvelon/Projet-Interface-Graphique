@@ -108,6 +108,9 @@ void ei_app_run(void)
         }
         invalid_rects = NULL;
 
+        /*test of fill*/
+	    ei_fill((ei_surface_t) ei_app_root_surface(), &(ei_color_t) {0x99, 0x44, 0x50, 0xff}, &(ei_rect_t ) {(ei_point_t) {150,200} ,(ei_size_t){300,200} } );
+
         hw_event_wait_next(&event);
 
         handle_event(event);
