@@ -1,3 +1,4 @@
+#include "../api/ei_types.h"
 #include "../api/ei_widget_configure.h"
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_implementation.h"
@@ -70,10 +71,10 @@ void ei_frame_configure(ei_widget_t widget,
     text != NULL ? ei_frame_set_text_label(frame, *text) : ei_frame_set_text_label(frame, NULL);
     text_font != NULL ? ei_frame_set_text_font(frame, *text_font) : ei_frame_set_text_font(frame, ei_default_font);
     text_color != NULL ? ei_frame_set_text_color(frame, *text_color) : ei_frame_set_text_color(frame, ei_font_default_color);
-    text_anchor != NULL ? ei_frame_set_text_anchor(frame, *text_anchor) : ei_frame_set_text_anchor(frame, ei_anc_center);
+    text_anchor != NULL &&*text_anchor != ei_anc_none ? ei_frame_set_text_anchor(frame, *text_anchor) : ei_frame_set_text_anchor(frame, ei_anc_center);
     img != NULL ? ei_frame_set_image_data(frame, *img) : ei_frame_set_image_data(frame, NULL);
     img_rect != NULL ? ei_frame_set_image_rect(frame, *img_rect) : ei_frame_set_image_rect(frame, NULL);
-    img_anchor != NULL ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
+    img_anchor != NULL &&*img_anchor != ei_anc_none ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
 
     widget->requested_size = requested_size != NULL ? *requested_size : *ei_frame_get_natural_size(frame);
     widget->screen_location.size = widget->requested_size;
@@ -126,10 +127,10 @@ void ei_button_configure(ei_widget_t widget,
     button->frame_appearance.text.label = text != NULL ? *text : NULL;
     button->frame_appearance.text.font = text_font != NULL ? *text_font : ei_default_font;
     button->frame_appearance.text.color = text_color != NULL ? *text_color : ei_font_default_color;
-    button->frame_appearance.text.anchor = text_anchor != NULL ? *text_anchor : ei_anc_center;
+    button->frame_appearance.text.anchor = text_anchor != NULL && *text_anchor != ei_anc_none ? *text_anchor : ei_anc_center;
     button->frame_appearance.image.data = img != NULL ? *img : NULL;
     button->frame_appearance.image.rect = img_rect != NULL ? *img_rect : NULL;
-    button->frame_appearance.image.anchor = img_anchor != NULL ? *img_anchor : ei_anc_center;
+    button->frame_appearance.image.anchor = img_anchor != NULL && *img_anchor != ei_anc_none ? *img_anchor : ei_anc_center;
     button->callback = callback != NULL ? *callback : NULL;
     button->user_param = user_param != NULL ? *user_param : NULL;
 

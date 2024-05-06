@@ -140,7 +140,7 @@ void ei_place(ei_widget_t widget,
     }
 
     // Set the geom params to the given parameter if not NULL or the default value otherwise
-    placer_geom_param->anchor = anchor != NULL ? *anchor : ei_placer_get_anchor_default_value();
+    placer_geom_param->anchor = anchor != NULL && *anchor != ei_anc_none ? *anchor : ei_placer_get_anchor_default_value();
     placer_geom_param->x = x != NULL ? *x : ei_placer_get_x_default_value();
     placer_geom_param->y = y != NULL ? *y : ei_placer_get_y_default_value();
     placer_geom_param->width = ei_placer_get_width_default_value(widget, width, rel_width);
