@@ -92,6 +92,9 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
         toplevel->close_button->widget.geom_params->manager->runfunc((ei_widget_t)toplevel->close_button);
         toplevel->close_button->widget.wclass->drawfunc((ei_widget_t)toplevel->close_button, surface, pick_surface, clipper);
 
+        ei_point_t center = ei_point(toplevel->close_button->widget.screen_location.top_left.x + k_default_toplevel_close_button_size / 2, toplevel->close_button->widget.screen_location.top_left.y + k_default_toplevel_close_button_size / 2);
+        ei_draw_circle(surface, center, (k_default_toplevel_close_button_size - toplevel->close_button->widget_appearance.border_width) / 2, toplevel->close_button->widget_appearance.color, clipper);
+
         // Reduce the size of the title bar to not draw the text over the close button
         title_bar = ei_rect_move(title_bar, k_default_toplevel_close_button_size + k_default_toplevel_title_left_padding, 0, &title_bar);
     }
@@ -102,20 +105,6 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
 
     // Draw the content rectangle of the toplevel
     ei_draw_frame(surface, ei_rect_move(toplevel->widget.screen_location, 0, title_bar.size.height, &toplevel->widget.screen_location), toplevel->widget_appearance.border_width, 0, toplevel->widget_appearance.color, ei_relief_none, &k_default_toplevel_title_bar_background_color, clipper);
-
-    ei_rect_t resizable_square = ei_rect(
-        ei_point(
-            toplevel->widget.screen_location.top_left.x + toplevel->widget.screen_location.size.width - k_default_toplevel_resize_square_size,
-            toplevel->widget.screen_location.top_left.y + toplevel->widget.screen_location.size.height - k_default_toplevel_resize_square_size),
-        ei_size(
-            k_default_toplevel_resize_square_size,
-            k_default_toplevel_resize_square_size));
-
-    // Draw the resize square
-    if (toplevel->resizable != ei_axis_none)
-    {
-        ei_draw_rectangle(surface, resizable_square, k_default_toplevel_title_bar_background_color, clipper);
-    }
 
     // Draw the toplevel on the offscreen picking surface
     // Just like for the title bar, the drawing on the picking offscreen surface needs to
@@ -131,9 +120,18 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
 
-    // Draw the resize square on the offscreen picking surface after drawing the children to override them
+    // Draw the resize square
     if (toplevel->resizable != ei_axis_none)
     {
+        ei_rect_t resizable_square = ei_rect(
+            ei_point(
+                toplevel->widget.screen_location.top_left.x + toplevel->widget.screen_location.size.width - k_default_toplevel_resize_square_size,
+                toplevel->widget.screen_location.top_left.y + toplevel->widget.screen_location.size.height - k_default_toplevel_resize_square_size),
+            ei_size(
+                k_default_toplevel_resize_square_size,
+                k_default_toplevel_resize_square_size));
+
+        ei_draw_rectangle(surface, resizable_square, k_default_toplevel_title_bar_background_color, clipper);
         ei_draw_rectangle(pick_surface, resizable_square, *toplevel->widget.pick_color, clipper);
     }
 }
@@ -177,8 +175,7 @@ ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
 
     ei_button_configure(close_button,
                         &((ei_size_t){k_default_toplevel_close_button_size, k_default_toplevel_close_button_size}),
-                        // &(ei_color_t){255, 0, 0, 255},
-                        &ei_default_background_color,
+                        &(ei_color_t){255, 0, 0, 255},
                         NULL,
                         &(int){k_default_toplevel_close_button_size / 2},
                         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -190,7 +187,7 @@ ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
 
     ei_place(close_button, NULL,
              &(int){k_default_toplevel_title_left_padding},
-             &(int){height / 2 - k_default_toplevel_close_button_size / 2 + 1},
+             &(int){height / 2 - k_default_toplevel_close_button_size / 2 + 2},
              NULL, NULL, NULL, NULL, NULL, NULL);
 
     return (ei_button_t *)close_button;

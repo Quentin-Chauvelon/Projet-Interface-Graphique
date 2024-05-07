@@ -286,6 +286,24 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
     }
 }
 
+void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_color_t color, const ei_rect_t *clipper)
+{
+    int nb_points = ei_get_nb_points_in_arc(0, 360, radius);
+
+    ei_point_t *point_array = arc(center, radius, 0, 360);
+
+    // If malloc failed, return
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw circle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    ei_draw_polygon(surface, point_array, nb_points, color, clipper);
+
+    free(point_array);
+}
+
 int ei_get_nb_points_in_arc(int start_angle, int end_angle, int radius)
 {
     return radius != 0 ? abs(end_angle - start_angle) + 1 : 1;

@@ -77,6 +77,8 @@ static inline void ei_draw_straight_frame(ei_surface_t surface, ei_rect_t screen
     ei_draw_frame(surface, screen_location, border_width, 0, background_color, relief, NULL, clipper);
 }
 
+void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_color_t color, const ei_rect_t *clipper);
+
 /**
  * @brief   Calculates the number of points needed to draw an arc based on the given start and end angles.
  *          If the radius is 0, the function returns 0 (since we don't need to draw an arc)
