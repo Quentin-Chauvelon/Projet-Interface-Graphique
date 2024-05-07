@@ -10,7 +10,7 @@
 static const ei_color_t k_default_toplevel_title_bar_background_color = (ei_color_t){100, 100, 100, 225};
 static const int k_default_toplevel_title_corner_radius = 15;
 static const int k_default_toplevel_title_left_padding = 7;
-static const int k_default_toplevel_close_button_size = 15;
+static const int k_default_toplevel_close_button_size = 16;
 static const int k_default_toplevel_resize_square_size = 12;
 
 typedef struct
@@ -87,5 +87,23 @@ ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel);
  * @return  The close button
  */
 ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel);
+
+/**
+ * @brief   Returns the rect of the title bar rectangle of a toplevel
+ *
+ * @param   toplevel The toplevel to return the rect of the title bar for
+ *
+ * @return  The rect of the title bar rectangle of the toplevel
+ */
+ei_rect_t ei_toplevel_get_title_bar_rect(ei_toplevel_t *toplevel);
+
+/**
+ * @brief   Returns the rect of the resize square of a toplevel
+ *
+ * @param   toplevel The toplevel to return the rect of the resize square for
+ *
+ * @return  The rect of the resize square of the toplevel
+ */
+ei_rect_t ei_toplevel_get_resize_square_rect(ei_toplevel_t *toplevel);
 
 #endif

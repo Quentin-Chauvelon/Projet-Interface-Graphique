@@ -15,6 +15,7 @@
 #define EI_UTILS_EXT_H
 
 #include "../api/ei_types.h"
+#include "../implem/headers/ei_types_ext.h"
 
 // If the area of the intersection of two rectangles over the area of both rectangles
 // is greater than this value, merge the two rectangles (20% seems low but if you draw
@@ -147,6 +148,17 @@ ei_rect_t ei_rect_add(ei_rect_t rect, int x, int y, int width, int height);
  * @param   height  The value to sub to the height component of the rectangle
  */
 ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height);
+
+/**
+ * @brief	Returns if the point is inside the circle formed by the given parameters
+ *
+ * @param	point	The point to check if it is inside the circle
+ * @param	center	The center of the circle
+ * @param	radius	The radius of the circle
+ *
+ * @return	True if the point is inside the circle, false otherwise
+ */
+bool ei_is_point_in_circle(ei_point_t point, ei_point_t center, int radius);
 
 /**
  * @brief   Converts a color from RGB to HSL.

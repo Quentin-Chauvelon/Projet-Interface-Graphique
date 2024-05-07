@@ -69,11 +69,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
 
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
-    int width = 0;
-    int height = 0;
-    hw_text_compute_size(toplevel->title, ei_default_font, &width, &height);
-
-    ei_rect_t title_bar = ei_rect(widget->screen_location.top_left, ei_size(widget->screen_location.size.width, height));
+    ei_rect_t title_bar = ei_toplevel_get_title_bar_rect(toplevel);
 
     // Draw the background of the title bar.
     // The title should have rounded corners at the top and straight corners at the bottom.
@@ -99,8 +95,12 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
         title_bar = ei_rect_move(title_bar, k_default_toplevel_close_button_size + k_default_toplevel_title_left_padding, 0, &title_bar);
     }
 
-    // Draw the text
+    int width = 0;
+    int height = 0;
+    hw_text_compute_size(toplevel->title, ei_default_font, &width, &height);
     ei_point_t where = get_position_in_parent_from_anchor(title_bar, ei_size(width, height), ei_anc_west);
+
+    // Draw the text
     ei_draw_text(surface, &where, toplevel->title, ei_default_font, (ei_color_t){255, 255, 255, 255}, clipper);
 
     // Draw the content rectangle of the toplevel
@@ -123,13 +123,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Draw the resize square
     if (toplevel->resizable != ei_axis_none)
     {
-        ei_rect_t resizable_square = ei_rect(
-            ei_point(
-                toplevel->widget.screen_location.top_left.x + toplevel->widget.screen_location.size.width - k_default_toplevel_resize_square_size,
-                toplevel->widget.screen_location.top_left.y + toplevel->widget.screen_location.size.height - k_default_toplevel_resize_square_size),
-            ei_size(
-                k_default_toplevel_resize_square_size,
-                k_default_toplevel_resize_square_size));
+        ei_rect_t resizable_square = ei_toplevel_get_resize_square_rect(toplevel);
 
         ei_draw_rectangle(surface, resizable_square, k_default_toplevel_title_bar_background_color, clipper);
         ei_draw_rectangle(pick_surface, resizable_square, *toplevel->widget.pick_color, clipper);
@@ -191,4 +185,24 @@ ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
              NULL, NULL, NULL, NULL, NULL, NULL);
 
     return (ei_button_t *)close_button;
+}
+
+ei_rect_t ei_toplevel_get_title_bar_rect(ei_toplevel_t *toplevel)
+{
+    int width = 0;
+    int height = 0;
+    hw_text_compute_size(toplevel->title, ei_default_font, &width, &height);
+
+    ei_rect_t title_bar = ei_rect(toplevel->widget.screen_location.top_left, ei_size(toplevel->widget.screen_location.size.width, height));
+}
+
+ei_rect_t ei_toplevel_get_resize_square_rect(ei_toplevel_t *toplevel)
+{
+    return ei_rect(
+        ei_point(
+            toplevel->widget.screen_location.top_left.x + toplevel->widget.screen_location.size.width - k_default_toplevel_resize_square_size,
+            toplevel->widget.screen_location.top_left.y + toplevel->widget.screen_location.size.height - k_default_toplevel_resize_square_size),
+        ei_size(
+            k_default_toplevel_resize_square_size,
+            k_default_toplevel_resize_square_size));
 }

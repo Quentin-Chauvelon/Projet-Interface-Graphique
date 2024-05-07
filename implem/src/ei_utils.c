@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_types_ext.h"
@@ -170,6 +172,11 @@ ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height)
     rect.size.height -= height;
 
     return rect;
+}
+
+bool ei_is_point_in_circle(ei_point_t point, ei_point_t center, int radius)
+{
+    return sqrt(pow(point.x - center.x, 2) + pow(point.y - center.y, 2)) <= radius;
 }
 
 ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color)

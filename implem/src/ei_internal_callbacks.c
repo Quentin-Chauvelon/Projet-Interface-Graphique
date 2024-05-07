@@ -1,12 +1,23 @@
+#include <math.h>
+
 #include "../api/ei_types.h"
 #include "../api/ei_event.h"
 #include "../api/ei_utils.h"
+#include "../api/ei_placer.h"
 #include "../api/ei_application.h"
 #include "../implem/headers/ei_button.h"
+#include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_placer_ext.h"
+
+typedef struct ei_move_top_level_params_t
+{
+    ei_widget_t widget;
+    ei_point_t offset;
+} ei_move_top_level_params_t;
 
 static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
@@ -46,6 +57,154 @@ static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user
     return false;
 }
 
+static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
+
+    ei_point_t mouse_position = event->param.mouse.where;
+
+    if (toplevel->closable)
+    {
+        ei_rect_t close_button_rect = toplevel->close_button->widget.screen_location;
+
+        // If the user clicked on the close button, close the toplevel
+        if (ei_is_point_in_circle(mouse_position, ei_point(close_button_rect.top_left.x + (close_button_rect.size.width / 2), close_button_rect.top_left.y + (close_button_rect.size.height / 2)), close_button_rect.size.width / 2))
+        {
+            ei_widget_destroy(widget);
+
+            return true;
+        }
+    }
+
+    ei_rect_t title_bar = ei_toplevel_get_title_bar_rect(toplevel);
+
+    // If the user clicked on the title bar
+    if (mouse_position.x >= title_bar.top_left.x && mouse_position.x <= title_bar.top_left.x + title_bar.size.width && mouse_position.y >= title_bar.top_left.y && mouse_position.y <= title_bar.top_left.y + title_bar.size.height)
+    {
+        ei_move_top_level_params_t *params = malloc(sizeof(ei_move_top_level_params_t));
+        params->widget = widget;
+
+        // Store the position of the cursor relative to the left corner of the top level,
+        // because when we are going to move it, we will need to keep the same offset
+        params->offset.x = mouse_position.x - toplevel->widget.screen_location.top_left.x;
+        params->offset.y = mouse_position.y - toplevel->widget.screen_location.top_left.y;
+
+        ei_bind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, params);
+        ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, params);
+
+        return true;
+    }
+
+    // If the user clicked on the resize square
+    if (toplevel->resizable != ei_axis_none)
+    {
+        ei_rect_t resizable_square = ei_toplevel_get_resize_square_rect(toplevel);
+
+        if (mouse_position.x >= resizable_square.top_left.x && mouse_position.x <= resizable_square.top_left.x + resizable_square.size.width && mouse_position.y >= resizable_square.top_left.y && mouse_position.y <= resizable_square.top_left.y + resizable_square.size.height)
+        {
+            ei_bind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, toplevel);
+            ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, toplevel);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    if (user_param == NULL)
+    {
+        return false;
+    }
+
+    ei_move_top_level_params_t params = *((ei_move_top_level_params_t *)user_param);
+
+    if (widget != params.widget)
+    {
+        return false;
+    }
+
+    ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
+
+    if (toplevel->widget.geom_params != NULL)
+    {
+        if (strcmp(toplevel->widget.geom_params->manager->name, "placer") == 0)
+        {
+            ei_placer_t *geom_params = (ei_placer_t *)toplevel->widget.geom_params;
+
+            // If the toplevel is going to clip out of the top or left side, don't move it
+            if (event->param.mouse.where.x - params.offset.x >= 0)
+            {
+                geom_params->x = event->param.mouse.where.x - params.offset.x;
+            }
+
+            if (event->param.mouse.where.y - params.offset.y >= 0)
+            {
+                geom_params->y = event->param.mouse.where.y - params.offset.y;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, user_param);
+    ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, user_param);
+
+    return true;
+}
+
+static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    if (widget != user_param)
+    {
+        return false;
+    }
+
+    ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
+
+    // Update the geom parameters so that the geometry manager can recompute the widget's geometry
+    if (toplevel->widget.geom_params != NULL)
+    {
+        if (strcmp(toplevel->widget.geom_params->manager->name, "placer") == 0)
+        {
+            ei_placer_t *geom_params = (ei_placer_t *)toplevel->widget.geom_params;
+
+            geom_params->width = event->param.mouse.where.x - toplevel->widget.screen_location.top_left.x;
+            geom_params->height = event->param.mouse.where.y - toplevel->widget.screen_location.top_left.y;
+
+            // Resize the top level to the minimum size if it is smaller than the minimum size
+            if (geom_params->width < (*toplevel->min_size).width)
+            {
+                geom_params->width = (*toplevel->min_size).width;
+            }
+
+            if (geom_params->height < (*toplevel->min_size).height)
+            {
+                geom_params->height = (*toplevel->min_size).height;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, user_param);
+    ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, user_param);
+
+    return true;
+}
+
 static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
     if (event->param.key_code == SDLK_g)
@@ -72,8 +231,6 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
                 {
                     *current->pick_color = get_color_from_id(current->pick_id * 1000000);
                 }
-
-                current->wclass->drawfunc(current, ei_app_root_surface(), ei_app_offscreen_picking_surface(), &widget->screen_location);
             }
 
             if (current->next_sibling != NULL)
@@ -89,6 +246,8 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
                 break;
             }
         }
+
+        ei_app_root_widget()->wclass->drawfunc(ei_app_root_widget(), ei_app_root_surface(), ei_app_offscreen_picking_surface(), &widget->screen_location);
 
         hw_surface_lock(ei_app_root_surface());
         hw_surface_lock(ei_app_offscreen_picking_surface());
@@ -127,6 +286,7 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
 void ei_bind_all_internal_callbacks()
 {
     ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
+    ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
 
     ei_surface_t root_surface_copy = NULL;
     ei_bind(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &root_surface_copy);

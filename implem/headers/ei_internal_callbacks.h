@@ -47,6 +47,65 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
+ * @brief   Callback function that is called when the use presses on a toplevel
+ *
+ * @param   widget      The toplevel the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the user moves the cursor around after pressing the
+ *          title bar of the toplevel
+ *
+ * @param   widget      The toplevel the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the user releases the mouse button over the toplevel
+ *          if they were moving it before
+ *
+ * @param   widget      The toplevel the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the user moves the cursor around after pressing the
+ *          resize square of the toplevel
+ *
+ * @param   widget      The toplevel the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the user releases the mouse button over the toplevel
+ *          if they were resizing it before
+ *
+ * @param   widget      The toplevel the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
  * @brief   Binds all the internal callbacks to the corresponding widgets/tags
  */
 void ei_bind_all_internal_callbacks();
