@@ -9,6 +9,7 @@
 #include "../implem/headers/ei_geometrymanager_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_toplevel.h"
 
 // Keep a pointer to the first geometry manager registered
 // Other geometry managers are linked using the next pointer
@@ -27,8 +28,21 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
         widget->screen_location.size.width == new_screen_location->size.width &&
         widget->screen_location.size.height == new_screen_location->size.height)
     {
+        // If the widget is the close button of a toplevel, don't invalidate it,
+        // otherwise this causes issues when displaying the offscreen picking surface.
+        // This is because the toplevel contains a button for which the geometry is
+        // recomputed during the toplevel redraw, which then calls the button drawfunc
+        // which leads to the whole toplevel being invalidated and redrawn over the
+        // offscreen picking surface
+        if (strcmp(widget->parent->wclass->name, "toplevel") == 0 &&
+            ((ei_toplevel_t *)widget->parent)->close_button != NULL &&
+            (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button == (ei_widget_t *)widget)
+        {
+            return;
+        }
+
         // If the widget's geometry has not changed, invalidate the widget's location
-        // because it may have to be redrawn anyway (eg: button pressed internal event)
+        // because it may have to be redrawn anyway (eg: button pressed internal event).
         ei_app_invalidate_rect(&widget->screen_location);
 
         return;
