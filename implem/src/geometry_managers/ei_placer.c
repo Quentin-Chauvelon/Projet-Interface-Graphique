@@ -1,4 +1,4 @@
-//#include "../api/ei_placer.h"
+#include "../api/ei_placer.h"
 #include "../api/ei_types.h"
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_implementation.h"
@@ -226,5 +226,13 @@ void ei_placer_releasefunc(ei_widget_t widget)
             prec->next_sibling = next_sibling;
         }
     }
+    /* Geometry Management of others widgets */
+
+    /* Redrawing the parent */
+    parent = widget->parent;
+    ei_app_invalidate_rect(parent->screen_location);
+    /* Redrawing others affected widgets */
+    
+
     
 }
