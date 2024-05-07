@@ -201,7 +201,28 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     return NULL;
 }
 
-void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t color, ei_relief_t relief, ei_color_t *border_color, const ei_rect_t *clipper)
+void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper)
+{
+    ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
+
+    // If malloc failed, return
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    point_array[0] = screen_location.top_left;
+    point_array[1] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y);
+    point_array[2] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y + screen_location.size.height);
+    point_array[3] = ei_point(screen_location.top_left.x, screen_location.top_left.y + screen_location.size.height);
+
+    ei_draw_polygon(surface, point_array, 4, background_color, clipper);
+
+    free(point_array);
+}
+
+void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, ei_color_t *border_color, const ei_rect_t *clipper)
 {
     // Draw the border if there is one
     if (border_width > 0)
@@ -217,7 +238,7 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
         // Otherwise, compute a lighter and darker color of the background color
         else
         {
-            ei_get_border_colors(color, relief, &color1, &color2);
+            ei_get_border_colors(background_color, relief, &color1, &color2);
         }
 
         ei_point_t *top_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_top);
@@ -226,7 +247,7 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
         // If malloc failed, return
         if (top_point_array == NULL || bottom_point_array == NULL)
         {
-            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            printf("\033[0;31mError: Couldn't allocate memory to draw frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
             return;
         }
 
@@ -245,23 +266,7 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
     // If the corner radius is 0, simply fill the rectangle
     if (corner_radius == 0)
     {
-        point_array = malloc(4 * sizeof(ei_point_t));
-
-        // If malloc failed, return
-        if (point_array == NULL)
-        {
-            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-            return;
-        }
-
-        point_array[0] = screen_location.top_left;
-        point_array[1] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y);
-        point_array[2] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y + screen_location.size.height);
-        point_array[3] = ei_point(screen_location.top_left.x, screen_location.top_left.y + screen_location.size.height);
-
-        ei_draw_polygon(surface, point_array, 4, color, clipper);
-
-        free(point_array);
+        ei_draw_rectangle(surface, screen_location, background_color, clipper);
     }
     else
     {
@@ -271,11 +276,11 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
         // If malloc failed, return
         if (point_array == NULL)
         {
-            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            printf("\033[0;31mError: Couldn't allocate memory to draw frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
             return;
         }
 
-        ei_draw_polygon(surface, point_array, 364, color, clipper);
+        ei_draw_polygon(surface, point_array, 364, background_color, clipper);
 
         free(point_array);
     }

@@ -42,6 +42,16 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
 ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
+ * @brief   Draws a plain rectanglee.
+ *
+ * @param   surface             Where to draw the rectangle. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   screen_location     The location of the rectangle.
+ * @param   background_color    The color of the rectangle.
+ * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
+ */
+void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper);
+
+/**
  * @brief   Draws a frame with rounded or straight corners.
  *          The function takes a number of parameters to allow for easy customization of the frame
  *          which allows us to draw all widgets (frames, buttons, toplevels, entries...)
@@ -62,7 +72,7 @@ static inline void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_
     ei_draw_frame(surface, screen_location, border_width, corner_radius, background_color, relief, NULL, clipper);
 }
 
-static inline void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, int border_width, ei_color_t background_color, ei_relief_t relief, const ei_rect_t *clipper)
+static inline void ei_draw_straight_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, ei_color_t background_color, ei_relief_t relief, const ei_rect_t *clipper)
 {
     ei_draw_frame(surface, screen_location, border_width, 0, background_color, relief, NULL, clipper);
 }

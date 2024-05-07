@@ -51,7 +51,7 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     // Draw the visible frame
-    ei_draw_rectangle(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, clipper);
+    ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, clipper);
 
     // Draw the text
     if (frame->frame_appearance.text.label != NULL)
