@@ -176,8 +176,38 @@ void ei_toplevel_configure(ei_widget_t widget,
     toplevel->widget_appearance.border_width = border_width != NULL ? *border_width : 4;
     toplevel->title = title != NULL ? *title : "Toplevel";
     toplevel->closable = closable != NULL ? *closable : true;
+
+    // Instantiate the close button if closable became true
+    if (toplevel->closable && toplevel->close_button == NULL)
+    {
+        toplevel->close_button = ei_toplevel_instantiate_close_button(toplevel);
+    }
+
     toplevel->resizable = resizable != NULL ? *resizable : ei_axis_both;
-    toplevel->min_size = min_size != NULL ? *min_size : ei_toplevel_get_natural_size(toplevel);
+
+    if (min_size == NULL)
+    {
+        ei_size_t *default_min_size = malloc(sizeof(ei_size_t));
+        default_min_size->width = 160;
+        default_min_size->height = 120;
+
+        toplevel->min_size = default_min_size;
+    }
+    else
+    {
+        toplevel->min_size = *min_size;
+    }
+
+    // If the user set the min_size to low, set it to the default min_size
+    if (toplevel->min_size->width < 160)
+    {
+        toplevel->min_size->width = 160;
+    }
+
+    if (toplevel->min_size->height < 120)
+    {
+        toplevel->min_size->height = 120;
+    }
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_size(320, 240);
     widget->screen_location.size = widget->requested_size;

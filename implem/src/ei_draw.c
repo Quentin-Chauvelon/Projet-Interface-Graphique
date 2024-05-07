@@ -222,7 +222,7 @@ void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color
     free(point_array);
 }
 
-void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, ei_color_t *border_color, const ei_rect_t *clipper)
+void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_color_t *border_color, const ei_rect_t *clipper)
 {
     // Draw the border if there is one
     if (border_width > 0)

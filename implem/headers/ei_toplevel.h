@@ -5,6 +5,13 @@
 #include "../api/hw_interface.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_widget_ext.h"
+#include "../implem/headers/ei_button.h"
+
+static const ei_color_t k_default_toplevel_title_bar_background_color = (ei_color_t){100, 100, 100, 225};
+static const int k_default_toplevel_title_corner_radius = 15;
+static const int k_default_toplevel_title_left_padding = 7;
+static const int k_default_toplevel_close_button_size = 15;
+static const int k_default_toplevel_resize_square_size = 12;
 
 typedef struct
 {
@@ -12,6 +19,7 @@ typedef struct
     ei_widget_appearance_t widget_appearance; // Appearance fields common to frames, toplevels, toplevels, and entries
     ei_string_t title;
     bool closable;
+    ei_button_t *close_button;
     ei_axis_set_t resizable;
     ei_size_ptr_t min_size;
 } ei_toplevel_t;
@@ -71,6 +79,13 @@ void toplevel_geomnotifyfunc(ei_widget_t widget);
  *
  * @return  The natural size of the toplevel.
  */
-ei_size_t *ei_toplevel_get_natural_size(ei_toplevel_t *toplevel);
+ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel);
+
+/**
+ * @brief   Instantiates the close button with the default parameters
+ *
+ * @return  The close button
+ */
+ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel);
 
 #endif

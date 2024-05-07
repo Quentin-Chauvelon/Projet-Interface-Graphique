@@ -65,7 +65,7 @@ void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color
  * @param   border_color        The color of the border of the rounded frame.
  * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
  */
-void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, ei_color_t *border_color, const ei_rect_t *clipper);
+void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_color_t *border_color, const ei_rect_t *clipper);
 
 static inline void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_rect_t *clipper)
 {
