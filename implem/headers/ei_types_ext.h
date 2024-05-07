@@ -23,4 +23,15 @@ typedef enum
     ei_rounded_frame_full,    ///< Full rounded frame.
 } ei_rounded_frame_part_t;
 
+/**
+ * @brief   A color in HSL format with transparency.
+ */
+typedef struct ei_hsl_color_t
+{
+    float hue;           ///< The hue component of the color.
+    float saturation;    ///< The saturation of the color.
+    float lightness;     ///< The lightness of the color.
+    unsigned char alpha; ///< The transparency of the color. 0 is invisible, 255 is totally opaque.
+} ei_hsl_color_t;
+
 #endif

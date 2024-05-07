@@ -443,18 +443,42 @@ void ei_get_border_colors(ei_color_t background_color, ei_relief_t relief, ei_co
 
 ei_color_t ei_lighten_color(ei_color_t color)
 {
-    color.red = color.red + 60 < 255 ? color.red + 60 : 255;
-    color.green = color.green + 60 < 255 ? color.green + 60 : 255;
-    color.blue = color.blue + 60 < 255 ? color.blue + 60 : 255;
+    // Our first approach to lighten the color was to simply increase
+    // each of the components by a set value, which worked well for
+    // gray colors, but not too much for others. Then, we tried to
+    // multiply each component by a set value in order to keep the
+    // ratio between the components, which worked much better for
+    // most colors. However, when implementing the close button
+    // of toplevels, we noticed that the lighter color was the
+    // same as the background color, which actually makes sense
+    // since the r component is already at 255 and g and b are at 0,
+    // so even if we multiply them, they are still at 0, thus we were
+    // getting the same color after lightening it.
+    // After that, we decided to research a bit on how it was usually
+    // done and found two approaches that could work well.
+    // The first one was to redistribute the components when they reached
+    // 255 (eg: for red, let's say we multiply 255 * 1.5, which gives us
+    // 382.5, but the r component is capped at 255, so we take 382.5 - 255
+    // and redistribute equally among g and b, which gives us
+    // g = b = 0 + (382.5 - 255) / 2 = 63.75). This would have worked well
+    // but did seem a bit complicated with a lot of cases to consider and
+    // since this is not a very important function, we didn't want to spend
+    // too much time on it.
+    // Instead, we decided to use the second approach, which is to convert
+    // the color to HSL, increase the lightness and convert it back to RGB.
 
-    return color;
+    ei_hsl_color_t hsl = convert_rgb_to_hsl(color);
+
+    hsl.lightness = hsl.lightness * 1.3 < 1 ? hsl.lightness * 1.3 : 1;
+
+    return convert_hsl_to_rgb(hsl);
 }
 
 ei_color_t ei_darken_color(ei_color_t color)
 {
-    color.red = color.red - 65 > 0 ? color.red - 65 : 0;
-    color.green = color.green - 65 > 0 ? color.green - 65 : 0;
-    color.blue = color.blue - 65 > 0 ? color.blue - 65 : 0;
+    ei_hsl_color_t hsl = convert_rgb_to_hsl(color);
 
-    return color;
+    hsl.lightness = hsl.lightness * 0.6 > 0 ? hsl.lightness * 0.6 : 0;
+
+    return convert_hsl_to_rgb(hsl);
 }

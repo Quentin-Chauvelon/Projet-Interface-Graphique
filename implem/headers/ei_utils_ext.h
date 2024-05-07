@@ -148,4 +148,27 @@ ei_rect_t ei_rect_add(ei_rect_t rect, int x, int y, int width, int height);
  */
 ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height);
 
+/**
+ * @brief   Converts a color from RGB to HSL.
+ *
+ * @param   color   The color to convert.
+ *
+ * @return  The color converted to HSL.
+ *
+ * @see     https://en.wikipedia.org/wiki/HSL_and_HSV for the formula and https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
+ */
+ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color);
+
+/**
+ * @brief   Converts a color from HSL to RGB.
+ *
+ * @param   hsl The color to convert.
+ *
+ * @return  The color converted to RGB.
+ *
+ * @see     https://en.wikipedia.org/wiki/HSL_and_HSV for the formula and https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
+
+*/
+ei_color_t convert_hsl_to_rgb(ei_hsl_color_t hsl);
+
 #endif

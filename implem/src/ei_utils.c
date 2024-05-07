@@ -1,5 +1,6 @@
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_types_ext.h"
 
 ei_color_t get_color_from_id(int id)
 {
@@ -169,4 +170,114 @@ ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height)
     rect.size.height -= height;
 
     return rect;
+}
+
+ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color)
+{
+    float r = color.red / 255.0;
+    float g = color.green / 255.0;
+    float b = color.blue / 255.0;
+
+    // Get the highest component value
+    float max = fmax(r, fmax(g, b));
+    float min = fmin(r, fmin(g, b));
+
+    float c = max - min;
+
+    float h = 0;
+    float s = 0;
+    float l = (max + min) / 2;
+
+    if (c == 0)
+    {
+        h = 0;
+    }
+    else if (max == r)
+    {
+        h = fmod((g - b) / c, 6);
+    }
+    else if (max == g)
+    {
+        h = ((b - r) / c) + 2;
+    }
+    else if (max == b)
+    {
+        h = ((r - g) / c) + 4;
+    }
+
+    h *= 60;
+
+    if (l == 1 || l == 0)
+    {
+        s = 0;
+    }
+    else
+    {
+        s = c / (1 - fabs(2 * l - 1));
+    }
+
+    return (ei_hsl_color_t){h, s, l};
+}
+
+/**
+ * @brief   Converts a color from HUE to RGB.
+ *
+ * @param   p
+ * @param   q
+ * @param   hue // The hue component of the color.
+ */
+static float convert_hue_to_rgb(float p, float q, float hue)
+{
+    if (hue < 0)
+    {
+        hue += 1;
+    }
+
+    if (hue > 1)
+    {
+        hue -= 1;
+    }
+
+    if (hue < 1.0 / 6.0)
+    {
+        return p + (q - p) * 6 * hue;
+    }
+
+    if (hue < 1.0 / 2.0)
+    {
+        return q;
+    }
+
+    if (hue < 2.0 / 3.0)
+    {
+        return p + (q - p) * (2.0 / 3.0 - hue) * 6;
+    }
+
+    return p;
+}
+
+ei_color_t convert_hsl_to_rgb(ei_hsl_color_t hsl)
+{
+    float r = 0;
+    float g = 0;
+    float b = 0;
+
+    // The hue is in degrees [0,360], for the following code to work, we need in [0,1]
+    hsl.hue /= 360;
+
+    if (hsl.saturation == 0)
+    {
+        r = g = b = hsl.lightness;
+    }
+    else
+    {
+        float q = hsl.lightness < 0.5 ? hsl.lightness * (1 + hsl.saturation) : hsl.lightness + hsl.saturation - hsl.lightness * hsl.saturation;
+        float p = 2 * hsl.lightness - q;
+
+        r = convert_hue_to_rgb(p, q, hsl.hue + 1.0 / 3.0);
+        g = convert_hue_to_rgb(p, q, hsl.hue);
+        b = convert_hue_to_rgb(p, q, hsl.hue - 1.0 / 3.0);
+    }
+
+    return (ei_color_t){r * 255, g * 255, b * 255, 255};
 }
