@@ -15,7 +15,7 @@
 
 ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
 {
-    int nb_points = ei_get_nb_points_in_arc(start_angle, end_angle);
+    int nb_points = ei_get_nb_points_in_arc(start_angle, end_angle, radius);
 
     // Using calloc so that the memory is initialized to 0
     // This way, if the number of points in the arc is less than the number of points we allocated,
@@ -27,6 +27,13 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
     {
         printf("\033[0;31mError: Couldn't allocate memory to draw arc.\n.\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         return NULL;
+    }
+
+    // If the radius is 0, we only to draw one point (the center of the arc since radius is 0)
+    if (radius == 0)
+    {
+        point_array[0] = center;
+        return point_array;
     }
 
     int point_array_index = 0;
@@ -52,9 +59,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
 {
     if (part_to_draw == ei_rounded_frame_top)
     {
-        int nb_points_arc_1 = ei_get_nb_points_in_arc(180, 270); // 90° top left angle
-        int nb_points_arc_2 = ei_get_nb_points_in_arc(270, 315); // 45° top right angle
-        int nb_points_arc_3 = ei_get_nb_points_in_arc(135, 180); // 45° bottom left angle
+        int nb_points_arc_1 = ei_get_nb_points_in_arc(180, 270, radius); // 90° top left angle
+        int nb_points_arc_2 = ei_get_nb_points_in_arc(270, 315, radius); // 45° top right angle
+        int nb_points_arc_3 = ei_get_nb_points_in_arc(135, 180, radius); // 45° bottom left angle
 
         ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
 
@@ -100,9 +107,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     }
     else if (part_to_draw == ei_rounded_frame_bottom)
     {
-        int nb_points_arc_1 = ei_get_nb_points_in_arc(0, 90);    // 90° bottom right angle
-        int nb_points_arc_2 = ei_get_nb_points_in_arc(90, 135);  // 45° bottom left angle
-        int nb_points_arc_3 = ei_get_nb_points_in_arc(315, 360); // 45° top right angle
+        int nb_points_arc_1 = ei_get_nb_points_in_arc(0, 90, radius);    // 90° bottom right angle
+        int nb_points_arc_2 = ei_get_nb_points_in_arc(90, 135, radius);  // 45° bottom left angle
+        int nb_points_arc_3 = ei_get_nb_points_in_arc(315, 360, radius); // 45° top right angle
 
         ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
 
@@ -148,7 +155,7 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     }
     else if (part_to_draw == ei_rounded_frame_full)
     {
-        int nb_points_per_arc = ei_get_nb_points_in_arc(0, 90);
+        int nb_points_per_arc = ei_get_nb_points_in_arc(0, 90, radius);
 
         ei_point_t *point_array = malloc(nb_points_per_arc * 4 * sizeof(ei_point_t));
 
@@ -194,15 +201,24 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
     return NULL;
 }
 
-void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t color, ei_relief_t relief, const ei_rect_t *clipper)
+void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t color, ei_relief_t relief, ei_color_t *border_color, const ei_rect_t *clipper)
 {
-    // Draw the relief if there is one and if the border width is not 0 (otherwise it
-    // would be overriden by the button itself anyway, so it would be useless to draw it)
-    if (border_width > 0 && relief != ei_relief_none)
+    // Draw the border if there is one
+    if (border_width > 0)
     {
-        // Invert the colors based on the relief (raised or sunken)
-        ei_color_t color1 = relief == ei_relief_raised ? (ei_color_t){200, 200, 200, 255} : (ei_color_t){100, 100, 100, 255};
-        ei_color_t color2 = relief == ei_relief_raised ? (ei_color_t){100, 100, 100, 255} : (ei_color_t){200, 200, 200, 255};
+        ei_color_t color1;
+        ei_color_t color2;
+
+        // If border_color is not NULL, use the given color for both border colors
+        if (border_color != NULL)
+        {
+            color1 = color2 = *border_color;
+        }
+        // Otherwise, compute a lighter and darker color of the background color
+        else
+        {
+            ei_get_border_colors(color, relief, &color1, &color2);
+        }
 
         ei_point_t *top_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_top);
         ei_point_t *bottom_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_bottom);
@@ -210,52 +226,64 @@ void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int 
         // If malloc failed, return
         if (top_point_array == NULL || bottom_point_array == NULL)
         {
-            printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
             return;
         }
 
-        ei_draw_polygon(surface, top_point_array, 185, color1, clipper);
-        ei_draw_polygon(surface, bottom_point_array, 185, color2, clipper);
+        ei_draw_polygon(surface, top_point_array, corner_radius != 0 ? 185 : 5, color1, clipper);
+        ei_draw_polygon(surface, bottom_point_array, corner_radius != 0 ? 185 : 5, color2, clipper);
 
         free(top_point_array);
         free(bottom_point_array);
     }
 
-    // Create a new smaller rectangle to account for the border width
-    ei_rect_t *border_width_rect = malloc(sizeof(ei_rect_t));
+    // Resize the rectangle to account for the border width
+    screen_location = ei_rect_add(screen_location, border_width, border_width, border_width * -2, border_width * -2);
 
-    // If malloc failed, return
-    if (border_width_rect == NULL)
+    ei_point_t *point_array;
+
+    // If the corner radius is 0, simply fill the rectangle
+    if (corner_radius == 0)
     {
-        printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        return;
+        point_array = malloc(4 * sizeof(ei_point_t));
+
+        // If malloc failed, return
+        if (point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        point_array[0] = screen_location.top_left;
+        point_array[1] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y);
+        point_array[2] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y + screen_location.size.height);
+        point_array[3] = ei_point(screen_location.top_left.x, screen_location.top_left.y + screen_location.size.height);
+
+        ei_draw_polygon(surface, point_array, 4, color, clipper);
+
+        free(point_array);
     }
-
-    border_width_rect->top_left = (ei_point_t){screen_location.top_left.x + border_width, screen_location.top_left.y + border_width};
-    border_width_rect->size = (ei_size_t){screen_location.size.width - 2 * border_width, screen_location.size.height - 2 * border_width};
-
-    // If relief is none, we don't want to take the border width into account,
-    // otherwise the button would be smaller than what it should be
-    ei_rect_t inner_rectangle = relief == ei_relief_none ? screen_location : *border_width_rect;
-
-    ei_point_t *point_array = rounded_frame(inner_rectangle, corner_radius, ei_rounded_frame_full);
-
-    // If malloc failed, return
-    if (point_array == NULL)
+    else
     {
-        printf("\033[0;31mError: Couldn't allocate memory to draw button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        return;
+
+        point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_full);
+
+        // If malloc failed, return
+        if (point_array == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        ei_draw_polygon(surface, point_array, 364, color, clipper);
+
+        free(point_array);
     }
-
-    ei_draw_polygon(surface, point_array, 364, color, clipper);
-
-    free(point_array);
-    free(border_width_rect);
 }
 
-int ei_get_nb_points_in_arc(int start_angle, int end_angle)
+int ei_get_nb_points_in_arc(int start_angle, int end_angle, int radius)
 {
-    return abs(end_angle - start_angle) + 1;
+    return radius != 0 ? abs(end_angle - start_angle) + 1 : 1;
 }
 
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
@@ -370,4 +398,40 @@ void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_su
     hw_surface_unlock(image);
 
     free(image_subpart_clipped);
+}
+
+void ei_get_border_colors(ei_color_t background_color, ei_relief_t relief, ei_color_t *lighter_color, ei_color_t *darker_color)
+{
+    switch (relief)
+    {
+    case ei_relief_raised:
+        *lighter_color = ei_lighten_color(background_color);
+        *darker_color = ei_darken_color(background_color);
+        break;
+    case ei_relief_sunken:
+        *lighter_color = ei_darken_color(background_color);
+        *darker_color = ei_lighten_color(background_color);
+        break;
+    default:
+        *lighter_color = *darker_color = ei_darken_color(background_color);
+        break;
+    }
+}
+
+ei_color_t ei_lighten_color(ei_color_t color)
+{
+    color.red = color.red + 60 < 255 ? color.red + 60 : 255;
+    color.green = color.green + 60 < 255 ? color.green + 60 : 255;
+    color.blue = color.blue + 60 < 255 ? color.blue + 60 : 255;
+
+    return color;
+}
+
+ei_color_t ei_darken_color(ei_color_t color)
+{
+    color.red = color.red - 65 > 0 ? color.red - 65 : 0;
+    color.green = color.green - 65 > 0 ? color.green - 65 : 0;
+    color.blue = color.blue - 65 > 0 ? color.blue - 65 : 0;
+
+    return color;
 }

@@ -135,3 +135,38 @@ ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child,
         return ei_point(parent.top_left.x, parent.top_left.y);
     }
 }
+
+ei_rect_t ei_rect_move(ei_rect_t rect, int x, int y, ei_rect_t *clipper)
+{
+    // Move the rectangle by x and y
+    rect.top_left.x += x;
+    rect.top_left.y += y;
+
+    // If the clipper is not NULL, crop the rectangle to fit in the clipper
+    if (clipper != NULL)
+    {
+        rect = get_intersection_rectangle(rect, *clipper);
+    }
+
+    return rect;
+}
+
+ei_rect_t ei_rect_add(ei_rect_t rect, int x, int y, int width, int height)
+{
+    rect.top_left.x += x;
+    rect.top_left.y += y;
+    rect.size.width += width;
+    rect.size.height += height;
+
+    return rect;
+}
+
+ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height)
+{
+    rect.top_left.x -= x;
+    rect.top_left.y -= y;
+    rect.size.width -= width;
+    rect.size.height -= height;
+
+    return rect;
+}

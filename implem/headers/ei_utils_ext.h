@@ -112,4 +112,40 @@ bool equal_sizes(ei_size_t size1, ei_size_t size2);
  */
 ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor);
 
+/**
+ * @brief   Returns the given rectangle moved by the given x and y
+ *
+ * @param   rect   The first rectangle
+ * @param   x       The amount of pixels to move the rectangle by on the x axis
+ * @param   y       The amount of pixels to move the rectangle by on the y axis
+ * @param   clipper If not null, the moved rectangle size will be cropped to fit in the clipper
+ *
+ * @return  The given rectangle moved by the given x and y
+ */
+ei_rect_t ei_rect_move(ei_rect_t rect, int x, int y, ei_rect_t *clipper);
+
+/**
+ * @brief	Returns a \ref ei_rect_t which components are the components of the rect
+ *		    parameter plus the given parametrs.
+ *
+ * @param	rect	The rectangle for which to add the components
+ * @param	x		The value to add to the x component of the rectangle
+ * @param	y		The value to add to the y component of the rectangle
+ * @param   width   The value to add to the width component of the rectangle
+ * @param   height  The value to add to the height component of the rectangle
+ */
+ei_rect_t ei_rect_add(ei_rect_t rect, int x, int y, int width, int height);
+
+/**
+ * @brief	Returns a \ref ei_rect_t which components are the components of the rect
+ *		    parameter minus the given parametrs.
+ *
+ * @param	rect	The rectangle for which to sub the components
+ * @param	x		The value to sub to the x component of the rectangle
+ * @param	y		The value to sub to the y component of the rectangle
+ * @param   width   The value to sub to the width component of the rectangle
+ * @param   height  The value to sub to the height component of the rectangle
+ */
+ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height);
+
 #endif
