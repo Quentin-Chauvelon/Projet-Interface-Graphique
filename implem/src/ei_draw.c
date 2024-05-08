@@ -224,35 +224,7 @@ void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color
 
 void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_color_t *border_color, const ei_rect_t *clipper)
 {
-<<<<<<< HEAD
-    return abs(end_angle - start_angle) + 1;
-}
-
-void	ei_fill	(ei_surface_t	surface, const ei_color_t*	color, const ei_rect_t*	clipper)
-{
-    //building of a square whith the specified surface if clipper is None
-    ei_rect_t rec=hw_surface_get_rect( (ei_surface_t) surface);
-    ei_size_t dim= rec.size;
-    int h= dim.height;
-    int l=dim.width;
-
-    //We create a rect from the top-left of the surface
-    ei_point_t *point_array = malloc(4*sizeof(ei_point_t));
-    ei_point_t *p=point_array;
-
-    *point_array= (ei_point_t) rec.top_left;
-    point_array++;
-    *point_array= (ei_point_t) {rec.top_left.x , rec.top_left.y+h};
-    point_array++;
-    *point_array= (ei_point_t) {rec.top_left.x+l , rec.top_left.y+h};
-    point_array++;
-    *point_array= (ei_point_t) {rec.top_left.x+l, rec.top_left.y};
-
-    ei_draw_polygon(surface, p,4,*color, clipper);
-
-    //free(p);
-=======
-    // Draw the border if there is one
+    //  Draw the border if there is one
     if (border_width > 0)
     {
         ei_color_t color1;
@@ -335,6 +307,31 @@ void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_colo
 int ei_get_nb_points_in_arc(int start_angle, int end_angle, int radius)
 {
     return radius != 0 ? abs(end_angle - start_angle) + 1 : 1;
+}
+
+void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *clipper)
+{
+    // building of a square whith the specified surface if clipper is None
+    ei_rect_t rec = hw_surface_get_rect((ei_surface_t)surface);
+    ei_size_t dim = rec.size;
+    int h = dim.height;
+    int l = dim.width;
+
+    // We create a rect from the top-left of the surface
+    ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
+    ei_point_t *p = point_array;
+
+    *point_array = (ei_point_t)rec.top_left;
+    point_array++;
+    *point_array = (ei_point_t){rec.top_left.x, rec.top_left.y + h};
+    point_array++;
+    *point_array = (ei_point_t){rec.top_left.x + l, rec.top_left.y + h};
+    point_array++;
+    *point_array = (ei_point_t){rec.top_left.x + l, rec.top_left.y};
+
+    ei_draw_polygon(surface, p, 4, *color, clipper);
+
+    // free(p);
 }
 
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
@@ -509,5 +506,4 @@ ei_color_t ei_darken_color(ei_color_t color)
     hsl.lightness = hsl.lightness * 0.6 > 0 ? hsl.lightness * 0.6 : 0;
 
     return convert_hsl_to_rgb(hsl);
->>>>>>> 762baf34a1a3ac399604974b005c335e373ccd47
 }
