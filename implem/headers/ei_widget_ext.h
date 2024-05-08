@@ -73,4 +73,15 @@ typedef struct ei_frame_appearance_t
  */
 ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor);
 
+/**
+ * @brief	Returns the widget matching the given pick id
+ *          This implements a tree preorder traversal algorithm.
+ *
+ * @param	widget	The current widget
+ * @param	pick_id	The pick id to search
+ *
+ * @return	The widget matching the given pick id
+ */
+ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id);
+
 #endif

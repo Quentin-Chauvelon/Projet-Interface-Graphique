@@ -195,3 +195,23 @@ void ei_widget_set_geom_params(ei_widget_t widget, ei_geom_param_t geom_params)
 {
     widget->geom_params = geom_params;
 }
+
+void ei_recompute_geometry_of_all_descendants(ei_widget_t *widget)
+{
+    if (widget == NULL)
+    {
+        return;
+    }
+
+    // Recompute the geometry of the widget
+    if ((*widget)->geom_params != NULL)
+    {
+        (*widget)->geom_params->manager->runfunc(*widget);
+    }
+
+    // Update the geometry of all children
+    for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
+    {
+        ei_recompute_geometry_of_all_descendants(&children);
+    }
+}

@@ -226,7 +226,32 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, user_param);
 
-    return true;
+    return false;
+}
+
+/**
+ * @brief   Update the pick color based on a certain multiplier of the pick id
+ *          This implements a tree preorder traversal algorithm.
+ *
+ * @param   widget      The widget to update the pick color for
+ * @param   multiplier  The multiplier for the pick id
+ */
+static void ei_update_pick_color_from_id(ei_widget_t *widget, int multiplier)
+{
+    if (widget == NULL)
+    {
+        return;
+    }
+
+    // Update the pick color
+    *(*widget)->pick_color = get_color_from_id((*widget)->pick_id * multiplier);
+
+    for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
+    {
+        ei_update_pick_color_from_id(&children, multiplier);
+    }
+
+    return;
 }
 
 static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -239,37 +264,8 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
         // toggle on or off the offscreen picking surface.
         ei_surface_t *root_surface_copy = (ei_surface_t *)user_param;
 
-        ei_widget_t current = ei_app_root_widget();
-        while (true)
-        {
-            // Recompute the geometry of the widget
-            if (current->geom_params != NULL)
-            {
-                // // If the offscreen picking surface is already displayed, reset the pick color
-                if (*root_surface_copy != NULL)
-                {
-                    *current->pick_color = get_color_from_id(current->pick_id);
-                }
-                // Otherwise multiply by a big number to differentiate the pick colors from one another
-                else
-                {
-                    *current->pick_color = get_color_from_id(current->pick_id * 1000000);
-                }
-            }
-
-            if (current->next_sibling != NULL)
-            {
-                current = current->next_sibling;
-            }
-            else if (current->children_head != NULL)
-            {
-                current = current->children_head;
-            }
-            else
-            {
-                break;
-            }
-        }
+        ei_widget_t root = ei_app_root_widget();
+        ei_update_pick_color_from_id(&root, *root_surface_copy != NULL ? 1 : 1000000);
 
         ei_app_root_widget()->wclass->drawfunc(ei_app_root_widget(), ei_app_root_surface(), ei_app_offscreen_picking_surface(), &widget->screen_location);
 

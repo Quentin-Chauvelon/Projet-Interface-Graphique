@@ -135,8 +135,10 @@ static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event,
 }
 
 /**
- * @brief Handle an event related to a tag
+ * @brief   Handle an event related to a tag
+ *          This implements a tree preorder traversal algorithm.
  *
+ * @param widget        The widget to start from
  * @param binded_event  The event for which to call the callback function (binded via \ref ei_bind)
  * @param event         The last raised event information
  * @param filter_widget if not NULL, only call the callback function if the event's widget is the same as this parameter
@@ -146,39 +148,38 @@ static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event,
  *
  * @return true if the event returned true (was handled), false otherwise
  */
-static bool handle_tag_event(ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
+static bool handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
 {
-    ei_widget_t widget = ei_app_root_widget();
-    bool handled = false;
-
-    // Traverse the widget tree
-    while (true)
+    if (widget == NULL)
     {
-        // If the widget is not the same as the filter widget, if there is one, continue to the next widget
-        if (filter_widget == NULL || widget == filter_widget)
-        {
-            // If the tag is "all" or the tag is the same as the widget class name (button, frame, ...), call the callback function
-            if (strcmp(binded_event->tag, "all") == 0 || strcmp(binded_event->tag, widget->wclass->name) == 0)
-            {
-                handled = handled || call_callback_function(binded_event->callback, widget, event, binded_event->user_param);
-            }
-        }
+        return false;
+    }
 
-        if (widget->next_sibling != NULL)
+    // If the widget is not the same as the filter widget, if there is one, continue to the next widget
+    if (filter_widget == NULL || *widget == filter_widget)
+    {
+        // If the tag is "all" or the tag is the same as the widget class name (button, frame, ...), call the callback function
+        if (strcmp(binded_event->tag, "all") == 0 || strcmp(binded_event->tag, (*widget)->wclass->name) == 0)
         {
-            widget = widget->next_sibling;
-        }
-        else if (widget->children_head != NULL)
-        {
-            widget = widget->children_head;
-        }
-        else
-        {
-            break;
+            bool handled = call_callback_function(binded_event->callback, *widget, event, binded_event->user_param);
+            if (handled)
+            {
+                return true;
+            }
         }
     }
 
-    return handled;
+    for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
+    {
+        bool handled = handle_tag_event(&children, binded_event, event, filter_widget);
+
+        if (handled)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**
@@ -241,7 +242,9 @@ void handle_event(ei_event_t event)
             // If the event is related to a tag
             else if (current_event->tag != NULL)
             {
-                if (handle_tag_event(current_event, event, filter_widget))
+                ei_widget_t root = ei_app_root_widget();
+
+                if (handle_tag_event(&root, current_event, event, filter_widget))
                 {
                     return;
                 }

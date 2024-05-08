@@ -228,33 +228,37 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
 
     int id = get_id_from_color((ei_color_t){red, green, blue, alpha});
 
-    ei_widget_t current = ei_app_root_widget();
+    ei_widget_t root = ei_app_root_widget();
+    ei_widget_t *result = ei_get_widget_from_pick_id(&root, id);
 
-    // If the user clicked on the root widget, return NULL
-    if (current->pick_id == id)
+    if (result != NULL)
+    {
+        return *result;
+    }
+
+    return NULL;
+}
+
+ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
+{
+    if (widget == NULL)
     {
         return NULL;
     }
 
-    // Traverse the tree of widgets to find the one that was clicked
-    while (true)
+    if ((*widget)->pick_id == pick_id)
     {
-        if (current->pick_id == id)
-        {
-            return current;
-        }
+        return widget;
+    }
 
-        if (current->next_sibling != NULL)
+    for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
+    {
+        ei_widget_t *result = ei_get_widget_from_pick_id(&children, pick_id);
+
+        // If we found the right widget, return it
+        if (result != NULL)
         {
-            current = current->next_sibling;
-        }
-        else if (current->children_head != NULL)
-        {
-            current = current->children_head;
-        }
-        else
-        {
-            break;
+            return result;
         }
     }
 

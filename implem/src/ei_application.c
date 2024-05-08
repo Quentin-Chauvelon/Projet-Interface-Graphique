@@ -8,6 +8,7 @@
 #include "../api/ei_types.h"
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_button.h"
+#include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_widgetclass_ext.h"
 #include "../implem/headers/ei_geometrymanager_ext.h"
@@ -48,32 +49,13 @@ void ei_app_run(void)
     int main_loop_count = 0;
 
     ei_event_t *event = (ei_event_t *)malloc(sizeof(struct ei_event_t));
+    event->type = ei_ev_none;
 
     // Invalidate the root widget once to draw the whole screen
     ei_app_invalidate_rect(&ei_app_root_widget()->screen_location);
 
-    ei_widget_t current = ei_app_root_widget();
-    while (true)
-    {
-        // Recompute the geometry of the widget
-        if (current->geom_params != NULL)
-        {
-            current->geom_params->manager->runfunc(current);
-        }
-
-        if (current->next_sibling != NULL)
-        {
-            current = current->next_sibling;
-        }
-        else if (current->children_head != NULL)
-        {
-            current = current->children_head;
-        }
-        else
-        {
-            break;
-        }
-    }
+    // Recompute the geometry of all widgets
+    ei_recompute_geometry_of_all_descendants(&root);
 
     while (main_loop_running)
     {
