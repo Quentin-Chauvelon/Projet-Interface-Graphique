@@ -81,6 +81,30 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
     // If the user clicked on the title bar
     if (mouse_position.x >= title_bar.top_left.x && mouse_position.x <= title_bar.top_left.x + title_bar.size.width && mouse_position.y >= title_bar.top_left.y && mouse_position.y <= title_bar.top_left.y + title_bar.size.height)
     {
+        // Move the toplevel to the foreground
+        if (widget != ei_app_root_widget()->children_tail)
+        {
+            if (widget == ei_app_root_widget()->children_head)
+            {
+                ei_app_root_widget()->children_head = widget->next_sibling;
+            }
+            else
+            {
+                ei_widget_t previous = ei_app_root_widget()->children_head;
+
+                while (previous->next_sibling != widget)
+                {
+                    previous = previous->next_sibling;
+                }
+
+                previous->next_sibling = widget->next_sibling;
+            }
+
+            ei_app_root_widget()->children_tail->next_sibling = widget;
+            ei_app_root_widget()->children_tail = widget;
+            widget->next_sibling = NULL;
+        }
+
         ei_move_top_level_params_t *params = malloc(sizeof(ei_move_top_level_params_t));
         params->widget = widget;
 
