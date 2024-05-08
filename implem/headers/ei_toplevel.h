@@ -106,4 +106,13 @@ ei_rect_t ei_toplevel_get_title_bar_rect(ei_toplevel_t *toplevel);
  */
 ei_rect_t ei_toplevel_get_resize_square_rect(ei_toplevel_t *toplevel);
 
+/**
+ * @brief   Computes the minimum size needed for the toplevel
+ *
+ * @param   widget  The toplevel to compute the minimum size for
+ * @param   width   The width of the minimum size
+ * @param   height  The height of the minimum size
+ */
+void ei_toplevel_get_min_size(ei_widget_t widget, int *width, int *height);
+
 #endif

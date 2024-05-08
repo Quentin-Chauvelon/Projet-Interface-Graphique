@@ -194,8 +194,7 @@ void ei_toplevel_configure(ei_widget_t widget,
     if (min_size == NULL)
     {
         ei_size_t *default_min_size = malloc(sizeof(ei_size_t));
-        default_min_size->width = 160;
-        default_min_size->height = 120;
+        *default_min_size = ei_size_zero();
 
         toplevel->min_size = default_min_size;
     }
@@ -204,18 +203,34 @@ void ei_toplevel_configure(ei_widget_t widget,
         toplevel->min_size = *min_size;
     }
 
+    int width = 0;
+    int height = 0;
+    ei_toplevel_get_min_size(widget, &width, &height);
+
     // If the user set the min_size to low, set it to the default min_size
-    if (toplevel->min_size->width < 160)
+    if (toplevel->min_size->width < width)
     {
-        toplevel->min_size->width = 160;
+        toplevel->min_size->width = width;
     }
 
-    if (toplevel->min_size->height < 120)
+    if (toplevel->min_size->height < height)
     {
-        toplevel->min_size->height = 120;
+        toplevel->min_size->height = height;
     }
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_size(320, 240);
+
+    // Resize the requested size to be at least the min size
+    if (widget->requested_size.width < toplevel->min_size->width)
+    {
+        widget->requested_size.width = toplevel->min_size->width;
+    }
+
+    if (widget->requested_size.height < toplevel->min_size->height)
+    {
+        widget->requested_size.height = toplevel->min_size->height;
+    }
+
     widget->screen_location.size = widget->requested_size;
 
     // Update the content rect of the toplevel
