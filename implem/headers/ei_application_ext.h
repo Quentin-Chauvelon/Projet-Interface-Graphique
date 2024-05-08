@@ -15,14 +15,21 @@
 
 #include "../api/hw_interface.h"
 
-static const bool DEBUG = true;
+static const bool DEBUG = false;
 static const bool TESTING = false;
 
 /**
  * \brief	Returns the offscreen picking surface.
  *
- * @return 			The surface of the offscreen picking surface.
+ * @return  The surface of the offscreen picking surface.
  */
 ei_surface_t ei_app_offscreen_picking_surface(void);
+
+/**
+ * \brief	Returns if the application is running.
+ *
+ * @return 	True if the application is running, false otherwise.
+ */
+bool ei_is_app_running(void);
 
 #endif

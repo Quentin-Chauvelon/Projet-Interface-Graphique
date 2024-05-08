@@ -8,7 +8,7 @@ void ei_impl_widget_draw_children(ei_widget_t widget, ei_surface_t surface, ei_s
 
     while (current != NULL)
     {
-        current->wclass->drawfunc(current, surface, pick_surface, clipper);
+        current->wclass->drawfunc(current, surface, pick_surface, current->content_rect);
         current = current->next_sibling;
     }
 }

@@ -18,4 +18,9 @@
  */
 void ei_geometrymanager_register_all();
 
+/**
+ * @brief   Frees all geometry managers (placer, ...).
+ */
+void ei_geometrymanager_free_all();
+
 #endif

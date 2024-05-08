@@ -113,6 +113,13 @@ void ei_place(ei_widget_t widget,
     if (!ei_widget_is_displayed(widget))
     {
         placer_geom_param = malloc(sizeof(ei_placer_t));
+
+        // If malloc failed, return
+        if (placer_geom_param == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for the widget's placer geom params.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
     }
     // Otherwise, get the geom params of the widget
     else
@@ -124,8 +131,16 @@ void ei_place(ei_widget_t widget,
     char geometrymanager_name[20] = "placer";
     placer_geom_param->geom_param.manager = ei_geometrymanager_from_name(geometrymanager_name);
 
+    // If the widget class doesn't exist, return
+    if (placer_geom_param->geom_param.manager == NULL)
+    {
+        free(placer_geom_param);
+        printf("\033[0;33mWarning: the geometry manager %s doesn't exist.\n\t at %s (%s:%d)\033[0m\n", geometrymanager_name, __func__, __FILE__, __LINE__);
+        return;
+    }
+
     // Set the geom params to the given parameter if not NULL or the default value otherwise
-    placer_geom_param->anchor = anchor != NULL ? *anchor : ei_placer_get_anchor_default_value();
+    placer_geom_param->anchor = anchor != NULL && *anchor != ei_anc_none ? *anchor : ei_placer_get_anchor_default_value();
     placer_geom_param->x = x != NULL ? *x : ei_placer_get_x_default_value();
     placer_geom_param->y = y != NULL ? *y : ei_placer_get_y_default_value();
     placer_geom_param->width = ei_placer_get_width_default_value(widget, width, rel_width);
@@ -144,13 +159,62 @@ void ei_placer_runfunc(ei_widget_t widget)
 
     ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
 
-    ei_rect_t new_screen_location = ei_rect_zero();
+    ei_rect_t new_screen_location = ei_rect(widget->parent->content_rect->top_left, ei_size_zero());
 
-    new_screen_location.top_left.x = widget_geom_params->x;
-    new_screen_location.top_left.y = widget_geom_params->y;
-    new_screen_location.size.width = widget_geom_params->width;
-    new_screen_location.size.height = widget_geom_params->height;
+    // Add the relative position
+    new_screen_location.top_left.x += widget_geom_params->rel_x * widget->parent->content_rect->size.width;
+    new_screen_location.top_left.y += widget_geom_params->rel_y * widget->parent->content_rect->size.height;
+
+    // Add the absolute position
+    new_screen_location.top_left.x += widget_geom_params->x;
+    new_screen_location.top_left.y += widget_geom_params->y;
+
+    // Add the relative size
+    new_screen_location.size.width += widget_geom_params->rel_width * widget->parent->content_rect->size.width;
+    new_screen_location.size.height += widget_geom_params->rel_height * widget->parent->content_rect->size.height;
+
+    // Add the absolute size
+    new_screen_location.size.width += widget_geom_params->width;
+    new_screen_location.size.height += widget_geom_params->height;
+
+    // Move the widget on the x axis based on the anchor
+    switch (widget_geom_params->anchor)
+    {
+    case ei_anc_north:
+    case ei_anc_center:
+    case ei_anc_south:
+        new_screen_location.top_left.x -= widget->screen_location.size.width / 2;
+        break;
+    case ei_anc_northeast:
+    case ei_anc_east:
+    case ei_anc_southeast:
+        new_screen_location.top_left.x -= widget->screen_location.size.width;
+        break;
+    default:
+        break;
+    }
+
+    // Move the widget on the y axis based on the anchor
+    switch (widget_geom_params->anchor)
+    {
+    case ei_anc_west:
+    case ei_anc_center:
+    case ei_anc_east:
+        new_screen_location.top_left.y -= widget->screen_location.size.height / 2;
+        break;
+    case ei_anc_southwest:
+    case ei_anc_south:
+    case ei_anc_southeast:
+        new_screen_location.top_left.y -= widget->screen_location.size.height;
+        break;
+    default:
+        break;
+    }
 
     // Must be the last function call before returning
     ei_geometry_run_finalize(widget, &new_screen_location);
+}
+
+void ei_placer_releasefunc(ei_widget_t widget)
+{
 }

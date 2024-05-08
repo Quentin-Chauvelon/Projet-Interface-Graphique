@@ -9,6 +9,14 @@ ei_event_bind_t *first_event_bind = NULL;
 void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_callback_t callback, void *user_param)
 {
     ei_event_bind_t *event_bind = malloc(sizeof(ei_event_bind_t));
+
+    // If malloc failed, return
+    if (event_bind == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to bind event.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     event_bind->eventtype = eventtype;
     event_bind->widget = widget;
     event_bind->tag = tag;
@@ -97,6 +105,19 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
 
         previous = current;
         current = current->next;
+    }
+}
+
+void ei_unbind_all_events()
+{
+    ei_event_bind_t *current = first_event_bind;
+    ei_event_bind_t *next = NULL;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
     }
 }
 

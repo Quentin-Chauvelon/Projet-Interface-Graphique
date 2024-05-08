@@ -1,5 +1,8 @@
+#include <math.h>
+
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_types_ext.h"
 
 ei_color_t get_color_from_id(int id)
 {
@@ -76,10 +79,17 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
 {
     ei_rect_t intersection = get_intersection_rectangle(rect1, rect2);
     int intersection_area = intersection.size.width * intersection.size.height;
+    int area_rect1 = rect1.size.width * rect1.size.height;
+    int area_rect2 = rect2.size.width * rect2.size.height;
+
+    if (area_rect1 == 0 || area_rect2 == 0)
+    {
+        return 0;
+    }
 
     // Calculate the total area of the two rectangles minus the intersection area
     // We then return the percentage of the intersection area over that total area
-    return ((intersection_area * 100) / ((rect1.size.width * rect1.size.height + rect2.size.width * rect2.size.height) - intersection_area));
+    return ((intersection_area * 100) / ((area_rect1 + area_rect2) - intersection_area));
 }
 
 ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
@@ -95,4 +105,186 @@ ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
         (rect1.top_left.y + rect1.size.height) > (rect2.top_left.y + rect2.size.height) ? (rect1.top_left.y + rect1.size.height) : (rect2.top_left.y + rect2.size.height));
 
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
+}
+
+bool equal_sizes(ei_size_t size1, ei_size_t size2)
+{
+    return size1.width == size2.width && size1.height == size2.height;
+}
+
+ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor)
+{
+    switch (anchor)
+    {
+    case ei_anc_center:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_north:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y);
+    case ei_anc_northeast:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y);
+    case ei_anc_east:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_southeast:
+        return ei_point(parent.top_left.x + parent.size.width - child.width, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_south:
+        return ei_point(parent.top_left.x + parent.size.width / 2 - child.width / 2, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_southwest:
+        return ei_point(parent.top_left.x, parent.top_left.y + parent.size.height - child.height);
+    case ei_anc_west:
+        return ei_point(parent.top_left.x, parent.top_left.y + parent.size.height / 2 - child.height / 2);
+    case ei_anc_northwest:
+        return ei_point(parent.top_left.x, parent.top_left.y);
+    default:
+        return ei_point(parent.top_left.x, parent.top_left.y);
+    }
+}
+
+ei_rect_t ei_rect_move(ei_rect_t rect, int x, int y, ei_rect_t *clipper)
+{
+    // Move the rectangle by x and y
+    rect.top_left.x += x;
+    rect.top_left.y += y;
+
+    // If the clipper is not NULL, crop the rectangle to fit in the clipper
+    if (clipper != NULL)
+    {
+        rect = get_intersection_rectangle(rect, *clipper);
+    }
+
+    return rect;
+}
+
+ei_rect_t ei_rect_add(ei_rect_t rect, int x, int y, int width, int height)
+{
+    rect.top_left.x += x;
+    rect.top_left.y += y;
+    rect.size.width += width;
+    rect.size.height += height;
+
+    return rect;
+}
+
+ei_rect_t ei_rect_sub(ei_rect_t rect, int x, int y, int width, int height)
+{
+    rect.top_left.x -= x;
+    rect.top_left.y -= y;
+    rect.size.width -= width;
+    rect.size.height -= height;
+
+    return rect;
+}
+
+bool ei_is_point_in_circle(ei_point_t point, ei_point_t center, int radius)
+{
+    return sqrt(pow(point.x - center.x, 2) + pow(point.y - center.y, 2)) <= radius;
+}
+
+ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color)
+{
+    float r = color.red / 255.0;
+    float g = color.green / 255.0;
+    float b = color.blue / 255.0;
+
+    // Get the highest component value
+    float max = fmax(r, fmax(g, b));
+    float min = fmin(r, fmin(g, b));
+
+    float c = max - min;
+
+    float h = 0;
+    float s = 0;
+    float l = (max + min) / 2;
+
+    if (c == 0)
+    {
+        h = 0;
+    }
+    else if (max == r)
+    {
+        h = fmod((g - b) / c, 6);
+    }
+    else if (max == g)
+    {
+        h = ((b - r) / c) + 2;
+    }
+    else if (max == b)
+    {
+        h = ((r - g) / c) + 4;
+    }
+
+    h *= 60;
+
+    if (l == 1 || l == 0)
+    {
+        s = 0;
+    }
+    else
+    {
+        s = c / (1 - fabs(2 * l - 1));
+    }
+
+    return (ei_hsl_color_t){h, s, l};
+}
+
+/**
+ * @brief   Converts a color from HUE to RGB.
+ *
+ * @param   p
+ * @param   q
+ * @param   hue // The hue component of the color.
+ */
+static float convert_hue_to_rgb(float p, float q, float hue)
+{
+    if (hue < 0)
+    {
+        hue += 1;
+    }
+
+    if (hue > 1)
+    {
+        hue -= 1;
+    }
+
+    if (hue < 1.0 / 6.0)
+    {
+        return p + (q - p) * 6 * hue;
+    }
+
+    if (hue < 1.0 / 2.0)
+    {
+        return q;
+    }
+
+    if (hue < 2.0 / 3.0)
+    {
+        return p + (q - p) * (2.0 / 3.0 - hue) * 6;
+    }
+
+    return p;
+}
+
+ei_color_t convert_hsl_to_rgb(ei_hsl_color_t hsl)
+{
+    float r = 0;
+    float g = 0;
+    float b = 0;
+
+    // The hue is in degrees [0,360], for the following code to work, we need in [0,1]
+    hsl.hue /= 360;
+
+    if (hsl.saturation == 0)
+    {
+        r = g = b = hsl.lightness;
+    }
+    else
+    {
+        float q = hsl.lightness < 0.5 ? hsl.lightness * (1 + hsl.saturation) : hsl.lightness + hsl.saturation - hsl.lightness * hsl.saturation;
+        float p = 2 * hsl.lightness - q;
+
+        r = convert_hue_to_rgb(p, q, hsl.hue + 1.0 / 3.0);
+        g = convert_hue_to_rgb(p, q, hsl.hue);
+        b = convert_hue_to_rgb(p, q, hsl.hue - 1.0 / 3.0);
+    }
+
+    return (ei_color_t){r * 255, g * 255, b * 255, 255};
 }

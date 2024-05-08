@@ -17,8 +17,9 @@ ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, e
     {
         if (!TESTING)
         {
-            printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\n", __func__, __FILE__, __LINE__);
+            printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         }
+
         return NULL;
     }
 
@@ -29,17 +30,47 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 {
     ei_widgetclass_t *wclass = ei_widgetclass_from_name(class_name);
 
+    // If the widget class doesn't exist, exit since the program can't run without it
+    if (wclass == NULL)
+    {
+        printf("\033[0;31mError: the widget class %s doesn't exist.\n\t at %s (%s:%d)\033[0m\n", class_name, __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     ei_widget_t widget = wclass->allocfunc();
     wclass->setdefaultsfunc(widget);
 
     widget->pick_id = pick_id++;
     widget->pick_color = malloc(sizeof(ei_color_t));
+
+    // If malloc failed, exit since the program can't run without the pick color
+    if (widget->pick_color == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the widget's pick color.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     *(widget->pick_color) = get_color_from_id(widget->pick_id);
 
     widget->wclass = wclass;
 
-    widget->user_data = &user_data;
-    widget->destructor = destructor;
+    if (user_data != NULL)
+    {
+        widget->user_data = &user_data;
+    }
+    else
+    {
+        widget->user_data = NULL;
+    }
+
+    if (destructor != NULL)
+    {
+        widget->destructor = destructor;
+    }
+    else
+    {
+        widget->destructor = NULL;
+    }
 
     widget->parent = parent;
     widget->children_head = NULL;
@@ -71,7 +102,48 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
 void ei_widget_destroy(ei_widget_t widget)
 {
+    // If the widget being destroyed is the root widget and the app is still running, quit the application
+    if (widget == ei_app_root_widget() && ei_is_app_running())
+    {
+        ei_app_quit_request();
+        return;
+    }
+
     ei_geometrymanager_unmap(widget);
+
+    // If it is not the root widget
+    if (widget->parent != NULL)
+    {
+        // Remove the widget from the widget tree
+        // If it is the first children, point to the next sibling
+        if (widget->parent->children_head == widget)
+        {
+            widget->parent->children_head = widget->next_sibling;
+        }
+        // If it is not the first children, find the previous widget and point to the next sibling
+        else
+        {
+            ei_widget_t current = widget->parent->children_head;
+            while (current->next_sibling != widget)
+            {
+                current = current->next_sibling;
+            }
+
+            current->next_sibling = widget->next_sibling;
+
+            // If it is the last child, point the tail to the previous widget
+            if (widget->parent->children_tail == widget)
+            {
+                widget->parent->children_tail = current;
+            }
+        }
+
+        // If it is the last child, remove the pointer to the tail
+        if (widget->parent->children_tail == widget)
+        {
+            widget->parent->children_tail = NULL;
+        }
+    }
 
     // Destroy all the descendants
     if (widget->children_head != NULL)
@@ -94,8 +166,22 @@ void ei_widget_destroy(ei_widget_t widget)
         widget->destructor(widget);
     }
 
+    // Don't free the geom_params field since it has already be freed in the geometry manager's unmap function
+
+    free(widget->pick_color);
+
+    if (widget->user_data != NULL)
+    {
+        free(widget->user_data);
+    }
+
+    if (widget->destructor != NULL)
+    {
+        free(widget->destructor);
+    }
+
     widget->wclass->releasefunc(widget);
-    free(widget);
+    widget = NULL;
 }
 
 bool ei_widget_is_displayed(ei_widget_t widget)
@@ -107,7 +193,11 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
 {
     ei_surface_t offscreen_picking = ei_app_offscreen_picking_surface();
 
+    hw_surface_lock(offscreen_picking);
+
     uint8_t *buffer = hw_surface_get_buffer(offscreen_picking);
+
+    hw_surface_unlock(offscreen_picking);
 
     // Each pixel is stored on 4 consecutive bytes with one byte for each component, with
     // the order depending on hw_surface_get_channel_indices.

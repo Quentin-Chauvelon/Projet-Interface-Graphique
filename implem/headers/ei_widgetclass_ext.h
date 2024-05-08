@@ -18,4 +18,9 @@
  */
 void ei_widgetclass_register_all();
 
+/**
+ * @brief   Frees all widgetclass (frame, button, ...).
+ */
+void ei_widgetclass_free_all();
+
 #endif

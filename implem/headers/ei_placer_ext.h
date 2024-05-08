@@ -38,4 +38,14 @@ typedef struct
  */
 void ei_placer_runfunc(ei_widget_t widget);
 
+/**
+ * \brief	A function called when a widget cease to be managed by its geometry manager.
+ *		    Most of the work is done in \ref ei_geometrymanager_unmap. This function hook is
+ *		    only provided to trigger recomputation when the disappearance of a widget has an
+ *		    effect on the geometry of other widgets.
+ *
+ * @param	widget		The widget instance that must be forgotten by the geometry manager.
+ */
+void ei_placer_releasefunc(ei_widget_t widget);
+
 #endif

@@ -42,54 +42,97 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
 ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
- * @brief   Draws a button.
- *          The button takes a border width and a color as parameters so that it can be
- *          customized without having to change the button values.
+ * @brief   Draws a plain rectanglee.
  *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
- * @param   border_width The width of the border of the button.
- * @param   color The color of the button.
+ * @param   surface             Where to draw the rectangle. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   screen_location     The location of the rectangle.
+ * @param   background_color    The color of the rectangle.
+ * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
  */
-void ei_draw_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color);
+void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper);
 
 /**
- * @brief   Draws a visible button.
- *          Wrapper for \ref ei_draw_button that uses the button's values.
+ * @brief   Draws a frame with rounded or straight corners.
+ *          The function takes a number of parameters to allow for easy customization of the frame
+ *          which allows us to draw all widgets (frames, buttons, toplevels, entries...)
  *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
+ * @param   surface             Where to draw the rounded frame. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   screen_location     The location where to draw the rounded frame.
+ * @param   border_width        The width of the border of the rounded frame.
+ * @param   corner_radius       The radius of the corners of the rounded frame.
+ * @param   background_color    The color of the rounded frame.
+ * @param   relief              The relief of the rounded frame.
+ * @param   border_color        The color of the border of the rounded frame.
+ * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
  */
-static inline void ei_draw_visible_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper)
+void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_color_t *border_color, const ei_rect_t *clipper);
+
+static inline void ei_draw_rounded_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, int corner_radius, ei_color_t background_color, ei_relief_t relief, const ei_rect_t *clipper)
 {
-    ei_draw_button(button, surface, clipper, button->border_width, button->color);
+    ei_draw_frame(surface, screen_location, border_width, corner_radius, background_color, relief, NULL, clipper);
 }
 
-/**
- * @brief   Draws an offscreen button.
- *          Wrapper for \ref ei_draw_button that uses the given border width and color.
- *
- * @param   button  The button to draw.
- * @param	surface Where to draw the polygon. The surface must be *locked* by \ref hw_surface_lock.
- * @param   clipper If not NULL, the drawing is restricted within this rectangle.
- * @param   border_width The width of the border of the button.
- * @param   color The color of the button.
- */
-static inline void ei_draw_offscreen_button(ei_button_t *button, ei_surface_t surface, const ei_rect_t *clipper, int border_width, ei_color_t color)
+static inline void ei_draw_straight_frame(ei_surface_t surface, ei_rect_t screen_location, int border_width, ei_color_t background_color, ei_relief_t relief, const ei_rect_t *clipper)
 {
-    ei_draw_button(button, surface, clipper, border_width, color);
+    ei_draw_frame(surface, screen_location, border_width, 0, background_color, relief, NULL, clipper);
 }
+
+void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_color_t color, const ei_rect_t *clipper);
 
 /**
  * @brief   Calculates the number of points needed to draw an arc based on the given start and end angles.
+ *          If the radius is 0, the function returns 0 (since we don't need to draw an arc)
  *
  * @param   start_angle The start angle of the arc.
  * @param   end_angle   The end angle of the arc.
+ * @param   radius      The radius of the arc.
  *
  * @return  The number of points needed to draw the arc.
  */
-int ei_get_nb_points_in_arc(int start_angle, int end_angle);
+int ei_get_nb_points_in_arc(int start_angle, int end_angle, int radius);
+
+/**
+ * @brief   Draws image.
+ *
+ * @param   surface 	    Where to draw the image. The surface must be *locked* by
+ *				            \ref hw_surface_lock.
+ * @param   image		    The surface containing the image. Can't be NULL.
+ * @param   image_subpart	If not NULL, the rectangle defines a subpart of "img" to use as the
+ *				            image displayed
+ * @param   where		    Coordinates, in the surface, where to anchor the top-left corner of
+ *		            	    the image.
+ * @param   clipper		    If not NULL, the drawing is restricted within this rectangle.
+ */
+void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_subpart, const ei_point_t *where, const ei_rect_t *clipper);
+
+/**
+ * @brief   Computes the the two colors (one lighter and one darked) used for the border based
+ *          on the background color and the relief. Pointers to the two colors should be passed
+ *          as arguments to get the result.
+ *
+ * @param   background_color The color of the background.
+ * @param   relief          The relief of the border.
+ * @param   lighter_color   A pointer to the lighter color.
+ * @param   darker_color    A pointer to the darker color.
+ */
+void ei_get_border_colors(ei_color_t background_color, ei_relief_t relief, ei_color_t *lighter_color, ei_color_t *darker_color);
+
+/**
+ * @brief   Returns a color that is lighter than the given color.
+ *
+ * @param   color   The color to lighten.
+ *
+ * @return  A color that is lighter than the given color.
+ */
+ei_color_t ei_lighten_color(ei_color_t color);
+
+/**
+ * @brief   Returns a color that is darker than the given color.
+ *
+ * @param   color   The color to darken.
+ *
+ * @return  A color that is darker than the given color.
+ */
+ei_color_t ei_darken_color(ei_color_t color);
 
 #endif

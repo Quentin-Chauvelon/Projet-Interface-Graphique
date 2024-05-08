@@ -18,11 +18,11 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 
-ei_widget_t root = NULL;
-ei_surface_t window_surface = NULL;
-ei_surface_t offscreen_picking = NULL;
-bool main_loop_running = true;
-ei_linked_rect_t *invalid_rects = NULL;
+static ei_widget_t root = NULL;
+static ei_surface_t window_surface = NULL;
+static ei_surface_t offscreen_picking = NULL;
+static bool main_loop_running = true;
+static ei_linked_rect_t *invalid_rects = NULL;
 
 void ei_app_create(ei_size_t main_window_size, bool fullscreen)
 {
@@ -47,7 +47,7 @@ void ei_app_run(void)
     // Only used for debugging
     int main_loop_count = 0;
 
-    ei_event_t event;
+    ei_event_t *event = (ei_event_t *)malloc(sizeof(struct ei_event_t));
 
     // Invalidate the root widget once to draw the whole screen
     ei_app_invalidate_rect(&ei_app_root_widget()->screen_location);
@@ -108,30 +108,51 @@ void ei_app_run(void)
         }
         invalid_rects = NULL;
 
+<<<<<<< HEAD
         /*test of fill*/
 	    ei_fill((ei_surface_t) ei_app_root_surface(), &(ei_color_t) {0x99, 0x44, 0x50, 0xff}, &(ei_rect_t ) {(ei_point_t) {150,200} ,(ei_size_t){300,200} } );
 
         hw_event_wait_next(&event);
+=======
+        hw_event_wait_next(event);
+>>>>>>> 762baf34a1a3ac399604974b005c335e373ccd47
 
-        handle_event(event);
+        handle_event(*event);
     }
+
+    free(event);
 }
 
 void ei_app_free(void)
 {
-    free(root);
+    ei_unbind_all_events();
+
+    ei_widget_destroy(ei_app_root_widget());
+
+    ei_widgetclass_free_all();
+
+    ei_geometrymanager_free_all();
+
     hw_surface_free(offscreen_picking);
     hw_quit();
 }
 
 void ei_app_invalidate_rect(const ei_rect_t *rect)
 {
-    DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
-
     // If the linked list is empty, add the first element
     if (invalid_rects == NULL)
     {
         invalid_rects = malloc(sizeof(ei_linked_rect_t));
+
+        // If malloc failed, return
+        if (invalid_rects == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
+
         invalid_rects->rect = *rect;
         invalid_rects->next = NULL;
     }
@@ -139,9 +160,8 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
     else
     {
         ei_linked_rect_t *current_invalid_rect = invalid_rects;
-        while (current_invalid_rect->next != NULL)
+        while (true)
         {
-            printf("current_invalid_rect %p\n", current_invalid_rect);
             // If the rectangle is fully included in another rectangle, we don't need it
             if (rect_included_in_rect(*rect, current_invalid_rect->rect))
             {
@@ -157,10 +177,25 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
                 return;
             }
 
+            if (current_invalid_rect->next == NULL)
+            {
+                break;
+            }
+
             current_invalid_rect = current_invalid_rect->next;
         }
 
         ei_linked_rect_t *invalid_rect = malloc(sizeof(ei_linked_rect_t));
+
+        // If malloc failed, return
+        if (invalid_rect == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
+
         invalid_rect->rect = *rect;
         invalid_rect->next = NULL;
 
@@ -187,4 +222,9 @@ ei_surface_t ei_app_root_surface(void)
 ei_surface_t ei_app_offscreen_picking_surface(void)
 {
     return offscreen_picking;
+}
+
+bool ei_is_app_running(void)
+{
+    return main_loop_running;
 }

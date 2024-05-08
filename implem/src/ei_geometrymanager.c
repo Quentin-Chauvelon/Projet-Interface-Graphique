@@ -9,6 +9,7 @@
 #include "../implem/headers/ei_geometrymanager_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_toplevel.h"
 
 // Keep a pointer to the first geometry manager registered
 // Other geometry managers are linked using the next pointer
@@ -27,8 +28,21 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
         widget->screen_location.size.width == new_screen_location->size.width &&
         widget->screen_location.size.height == new_screen_location->size.height)
     {
+        // If the widget is the close button of a toplevel, don't invalidate it,
+        // otherwise this causes issues when displaying the offscreen picking surface.
+        // This is because the toplevel contains a button for which the geometry is
+        // recomputed during the toplevel redraw, which then calls the button drawfunc
+        // which leads to the whole toplevel being invalidated and redrawn over the
+        // offscreen picking surface
+        if (strcmp(widget->parent->wclass->name, "toplevel") == 0 &&
+            ((ei_toplevel_t *)widget->parent)->close_button != NULL &&
+            (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button == (ei_widget_t *)widget)
+        {
+            return;
+        }
+
         // If the widget's geometry has not changed, invalidate the widget's location
-        // because it may have to be redrawn anyway (eg: button pressed internal event)
+        // because it may have to be redrawn anyway (eg: button pressed internal event).
         ei_app_invalidate_rect(&widget->screen_location);
 
         return;
@@ -120,6 +134,7 @@ void ei_geometrymanager_unmap(ei_widget_t widget)
     widget->geom_params->manager->releasefunc(widget);
 
     free(widget->geom_params);
+    widget->geom_params = NULL;
 
     ei_app_invalidate_rect(&widget->screen_location);
 
@@ -129,12 +144,33 @@ void ei_geometrymanager_unmap(ei_widget_t widget)
 void ei_geometrymanager_register_all()
 {
     ei_geometrymanager_t *placer = malloc(sizeof(ei_geometrymanager_t));
+
+    // If malloc failed, return
+    if (placer == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to register geometry manager.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     strcpy(placer->name, "placer");
     placer->runfunc = &ei_placer_runfunc;
-    placer->releasefunc = NULL;
+    placer->releasefunc = &ei_placer_releasefunc;
     placer->next = NULL;
 
     ei_geometrymanager_register(placer);
+}
+
+void ei_geometrymanager_free_all()
+{
+    ei_geometrymanager_t *current = first_geometrymanager;
+    ei_geometrymanager_t *next = NULL;
+
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current);
+        current = next;
+    }
 }
 
 ei_geometrymanager_t *ei_widget_get_geom_manager(ei_widget_t widget)
