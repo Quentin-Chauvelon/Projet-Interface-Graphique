@@ -47,11 +47,6 @@ void button_releasefunc(ei_widget_t widget)
 
 void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    if (clipper != NULL && !rect_intersects_rect(widget->screen_location, *clipper))
-    {
-        return;
-    }
-
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
     ei_button_t *button = (ei_button_t *)widget;
@@ -82,7 +77,21 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
     // Draw the button on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, button->corner_radius, *widget->pick_color, ei_relief_none, clipper);
 
-    ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
+    // Reduce the size of the clipper to the widget's content rect so that children
+    // can't be drawn outside the widget's content rect
+    ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
+    if (clipper != NULL)
+    {
+        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
+    }
+    else
+    {
+        *children_clipper = *widget->content_rect;
+    }
+
+    ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
+
+    free(children_clipper);
 }
 
 void button_setdefaultsfunc(ei_widget_t widget)
@@ -99,7 +108,10 @@ void button_setdefaultsfunc(ei_widget_t widget)
 
 void button_geomnotifyfunc(ei_widget_t widget)
 {
-    // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
+    ei_button_t *button = (ei_button_t *)widget;
+
+    // Compute the content rect of the button (size of the button without its border)
+    *widget->content_rect = ei_rect_add(widget->screen_location, button->widget_appearance.border_width, button->widget_appearance.border_width, -button->widget_appearance.border_width * 2, -button->widget_appearance.border_width * 2);
 }
 
 ei_size_t ei_button_get_natural_size(ei_button_t *button)

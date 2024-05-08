@@ -94,7 +94,11 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
     widget->geom_params = NULL;
     widget->requested_size = ei_size_zero();
     widget->screen_location = ei_rect_zero();
-    widget->content_rect = &widget->screen_location;
+
+    widget->content_rect = malloc(sizeof(ei_rect_t));
+    widget->content_rect->top_left = widget->screen_location.top_left;
+    widget->content_rect->size = widget->screen_location.size;
+
     widget->preferred_size = ei_size_zero();
 
     return widget;

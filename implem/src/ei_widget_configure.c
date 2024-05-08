@@ -78,6 +78,9 @@ void ei_frame_configure(ei_widget_t widget,
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_frame_get_natural_size(frame);
     widget->screen_location.size = widget->requested_size;
+
+    // Update the content rect of the frame
+    widget->wclass->geomnotifyfunc(widget);
 }
 
 /**
@@ -136,6 +139,9 @@ void ei_button_configure(ei_widget_t widget,
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_button_get_natural_size(button);
     widget->screen_location.size = widget->requested_size;
+
+    // Update the content rect of the button
+    widget->wclass->geomnotifyfunc(widget);
 }
 
 /**
@@ -211,4 +217,7 @@ void ei_toplevel_configure(ei_widget_t widget,
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_size(320, 240);
     widget->screen_location.size = widget->requested_size;
+
+    // Update the content rect of the toplevel
+    widget->wclass->geomnotifyfunc(widget);
 }

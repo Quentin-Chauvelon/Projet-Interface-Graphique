@@ -3,6 +3,7 @@
 #include "../api/ei_utils.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_placer_ext.h"
+#include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_application_ext.h"
 
 static ei_anchor_t ei_placer_get_anchor_default_value()
@@ -161,54 +162,73 @@ void ei_placer_runfunc(ei_widget_t widget)
 
     ei_rect_t new_screen_location = ei_rect(widget->parent->content_rect->top_left, ei_size_zero());
 
-    // Add the relative position
-    new_screen_location.top_left.x += widget_geom_params->rel_x * widget->parent->content_rect->size.width;
-    new_screen_location.top_left.y += widget_geom_params->rel_y * widget->parent->content_rect->size.height;
-
-    // Add the absolute position
-    new_screen_location.top_left.x += widget_geom_params->x;
-    new_screen_location.top_left.y += widget_geom_params->y;
-
-    // Add the relative size
-    new_screen_location.size.width += widget_geom_params->rel_width * widget->parent->content_rect->size.width;
-    new_screen_location.size.height += widget_geom_params->rel_height * widget->parent->content_rect->size.height;
-
-    // Add the absolute size
-    new_screen_location.size.width += widget_geom_params->width;
-    new_screen_location.size.height += widget_geom_params->height;
-
-    // Move the widget on the x axis based on the anchor
-    switch (widget_geom_params->anchor)
+    // If the widget is the close button of the toplevel, don't use the widget's content_rect.
+    // Instead, we want to use the screen location
+    if (strcmp(widget->parent->wclass->name, "toplevel") == 0 &&
+        ((ei_toplevel_t *)widget->parent)->close_button != NULL &&
+        (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button == (ei_widget_t *)widget)
     {
-    case ei_anc_north:
-    case ei_anc_center:
-    case ei_anc_south:
-        new_screen_location.top_left.x -= widget->screen_location.size.width / 2;
-        break;
-    case ei_anc_northeast:
-    case ei_anc_east:
-    case ei_anc_southeast:
-        new_screen_location.top_left.x -= widget->screen_location.size.width;
-        break;
-    default:
-        break;
+        new_screen_location.top_left = widget->parent->screen_location.top_left;
+
+        // Add the absolute position
+        new_screen_location.top_left.x += widget_geom_params->x;
+        new_screen_location.top_left.y += widget_geom_params->y;
+
+        // Add the absolute size
+        new_screen_location.size.width += widget_geom_params->width;
+        new_screen_location.size.height += widget_geom_params->height;
     }
-
-    // Move the widget on the y axis based on the anchor
-    switch (widget_geom_params->anchor)
+    else
     {
-    case ei_anc_west:
-    case ei_anc_center:
-    case ei_anc_east:
-        new_screen_location.top_left.y -= widget->screen_location.size.height / 2;
-        break;
-    case ei_anc_southwest:
-    case ei_anc_south:
-    case ei_anc_southeast:
-        new_screen_location.top_left.y -= widget->screen_location.size.height;
-        break;
-    default:
-        break;
+        // Add the relative position
+        new_screen_location.top_left.x += widget_geom_params->rel_x * widget->parent->content_rect->size.width;
+        new_screen_location.top_left.y += widget_geom_params->rel_y * widget->parent->content_rect->size.height;
+
+        // Add the absolute position
+        new_screen_location.top_left.x += widget_geom_params->x;
+        new_screen_location.top_left.y += widget_geom_params->y;
+
+        // Add the relative size
+        new_screen_location.size.width += widget_geom_params->rel_width * widget->parent->content_rect->size.width;
+        new_screen_location.size.height += widget_geom_params->rel_height * widget->parent->content_rect->size.height;
+
+        // Add the absolute size
+        new_screen_location.size.width += widget_geom_params->width;
+        new_screen_location.size.height += widget_geom_params->height;
+
+        // Move the widget on the x axis based on the anchor
+        switch (widget_geom_params->anchor)
+        {
+        case ei_anc_north:
+        case ei_anc_center:
+        case ei_anc_south:
+            new_screen_location.top_left.x -= widget->content_rect->size.width / 2;
+            break;
+        case ei_anc_northeast:
+        case ei_anc_east:
+        case ei_anc_southeast:
+            new_screen_location.top_left.x -= widget->content_rect->size.width;
+            break;
+        default:
+            break;
+        }
+
+        // Move the widget on the y axis based on the anchor
+        switch (widget_geom_params->anchor)
+        {
+        case ei_anc_west:
+        case ei_anc_center:
+        case ei_anc_east:
+            new_screen_location.top_left.y -= widget->screen_location.size.height / 2;
+            break;
+        case ei_anc_southwest:
+        case ei_anc_south:
+        case ei_anc_southeast:
+            new_screen_location.top_left.y -= widget->screen_location.size.height;
+            break;
+        default:
+            break;
+        }
     }
 
     // Must be the last function call before returning

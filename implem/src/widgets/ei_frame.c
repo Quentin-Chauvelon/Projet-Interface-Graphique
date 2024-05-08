@@ -41,17 +41,12 @@ void frame_releasefunc(ei_widget_t widget)
 
 void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    if (clipper != NULL && !rect_intersects_rect(widget->screen_location, *clipper))
-    {
-        return;
-    }
-
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     // Draw the visible frame
-    ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, clipper);
+    ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, NULL);
 
     // Draw the text
     if (frame->frame_appearance.text.label != NULL)
@@ -76,7 +71,21 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     // Draw the frame on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, 0, *widget->pick_color, ei_relief_none, clipper);
 
-    ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
+    // Reduce the size of the clipper to the widget's content rect so that children
+    // can't be drawn outside the widget's content rect
+    ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
+    if (clipper != NULL)
+    {
+        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
+    }
+    else
+    {
+        *children_clipper = *widget->content_rect;
+    }
+
+    ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
+
+    free(children_clipper);
 }
 
 void frame_setdefaultsfunc(ei_widget_t widget)
@@ -89,7 +98,10 @@ void frame_setdefaultsfunc(ei_widget_t widget)
 
 void frame_geomnotifyfunc(ei_widget_t widget)
 {
-    // widget->wclass->drawfunc(widget, ei_app_root_surface(), ei_app_offscreen_picking_surface(), NULL);
+    ei_frame_t *frame = (ei_frame_t *)widget;
+
+    // Compute the content rect of the frame (size of the frame without its border)
+    *widget->content_rect = ei_rect_add(widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.border_width, -frame->widget_appearance.border_width * 2, -frame->widget_appearance.border_width * 2);
 }
 
 ei_color_t ei_frame_get_color(ei_frame_t *frame)

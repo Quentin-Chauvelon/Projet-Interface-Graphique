@@ -60,11 +60,6 @@ void toplevel_releasefunc(ei_widget_t widget)
 
 void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    if (clipper != NULL && !rect_intersects_rect(widget->screen_location, *clipper))
-    {
-        return;
-    }
-
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
@@ -116,9 +111,19 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
 
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
-    *clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
+    ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
+    if (clipper != NULL)
+    {
+        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
+    }
+    else
+    {
+        *children_clipper = *widget->content_rect;
+    }
 
-    ei_impl_widget_draw_children(widget, surface, pick_surface, clipper);
+    ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
+
+    free(children_clipper);
 
     // Draw the resize square
     if (toplevel->resizable != ei_axis_none)
@@ -156,6 +161,11 @@ void toplevel_setdefaultsfunc(ei_widget_t widget)
 
 void toplevel_geomnotifyfunc(ei_widget_t widget)
 {
+    ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
+
+    // Compute the content rect of the toplevel (size of the toplevel without its border and the title bar)
+    *widget->content_rect = ei_rect_move(toplevel->widget.screen_location, 0, ei_toplevel_get_title_bar_rect(toplevel).size.height, &toplevel->widget.screen_location);
+    *widget->content_rect = ei_rect_add(*widget->content_rect, toplevel->widget_appearance.border_width, 0, -toplevel->widget_appearance.border_width * 2, -toplevel->widget_appearance.border_width);
 }
 
 ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel)
