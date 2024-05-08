@@ -218,6 +218,8 @@ void ei_toplevel_configure(ei_widget_t widget,
         toplevel->min_size->height = height;
     }
 
+    // Increase the requested size to take into account the decorations (title bar and border)
+    *requested_size = ei_size_add(*requested_size, ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width));
     widget->requested_size = requested_size != NULL ? *requested_size : ei_size(320, 240);
 
     // Resize the requested size to be at least the min size
