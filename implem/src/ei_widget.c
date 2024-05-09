@@ -99,8 +99,6 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
     widget->content_rect->top_left = widget->screen_location.top_left;
     widget->content_rect->size = widget->screen_location.size;
 
-    widget->preferred_size = ei_size_zero();
-
     wclass->setdefaultsfunc(widget);
 
     return widget;

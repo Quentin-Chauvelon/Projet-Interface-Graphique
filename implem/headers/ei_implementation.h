@@ -36,7 +36,6 @@ typedef struct ei_impl_widget_t
 	ei_size_t requested_size;	 ///< See \ref ei_widget_get_requested_size.
 	ei_rect_t screen_location;	 ///< See \ref ei_widget_get_screen_location.
 	ei_rect_t *content_rect;	 ///< See ei_widget_get_content_rect. By defaults, points to the screen_location.
-	ei_size_t preferred_size;	 ///< The preferred size of the widget.
 
 	bool instantiated; ///< True if there a call to the configure function of the widget has been made. Allows to know if the values should be set if the pointers are NULL.
 
