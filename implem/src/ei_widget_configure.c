@@ -529,16 +529,13 @@ void ei_toplevel_configure(ei_widget_t widget,
 
     if (min_size != NULL)
     {
-        toplevel->min_size = *min_size;
+        *toplevel->min_size = **min_size;
     }
     else
     {
         if (toplevel->min_size == NULL)
         {
-            ei_size_t *default_min_size = malloc(sizeof(ei_size_t));
-            *default_min_size = ei_size(160, 120);
-
-            toplevel->min_size = default_min_size;
+            *toplevel->min_size = ei_size(160, 120);
         }
     }
 

@@ -48,6 +48,11 @@ void ei_widget_set_requested_size(ei_widget_t widget, ei_size_t requested_size)
     (*widget).requested_size = requested_size;
 }
 
+const ei_rect_t *ei_widget_get_screen_location(ei_widget_t widget)
+{
+    return &(widget->screen_location);
+}
+
 const ei_rect_t *ei_widget_get_content_rect(ei_widget_t widget)
 {
     return widget->content_rect;
@@ -55,5 +60,6 @@ const ei_rect_t *ei_widget_get_content_rect(ei_widget_t widget)
 
 void ei_widget_set_content_rect(ei_widget_t widget, const ei_rect_t *content_rect)
 {
-    widget->content_rect = (ei_rect_t *)content_rect;
+    widget->content_rect->top_left = content_rect->top_left;
+    widget->content_rect->size = content_rect->size;
 }
