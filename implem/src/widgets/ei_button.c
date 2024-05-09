@@ -58,7 +58,17 @@ void ei_button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t p
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+
+    // If malloc failed, set the children clipper to the clipper
+    if (children_clipper == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        *children_clipper = *clipper;
+    }
+    else
+    {
+        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+    }
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
@@ -94,8 +104,10 @@ void ei_button_geomnotifyfunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
+    int border_width = button->widget_appearance.border_width;
+
     // Compute the content rect of the button (size of the button without its border)
-    *widget->content_rect = ei_rect_add(widget->screen_location, button->widget_appearance.border_width, button->widget_appearance.border_width, -button->widget_appearance.border_width * 2, -button->widget_appearance.border_width * 2);
+    *widget->content_rect = ei_rect_add(widget->screen_location, border_width, border_width, -border_width * 2, -border_width * 2);
 }
 
 ei_size_t ei_button_get_natural_size(ei_button_t *button)

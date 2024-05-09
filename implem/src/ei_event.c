@@ -48,7 +48,11 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
 
     while (current != NULL)
     {
-        if (current->eventtype == eventtype && current->widget == widget && current->tag == tag && current->callback == callback && current->user_param == user_param)
+        if (current->eventtype == eventtype &&
+            current->widget == widget &&
+            current->tag == tag &&
+            current->callback == callback &&
+            current->user_param == user_param)
         {
             // If the event to unbind is the first element of the linked list, set the next element as the first element
             if (previous == NULL)
@@ -104,7 +108,7 @@ static bool call_callback_function(ei_callback_t callback, ei_widget_t widget, e
     // The callback must be called before computing the geometry since it might change the widget's geometry
     bool handled = callback(widget, &event, user_param);
 
-    if (widget_copy->geom_params != NULL)
+    if (ei_widget_is_displayed(widget_copy))
     {
         widget_copy->geom_params->manager->runfunc(widget_copy);
     }
@@ -223,7 +227,9 @@ void ei_handle_event(ei_event_t event)
     {
         // If there is no widget beneath the mouse cursor, it means that the user clicked on the root widget
         // thus, we want to set the filter_widget to the root widget
-        filter_widget = picking_widget == NULL ? ei_app_root_widget() : picking_widget;
+        filter_widget = picking_widget == NULL
+                            ? ei_app_root_widget()
+                            : picking_widget;
     }
 
     while (current_event != NULL)

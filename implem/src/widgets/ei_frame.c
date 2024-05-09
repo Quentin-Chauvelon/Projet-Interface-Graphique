@@ -35,7 +35,7 @@ void ei_frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     // Draw the visible frame
-    ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, NULL);
+    ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, clipper);
 
     // Draw the frame appearance (text and image)
     ei_draw_frame_appearance(surface, widget, frame->frame_appearance.text, frame->frame_appearance.image, clipper);
@@ -46,7 +46,17 @@ void ei_frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+
+    // If malloc failed, set the children clipper to the clipper
+    if (children_clipper == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        *children_clipper = *clipper;
+    }
+    else
+    {
+        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+    }
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
@@ -78,8 +88,10 @@ void ei_frame_geomnotifyfunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
+    int border_width = frame->widget_appearance.border_width;
+
     // Compute the content rect of the frame (size of the frame without its border)
-    *widget->content_rect = ei_rect_add(widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.border_width, -frame->widget_appearance.border_width * 2, -frame->widget_appearance.border_width * 2);
+    *widget->content_rect = ei_rect_add(widget->screen_location, border_width, border_width, -border_width * 2, -border_width * 2);
 }
 
 ei_size_t ei_frame_get_natural_size(ei_frame_t *frame)

@@ -66,9 +66,10 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
     if (toplevel->closable)
     {
         ei_rect_t close_button_rect = toplevel->close_button->widget.screen_location;
+        ei_point_t close_button_center = ei_point(close_button_rect.top_left.x + (close_button_rect.size.width / 2), close_button_rect.top_left.y + (close_button_rect.size.height / 2));
 
         // If the user clicked on the close button, close the toplevel
-        if (ei_is_point_in_circle(mouse_position, ei_point(close_button_rect.top_left.x + (close_button_rect.size.width / 2), close_button_rect.top_left.y + (close_button_rect.size.height / 2)), close_button_rect.size.width / 2))
+        if (ei_is_point_in_circle(mouse_position, close_button_center, close_button_rect.size.width / 2))
         {
             ei_widget_destroy(widget);
 
@@ -79,7 +80,10 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
     ei_rect_t title_bar = ei_toplevel_get_title_bar_rect(toplevel);
 
     // If the user clicked on the title bar
-    if (mouse_position.x >= title_bar.top_left.x && mouse_position.x <= title_bar.top_left.x + title_bar.size.width && mouse_position.y >= title_bar.top_left.y && mouse_position.y <= title_bar.top_left.y + title_bar.size.height)
+    if (mouse_position.x >= title_bar.top_left.x &&
+        mouse_position.x <= title_bar.top_left.x + title_bar.size.width &&
+        mouse_position.y >= title_bar.top_left.y &&
+        mouse_position.y <= title_bar.top_left.y + title_bar.size.height)
     {
         // Move the toplevel to the foreground
         if (widget != ei_app_root_widget()->children_tail)
@@ -106,6 +110,14 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
         }
 
         ei_move_top_level_params_t *params = malloc(sizeof(ei_move_top_level_params_t));
+
+        // If malloc failed, exit since the program can't run without the event
+        if (params == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory to handle toplevel click.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            exit(1);
+        }
+
         params->widget = widget;
 
         // Store the position of the cursor relative to the left corner of the top level,
@@ -124,7 +136,10 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
     {
         ei_rect_t resizable_square = ei_toplevel_get_resize_square_rect(toplevel);
 
-        if (mouse_position.x >= resizable_square.top_left.x && mouse_position.x <= resizable_square.top_left.x + resizable_square.size.width && mouse_position.y >= resizable_square.top_left.y && mouse_position.y <= resizable_square.top_left.y + resizable_square.size.height)
+        if (mouse_position.x >= resizable_square.top_left.x &&
+            mouse_position.x <= resizable_square.top_left.x + resizable_square.size.width &&
+            mouse_position.y >= resizable_square.top_left.y &&
+            mouse_position.y <= resizable_square.top_left.y + resizable_square.size.height)
         {
             ei_bind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, toplevel);
             ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, toplevel);
@@ -152,7 +167,7 @@ static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_para
 
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
-    if (toplevel->widget.geom_params != NULL)
+    if (ei_widget_is_displayed(&toplevel->widget))
     {
         if (strcmp(toplevel->widget.geom_params->manager->name, "placer") == 0)
         {
@@ -194,7 +209,7 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
     // Update the geom parameters so that the geometry manager can recompute the widget's geometry
-    if (toplevel->widget.geom_params != NULL)
+    if (ei_widget_is_displayed(&toplevel->widget))
     {
         if (strcmp(toplevel->widget.geom_params->manager->name, "placer") == 0)
         {
@@ -263,13 +278,14 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
         // Checking if the surface is NULL also allows to know if we should
         // toggle on or off the offscreen picking surface.
         ei_surface_t *root_surface_copy = (ei_surface_t *)user_param;
+        ei_surface_t root_surface = ei_app_root_surface();
 
         ei_widget_t root = ei_app_root_widget();
         ei_update_pick_color_from_id(&root, *root_surface_copy != NULL ? 1 : 1000000);
 
-        ei_app_root_widget()->wclass->drawfunc(ei_app_root_widget(), ei_app_root_surface(), ei_app_offscreen_picking_surface(), &widget->screen_location);
+        root->wclass->drawfunc(root, root_surface, ei_app_offscreen_picking_surface(), &widget->screen_location);
 
-        hw_surface_lock(ei_app_root_surface());
+        hw_surface_lock(root_surface);
         hw_surface_lock(ei_app_offscreen_picking_surface());
 
         // If the offscreen picking surface is not displayed, make a copy of the root surface
@@ -277,16 +293,16 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
         if (*root_surface_copy == NULL)
         {
             printf("Displaying offscreen picking surface\n");
-            *root_surface_copy = hw_surface_create(ei_app_root_surface(), hw_surface_get_size(ei_app_root_surface()), true);
-            ei_copy_surface(*root_surface_copy, NULL, ei_app_root_surface(), NULL, false);
+            *root_surface_copy = hw_surface_create(root_surface, hw_surface_get_size(root_surface), true);
+            ei_copy_surface(*root_surface_copy, NULL, root_surface, NULL, false);
 
-            ei_copy_surface(ei_app_root_surface(), NULL, ei_app_offscreen_picking_surface(), NULL, false);
+            ei_copy_surface(root_surface, NULL, ei_app_offscreen_picking_surface(), NULL, false);
         }
         // Otherwise, restore the root surface and delete the copy
         else
         {
             printf("Hiding offscreen picking surface\n");
-            ei_copy_surface(ei_app_root_surface(), NULL, *root_surface_copy, NULL, false);
+            ei_copy_surface(root_surface, NULL, *root_surface_copy, NULL, false);
 
             hw_surface_free(*root_surface_copy);
             *root_surface_copy = NULL;

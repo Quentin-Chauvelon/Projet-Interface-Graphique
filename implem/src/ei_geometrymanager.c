@@ -53,6 +53,7 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
     if (ei_get_intersection_percentage(widget->screen_location, *new_screen_location) >= RECTANGLES_MERGE_THRESHOLD)
     {
         DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", widget->screen_location.top_left.x, widget->screen_location.top_left.y, widget->screen_location.size.width, widget->screen_location.size.height, new_screen_location->top_left.x, new_screen_location->top_left.y, new_screen_location->size.width, new_screen_location->size.height) : 0;
+
         ei_rect_t merged_rectange = ei_merge_rectangles(widget->screen_location, *new_screen_location);
         ei_app_invalidate_rect(&merged_rectange);
     }
@@ -69,11 +70,11 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
         widget->wclass->geomnotifyfunc(widget);
     }
 
-    for (ei_widget_t child = widget->children_head; child != NULL; child = child->next_sibling)
+    for (ei_widget_t children = widget->children_head; children != NULL; children = children->next_sibling)
     {
-        if (child->geom_params != NULL)
+        if (ei_widget_is_displayed(children))
         {
-            child->geom_params->manager->runfunc(child);
+            children->geom_params->manager->runfunc(children);
         }
     }
 }
@@ -133,7 +134,7 @@ ei_geometrymanager_t *ei_geometrymanager_from_name(ei_geometrymanager_name_t nam
 void ei_geometrymanager_unmap(ei_widget_t widget)
 {
     // If the widget is not currently displayed, return silently
-    if (widget->geom_params == NULL)
+    if (!ei_widget_is_displayed(widget))
     {
         return;
     }
@@ -195,7 +196,7 @@ ei_geometrymanager_t *ei_widget_get_geom_manager(ei_widget_t widget)
 
 void ei_widget_set_geom_manager(ei_widget_t widget, ei_geometrymanager_t *manager)
 {
-    if (widget->geom_params != NULL)
+    if (ei_widget_is_displayed(widget))
     {
         widget->geom_params->manager = manager;
     }
@@ -219,7 +220,7 @@ void ei_recompute_geometry_of_all_descendants(ei_widget_t *widget)
     }
 
     // Recompute the geometry of the widget
-    if ((*widget)->geom_params != NULL)
+    if (ei_widget_is_displayed(*widget))
     {
         (*widget)->geom_params->manager->runfunc(*widget);
     }

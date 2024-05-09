@@ -96,6 +96,14 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
     widget->screen_location = ei_rect_zero();
 
     widget->content_rect = malloc(sizeof(ei_rect_t));
+
+    // If malloc failed, exit since the program can't run without the content rect
+    if (widget->content_rect == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for widget's content rect.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     widget->content_rect->top_left = widget->screen_location.top_left;
     widget->content_rect->size = widget->screen_location.size;
 
@@ -288,7 +296,11 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
     // Draw the image
     if (image.data != NULL)
     {
-        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image.rect == NULL ? hw_surface_get_size(image.data) : image.rect->size, image.anchor);
+        ei_size_t image_size = image.rect == NULL
+                                   ? hw_surface_get_size(image.data)
+                                   : image.rect->size;
+
+        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image_size, image.anchor);
 
         ei_draw_image(surface, image.data, image.rect, &where, clipper);
     }
@@ -321,7 +333,9 @@ void ei_calculate_frame_appearance_natural_size(ei_frame_appearance_t frame_appe
 
     if (frame_appearance.image.data != NULL)
     {
-        ei_size_t image_size = frame_appearance.image.rect == NULL ? hw_surface_get_size(frame_appearance.image.data) : frame_appearance.image.rect->size;
+        ei_size_t image_size = frame_appearance.image.rect == NULL
+                                   ? hw_surface_get_size(frame_appearance.image.data)
+                                   : frame_appearance.image.rect->size;
 
         size->width += image_size.width;
         size->height += image_size.height;

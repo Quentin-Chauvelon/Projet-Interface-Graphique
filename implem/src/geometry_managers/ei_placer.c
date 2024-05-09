@@ -85,6 +85,7 @@ void ei_placer_runfunc(ei_widget_t widget)
     }
 
     new_screen_location.size = ei_size_zero();
+
     // Add the relative position
     new_screen_location.top_left.x += widget_geom_params->rel_x * widget->parent->content_rect->size.width;
     new_screen_location.top_left.y += widget_geom_params->rel_y * widget->parent->content_rect->size.height;

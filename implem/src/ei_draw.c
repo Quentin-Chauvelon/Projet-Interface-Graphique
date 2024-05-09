@@ -93,7 +93,9 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
         }
 
         // Calculate the minimum between half the width and half the height of the rectangle
-        int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
+        int h = rect.size.width / 2 < rect.size.height / 2
+                    ? rect.size.width / 2
+                    : rect.size.height / 2;
 
         ei_point_t *arc_1, *arc_2, *arc_3;
         if (part_to_draw == ei_rounded_frame_top)
@@ -129,12 +131,12 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
         if (part_to_draw == ei_rounded_frame_top)
         {
             point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
-            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + h);
+            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
         }
         else if (part_to_draw == ei_rounded_frame_bottom)
         {
-            point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + rect.size.height - h);
-            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
+            point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
+            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
         }
 
         memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
@@ -151,7 +153,7 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
 
         ei_point_t *point_array = malloc(nb_points_per_arc * 4 * sizeof(ei_point_t));
 
-        // If alloc failed, return NULL
+        // If malloc failed, return NULL
         if (point_array == NULL)
         {
             printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
@@ -298,7 +300,9 @@ void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_colo
 
 int ei_get_nb_points_in_arc(int start_angle, int end_angle, int radius)
 {
-    return radius != 0 ? abs(end_angle - start_angle) + 1 : 1;
+    return radius != 0
+               ? abs(end_angle - start_angle) + 1
+               : 1;
 }
 
 void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *clipper)
@@ -311,6 +315,14 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
 
     // We create a rect from the top-left of the surface
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
+
+    // If malloc failed, return
+    if (point_array == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to fill surface.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     ei_point_t *p = point_array;
 
     *point_array = rec.top_left;
@@ -328,19 +340,33 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
 
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
 {
-    ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
-    ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
+    ei_size_t src_size_after_clipping = src_rect == NULL
+                                            ? hw_surface_get_size(source)
+                                            : src_rect->size;
+
+    ei_size_t dst_size_after_clipping = dst_rect == NULL
+                                            ? hw_surface_get_size(destination)
+                                            : dst_rect->size;
 
     // If the surfaces after clipping don't have the same size, resize them
     if (!ei_equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
-        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
-        dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
+        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width
+                                            ? src_size_after_clipping.width
+                                            : dst_size_after_clipping.width;
+
+        dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width
+                                            ? src_size_after_clipping.width
+                                            : dst_size_after_clipping.width;
     }
 
     // Calculate the rectangles represensenting the areas to copy/paste after clipping
-    src_rect = src_rect != NULL ? src_rect : &(ei_rect_t){ei_point_zero(), src_size_after_clipping};
-    dst_rect = dst_rect != NULL ? dst_rect : &(ei_rect_t){ei_point_zero(), dst_size_after_clipping};
+    src_rect = src_rect != NULL
+                   ? src_rect
+                   : &(ei_rect_t){ei_point_zero(), src_size_after_clipping};
+    dst_rect = dst_rect != NULL
+                   ? dst_rect
+                   : &(ei_rect_t){ei_point_zero(), dst_size_after_clipping};
 
     ei_size_t src_size = hw_surface_get_size(source);
     ei_size_t dst_size = hw_surface_get_size(destination);
@@ -418,8 +444,21 @@ void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_su
 {
     // If the subpart is not NULL, limit the surface to the size of the subpart, otherwise use the whole image
     ei_rect_t *image_subpart_clipped = malloc(sizeof(ei_rect_t));
-    image_subpart_clipped->top_left = image_subpart != NULL ? image_subpart->top_left : ei_point_zero();
-    image_subpart_clipped->size = image_subpart != NULL ? image_subpart->size : hw_surface_get_size(image);
+
+    // If malloc failed, return
+    if (image_subpart_clipped == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to draw image.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    image_subpart_clipped->top_left = image_subpart != NULL
+                                          ? image_subpart->top_left
+                                          : ei_point_zero();
+
+    image_subpart_clipped->size = image_subpart != NULL
+                                      ? image_subpart->size
+                                      : hw_surface_get_size(image);
 
     ei_rect_t image_rect = ei_rect(*where, image_subpart_clipped->size);
 
@@ -486,7 +525,9 @@ ei_color_t ei_lighten_color(ei_color_t color)
 
     ei_hsl_color_t hsl = ei_convert_rgb_to_hsl(color);
 
-    hsl.lightness = hsl.lightness * 1.3 < 1 ? hsl.lightness * 1.3 : 1;
+    hsl.lightness = hsl.lightness * 1.3 < 1
+                        ? hsl.lightness * 1.3
+                        : 1;
 
     return ei_convert_hsl_to_rgb(hsl);
 }
@@ -495,7 +536,9 @@ ei_color_t ei_darken_color(ei_color_t color)
 {
     ei_hsl_color_t hsl = ei_convert_rgb_to_hsl(color);
 
-    hsl.lightness = hsl.lightness * 0.6 > 0 ? hsl.lightness * 0.6 : 0;
+    hsl.lightness = hsl.lightness * 0.6 > 0
+                        ? hsl.lightness * 0.6
+                        : 0;
 
     return ei_convert_hsl_to_rgb(hsl);
 }

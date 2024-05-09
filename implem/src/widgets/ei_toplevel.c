@@ -46,7 +46,8 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     // the size of the title bar and draw rounded corners on all 4 sides. Then, the drawing
     // of the main rectangle of the toplevel will cover the bottom rounded corners which will
     // give the illusion of only the top corners being rounded
-    ei_draw_rounded_frame(surface, ei_rect_add(title_bar, 0, 0, 0, k_default_toplevel_title_corner_radius * 2), 0, k_default_toplevel_title_corner_radius, k_default_toplevel_title_bar_background_color, ei_relief_none, clipper);
+    ei_rect_t title_bar_with_bottom_corners = ei_rect_add(title_bar, 0, 0, 0, k_default_toplevel_title_corner_radius * 2);
+    ei_draw_rounded_frame(surface, title_bar_with_bottom_corners, 0, k_default_toplevel_title_corner_radius, k_default_toplevel_title_bar_background_color, ei_relief_none, clipper);
 
     // Resize the title bar to add a left padding for the close button and the text
     title_bar = ei_rect_move(title_bar, k_default_toplevel_title_left_padding, 0, &title_bar);
@@ -57,8 +58,12 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
         toplevel->close_button->widget.geom_params->manager->runfunc((ei_widget_t)toplevel->close_button);
         toplevel->close_button->widget.wclass->drawfunc((ei_widget_t)toplevel->close_button, surface, pick_surface, clipper);
 
-        ei_point_t center = ei_point(toplevel->close_button->widget.screen_location.top_left.x + k_default_toplevel_close_button_size / 2, toplevel->close_button->widget.screen_location.top_left.y + k_default_toplevel_close_button_size / 2);
-        ei_draw_circle(surface, center, (k_default_toplevel_close_button_size - toplevel->close_button->widget_appearance.border_width) / 2, toplevel->close_button->widget_appearance.color, clipper);
+        ei_point_t center = ei_point(
+            toplevel->close_button->widget.screen_location.top_left.x + k_default_toplevel_close_button_size / 2,
+            toplevel->close_button->widget.screen_location.top_left.y + k_default_toplevel_close_button_size / 2);
+        int radius = (k_default_toplevel_close_button_size - toplevel->close_button->widget_appearance.border_width) / 2;
+
+        ei_draw_circle(surface, center, radius, toplevel->close_button->widget_appearance.color, clipper);
 
         // Reduce the size of the title bar to not draw the text over the close button
         title_bar = ei_rect_move(title_bar, k_default_toplevel_close_button_size + k_default_toplevel_title_left_padding, 0, &title_bar);
@@ -72,8 +77,9 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     // Draw the text
     ei_draw_text(surface, &where, toplevel->title, ei_default_font, (ei_color_t){255, 255, 255, 255}, clipper);
 
-    // Draw the content rectangle of the toplevel
-    ei_draw_frame(surface, ei_rect_move(toplevel->widget.screen_location, 0, title_bar.size.height, &toplevel->widget.screen_location), toplevel->widget_appearance.border_width, 0, toplevel->widget_appearance.color, ei_relief_none, &k_default_toplevel_title_bar_background_color, clipper);
+    // Draw the content rectangle of the toplevel by moving reducing its size by the height of the title bar
+    ei_rect_t screen_location_offset = ei_rect_move(toplevel->widget.screen_location, 0, title_bar.size.height, &toplevel->widget.screen_location);
+    ei_draw_frame(surface, screen_location_offset, toplevel->widget_appearance.border_width, 0, toplevel->widget_appearance.color, ei_relief_none, &k_default_toplevel_title_bar_background_color, clipper);
 
     // Draw the toplevel on the offscreen picking surface
     // Just like for the title bar, the drawing on the picking offscreen surface needs to
@@ -86,7 +92,17 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+
+    // If malloc failed, set the children clipper to the clipper
+    if (children_clipper == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        *children_clipper = *clipper;
+    }
+    else
+    {
+        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+    }
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
@@ -123,6 +139,13 @@ void ei_toplevel_setdefaultsfunc(ei_widget_t widget)
     if (toplevel->min_size == NULL)
     {
         toplevel->min_size = malloc(sizeof(ei_size_t));
+
+        // If malloc failed, exit since the program can't run without the min size
+        if (toplevel->min_size == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for toplevel min size.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            exit(1);
+        }
     }
 
     *toplevel->min_size = ei_toplevel_get_natural_size(toplevel);

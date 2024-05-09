@@ -64,13 +64,21 @@ ei_rect_t ei_get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2)
 
     // Find the right most left coordinate and highest top coordinate
     ei_point_t top_left = ei_point(
-        rect1.top_left.x > rect2.top_left.x ? rect1.top_left.x : rect2.top_left.x,
-        rect1.top_left.y > rect2.top_left.y ? rect1.top_left.y : rect2.top_left.y);
+        rect1.top_left.x > rect2.top_left.x
+            ? rect1.top_left.x
+            : rect2.top_left.x,
+        rect1.top_left.y > rect2.top_left.y
+            ? rect1.top_left.y
+            : rect2.top_left.y);
 
     // Find the left most right coordinate and lowest bottom coordinate
     ei_point_t bottom_right = ei_point(
-        (rect1.top_left.x + rect1.size.width) < (rect2.top_left.x + rect2.size.width) ? (rect1.top_left.x + rect1.size.width) : (rect2.top_left.x + rect2.size.width),
-        (rect1.top_left.y + rect1.size.height) < (rect2.top_left.y + rect2.size.height) ? (rect1.top_left.y + rect1.size.height) : (rect2.top_left.y + rect2.size.height));
+        (rect1.top_left.x + rect1.size.width) < (rect2.top_left.x + rect2.size.width)
+            ? rect1.top_left.x + rect1.size.width
+            : rect2.top_left.x + rect2.size.width,
+        (rect1.top_left.y + rect1.size.height) < (rect2.top_left.y + rect2.size.height)
+            ? rect1.top_left.y + rect1.size.height
+            : rect2.top_left.y + rect2.size.height);
 
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
@@ -105,12 +113,20 @@ ei_rect_t ei_merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
     // This uses the same principle as ei_get_intersection_rectangle() but with inverted conditions
 
     ei_point_t top_left = ei_point(
-        rect1.top_left.x < rect2.top_left.x ? rect1.top_left.x : rect2.top_left.x,
-        rect1.top_left.y < rect2.top_left.y ? rect1.top_left.y : rect2.top_left.y);
+        rect1.top_left.x < rect2.top_left.x
+            ? rect1.top_left.x
+            : rect2.top_left.x,
+        rect1.top_left.y < rect2.top_left.y
+            ? rect1.top_left.y
+            : rect2.top_left.y);
 
     ei_point_t bottom_right = ei_point(
-        (rect1.top_left.x + rect1.size.width) > (rect2.top_left.x + rect2.size.width) ? (rect1.top_left.x + rect1.size.width) : (rect2.top_left.x + rect2.size.width),
-        (rect1.top_left.y + rect1.size.height) > (rect2.top_left.y + rect2.size.height) ? (rect1.top_left.y + rect1.size.height) : (rect2.top_left.y + rect2.size.height));
+        (rect1.top_left.x + rect1.size.width) > (rect2.top_left.x + rect2.size.width)
+            ? rect1.top_left.x + rect1.size.width
+            : rect2.top_left.x + rect2.size.width,
+        (rect1.top_left.y + rect1.size.height) > (rect2.top_left.y + rect2.size.height)
+            ? rect1.top_left.y + rect1.size.height
+            : rect2.top_left.y + rect2.size.height);
 
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
@@ -286,7 +302,10 @@ ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl)
     }
     else
     {
-        float q = hsl.lightness < 0.5 ? hsl.lightness * (1 + hsl.saturation) : hsl.lightness + hsl.saturation - hsl.lightness * hsl.saturation;
+        float q = hsl.lightness < 0.5
+                      ? hsl.lightness * (1 + hsl.saturation)
+                      : hsl.lightness + hsl.saturation - hsl.lightness * hsl.saturation;
+
         float p = 2 * hsl.lightness - q;
 
         r = convert_hue_to_rgb(p, q, hsl.hue + 1.0 / 3.0);

@@ -111,7 +111,16 @@ void ei_frame_configure(ei_widget_t widget,
         }
 
         frame->frame_appearance.text.label = malloc(strlen(*text) + 1);
-        strcpy(frame->frame_appearance.text.label, *text);
+
+        // If malloc failed, print
+        if (frame->frame_appearance.text.label == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for text.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        }
+        else
+        {
+            strcpy(frame->frame_appearance.text.label, *text);
+        }
     }
     else
     {
@@ -197,7 +206,10 @@ void ei_frame_configure(ei_widget_t widget,
     // later on if another call is made with NULL values
     frame->widget.instantiated = true;
 
-    widget->requested_size = requested_size != NULL ? *requested_size : ei_frame_get_natural_size(frame);
+    widget->requested_size = requested_size != NULL
+                                 ? *requested_size
+                                 : ei_frame_get_natural_size(frame);
+
     widget->screen_location.size = widget->requested_size;
 
     // Update the geometry of the widget in case the size has changed
@@ -305,7 +317,16 @@ void ei_button_configure(ei_widget_t widget,
         }
 
         button->frame_appearance.text.label = malloc(strlen(*text) + 1);
-        strcpy(button->frame_appearance.text.label, *text);
+
+        // If malloc failed, print
+        if (button->frame_appearance.text.label == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for text.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        }
+        else
+        {
+            strcpy(button->frame_appearance.text.label, *text);
+        }
     }
     else
     {
@@ -415,7 +436,10 @@ void ei_button_configure(ei_widget_t widget,
     // later on if another call is made with NULL values
     button->widget.instantiated = true;
 
-    widget->requested_size = requested_size != NULL ? *requested_size : ei_button_get_natural_size(button);
+    widget->requested_size = requested_size != NULL
+                                 ? *requested_size
+                                 : ei_button_get_natural_size(button);
+
     widget->screen_location.size = widget->requested_size;
 
     // Update the geometry of the widget in case the size has changed
@@ -559,8 +583,12 @@ void ei_toplevel_configure(ei_widget_t widget,
     toplevel->widget.instantiated = true;
 
     // Increase the requested size to take into account the decorations (title bar and border)
-    *requested_size = ei_size_add(*requested_size, ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width));
-    widget->requested_size = requested_size != NULL ? *requested_size : ei_size(320, 240);
+    ei_size_t decorations_size = ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width);
+    *requested_size = ei_size_add(*requested_size, decorations_size);
+
+    widget->requested_size = requested_size != NULL
+                                 ? *requested_size
+                                 : ei_size(320, 240);
 
     // Resize the requested size to be at least the min size
     if (widget->requested_size.width < toplevel->min_size->width)

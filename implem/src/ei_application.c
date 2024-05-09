@@ -49,6 +49,14 @@ void ei_app_run(void)
     int main_loop_count = 0;
 
     ei_event_t *event = (ei_event_t *)malloc(sizeof(struct ei_event_t));
+
+    // If malloc failed, exit since the program can't run without the event
+    if (event == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for event.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
     event->type = ei_ev_none;
 
     // Invalidate the root widget once to draw the whole screen
