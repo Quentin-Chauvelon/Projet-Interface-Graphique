@@ -175,7 +175,7 @@ ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel)
 
 ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
 {
-    ei_widget_t close_button = ei_widget_create_internal("button", (ei_widget_t)toplevel, NULL, NULL);
+    ei_widget_t close_button = ei_widget_create("button", (ei_widget_t)toplevel, NULL, NULL);
 
     ei_button_configure(close_button,
                         &((ei_size_t){k_default_toplevel_close_button_size, k_default_toplevel_close_button_size}),
@@ -219,21 +219,6 @@ ei_rect_t ei_toplevel_get_resize_square_rect(ei_toplevel_t *toplevel)
 
 void ei_toplevel_get_min_size(ei_widget_t widget, int *width, int *height)
 {
-    ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
-
-    hw_text_compute_size(toplevel->title, ei_default_font, width, height);
-
-    // Calculate the minimum width needed for the title + leave some space on the
-    // left and right so that it doesn't too clumpsy
-    int title_width = *width + k_default_toplevel_title_left_padding * 2;
-
-    // If there is a close button, add more space for the button and again some padding
-    if (toplevel->closable)
-    {
-        title_width += k_default_toplevel_title_left_padding + k_default_toplevel_close_button_size;
-    }
-
-    // Return the minimum between the size needed for the title and 160 pixels
-    *width = title_width > 160 ? title_width : 160;
+    *width = 160;
     *height = 120;
 }
