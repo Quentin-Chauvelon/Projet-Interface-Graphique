@@ -12,18 +12,7 @@
 
 ei_widget_t frame_allocfunc()
 {
-    ei_frame_t *frame = malloc(sizeof(ei_frame_t));
-
-    // If malloc failed, exit since the program will crash if the user tries to use the frame
-    if (frame == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory for the frame widget.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        exit(1);
-    }
-
-    memset(frame, 0, sizeof(ei_frame_t));
-
-    return (ei_widget_t)frame;
+    return widget_allocfunc(sizeof(ei_frame_t));
 }
 
 void frame_releasefunc(ei_widget_t widget)

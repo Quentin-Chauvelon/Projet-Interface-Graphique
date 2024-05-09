@@ -16,18 +16,7 @@
 
 ei_widget_t toplevel_allocfunc()
 {
-    ei_toplevel_t *toplevel = malloc(sizeof(ei_toplevel_t));
-
-    // If malloc failed, exit since the program will crash if the user tries to use the toplevel
-    if (toplevel == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory for the toplevel widget.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        exit(1);
-    }
-
-    memset(toplevel, 0, sizeof(ei_toplevel_t));
-
-    return (ei_widget_t)toplevel;
+    return widget_allocfunc(sizeof(ei_toplevel_t));
 }
 
 void toplevel_releasefunc(ei_widget_t widget)

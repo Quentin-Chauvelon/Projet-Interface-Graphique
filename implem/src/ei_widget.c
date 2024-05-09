@@ -255,3 +255,19 @@ ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
 
     return NULL;
 }
+
+ei_widget_t widget_allocfunc(size_t widget_size)
+{
+    ei_widget_t widget = malloc(widget_size);
+
+    // If malloc failed, exit since the program will crash if the user tries to use the widget
+    if (widget == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the widget widget.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
+    memset(widget, 0, widget_size);
+
+    return widget;
+}

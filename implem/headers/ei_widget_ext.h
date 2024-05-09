@@ -84,4 +84,15 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
  */
 ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id);
 
+/**
+ * \brief	A function that allocates a block of memory that is big enough to store the
+ *		    attributes of a widget of a class, given by widget_size.
+ *		    After allocation, the function *must* initialize the memory to 0.
+ *
+ * @param	widget_size	The size of the widget to allocate
+ *
+ * @return	The widget allocated
+ */
+ei_widget_t widget_allocfunc(size_t widget_size);
+
 #endif
