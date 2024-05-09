@@ -181,7 +181,7 @@ void ei_frame_configure(ei_widget_t widget,
         }
     }
 
-    if (img_anchor != NULL)
+    if (img_anchor != NULL && *img_anchor != ei_anc_none)
     {
         frame->frame_appearance.image.anchor = *img_anchor;
     }
@@ -375,7 +375,7 @@ void ei_button_configure(ei_widget_t widget,
         }
     }
 
-    if (img_anchor != NULL)
+    if (img_anchor != NULL && *img_anchor != ei_anc_none)
     {
         button->frame_appearance.image.anchor = *img_anchor;
     }
