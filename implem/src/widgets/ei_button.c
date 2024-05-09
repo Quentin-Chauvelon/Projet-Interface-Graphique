@@ -12,12 +12,12 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 
-ei_widget_t button_allocfunc()
+ei_widget_t ei_button_allocfunc()
 {
-    return widget_allocfunc(sizeof(ei_button_t));
+    return ei_widget_allocfunc(sizeof(ei_button_t));
 }
 
-void button_releasefunc(ei_widget_t widget)
+void ei_button_releasefunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
@@ -35,7 +35,7 @@ void button_releasefunc(ei_widget_t widget)
     button = NULL;
 }
 
-void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
+void ei_button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
@@ -58,14 +58,14 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
+    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
     free(children_clipper);
 }
 
-void button_setdefaultsfunc(ei_widget_t widget)
+void ei_button_setdefaultsfunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
@@ -90,7 +90,7 @@ void button_setdefaultsfunc(ei_widget_t widget)
     button->user_param = NULL;
 }
 
-void button_geomnotifyfunc(ei_widget_t widget)
+void ei_button_geomnotifyfunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 

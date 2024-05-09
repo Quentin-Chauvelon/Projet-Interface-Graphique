@@ -38,7 +38,7 @@ typedef struct ei_event_bind_t
  *
  * @param   event   The event to handle
  */
-void handle_event(ei_event_t event);
+void ei_handle_event(ei_event_t event);
 
 /**
  * @brief   Returns the widget under the mouse cursor

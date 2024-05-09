@@ -9,7 +9,7 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 
-ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
+ei_point_t *ei_get_arc_points(ei_point_t center, int radius, int start_angle, int end_angle)
 {
     int nb_points = ei_get_nb_points_in_arc(start_angle, end_angle, radius);
 
@@ -51,7 +51,7 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
     return point_array;
 }
 
-ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw)
+ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw)
 {
     if (part_to_draw == ei_rounded_frame_top)
     {
@@ -71,9 +71,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
-        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 315);
-        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 135, 180);
+        ei_point_t *arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
+        ei_point_t *arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 315);
+        ei_point_t *arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 135, 180);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
@@ -119,9 +119,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
-        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 135);
-        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 315, 360);
+        ei_point_t *arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
+        ei_point_t *arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 135);
+        ei_point_t *arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 315, 360);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
@@ -162,10 +162,10 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
             return NULL;
         }
 
-        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
-        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 360);
-        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
-        ei_point_t *arc_4 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 180);
+        ei_point_t *arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
+        ei_point_t *arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 360);
+        ei_point_t *arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
+        ei_point_t *arc_4 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 180);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL || arc_4 == NULL)
@@ -237,8 +237,8 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
             ei_get_border_colors(background_color, relief, &color1, &color2);
         }
 
-        ei_point_t *top_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_top);
-        ei_point_t *bottom_point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_bottom);
+        ei_point_t *top_point_array = ei_get_rounded_frame_points(screen_location, corner_radius, ei_rounded_frame_top);
+        ei_point_t *bottom_point_array = ei_get_rounded_frame_points(screen_location, corner_radius, ei_rounded_frame_bottom);
 
         // If malloc failed, return
         if (top_point_array == NULL || bottom_point_array == NULL)
@@ -267,7 +267,7 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
     else
     {
 
-        point_array = rounded_frame(screen_location, corner_radius, ei_rounded_frame_full);
+        point_array = ei_get_rounded_frame_points(screen_location, corner_radius, ei_rounded_frame_full);
 
         // If malloc failed, return
         if (point_array == NULL)
@@ -286,7 +286,7 @@ void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_colo
 {
     int nb_points = ei_get_nb_points_in_arc(0, 360, radius);
 
-    ei_point_t *point_array = arc(center, radius, 0, 360);
+    ei_point_t *point_array = ei_get_arc_points(center, radius, 0, 360);
 
     // If malloc failed, return
     if (point_array == NULL)
@@ -336,7 +336,7 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
     ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
 
     // If the surfaces after clipping don't have the same size, resize them
-    if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
+    if (!ei_equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
         src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
         dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
@@ -408,7 +408,7 @@ void ei_draw_text(ei_surface_t surface, const ei_point_t *where, ei_const_string
     // Otherwise, limit the surface to the intersection of the size of the text and the clipper
     else
     {
-        text_surface_rect = get_intersection_rectangle(ei_rect(*where, hw_surface_get_size(text_surface)), *clipper);
+        text_surface_rect = ei_get_intersection_rectangle(ei_rect(*where, hw_surface_get_size(text_surface)), *clipper);
     }
 
     hw_surface_lock(text_surface);
@@ -430,7 +430,7 @@ void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_su
     // If the clipper is not NULL, limit the surface to the intersection of the size of the text and the clipper
     if (clipper != NULL)
     {
-        image_rect = get_intersection_rectangle(image_rect, *clipper);
+        image_rect = ei_get_intersection_rectangle(image_rect, *clipper);
     }
 
     // Limit the size of the subpart to the size of the image,
@@ -488,18 +488,18 @@ ei_color_t ei_lighten_color(ei_color_t color)
     // Instead, we decided to use the second approach, which is to convert
     // the color to HSL, increase the lightness and convert it back to RGB.
 
-    ei_hsl_color_t hsl = convert_rgb_to_hsl(color);
+    ei_hsl_color_t hsl = ei_convert_rgb_to_hsl(color);
 
     hsl.lightness = hsl.lightness * 1.3 < 1 ? hsl.lightness * 1.3 : 1;
 
-    return convert_hsl_to_rgb(hsl);
+    return ei_convert_hsl_to_rgb(hsl);
 }
 
 ei_color_t ei_darken_color(ei_color_t color)
 {
-    ei_hsl_color_t hsl = convert_rgb_to_hsl(color);
+    ei_hsl_color_t hsl = ei_convert_rgb_to_hsl(color);
 
     hsl.lightness = hsl.lightness * 0.6 > 0 ? hsl.lightness * 0.6 : 0;
 
-    return convert_hsl_to_rgb(hsl);
+    return ei_convert_hsl_to_rgb(hsl);
 }

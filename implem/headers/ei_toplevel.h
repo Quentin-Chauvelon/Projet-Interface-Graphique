@@ -31,7 +31,7 @@ typedef struct
  * @return			A block of memory big enough to represent a widget of this class,
  * 				with all bytes set to 0.
  */
-ei_widget_t toplevel_allocfunc();
+ei_widget_t ei_toplevel_allocfunc();
 
 /**
  * \brief	A function that releases the memory used by a widget before it is destroyed.
@@ -41,7 +41,7 @@ ei_widget_t toplevel_allocfunc();
  *
  * @param	widget		The widget which resources are to be freed.
  */
-void toplevel_releasefunc(ei_widget_t widget);
+void ei_toplevel_releasefunc(ei_widget_t widget);
 
 /**
  * \brief	A function that draws a toplevel.
@@ -54,14 +54,14 @@ void toplevel_releasefunc(ei_widget_t widget);
  * @param	clipper		If not NULL, the drawing is restricted within this rectangle
  *				(expressed in the surface reference toplevel).
  */
-void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
+void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
 
 /**
  * \brief	A function that sets the default values for a toplevel.
  *
  * @param	widget		A pointer to the widget instance to initialize.
  */
-void toplevel_setdefaultsfunc(ei_widget_t widget);
+void ei_toplevel_setdefaultsfunc(ei_widget_t widget);
 
 /**
  * \brief 	A function that is called to notify the widget that its geometry has been modified
@@ -70,7 +70,7 @@ void toplevel_setdefaultsfunc(ei_widget_t widget);
  *
  * @param	widget		The widget instance to notify of a geometry change.
  */
-void toplevel_geomnotifyfunc(ei_widget_t widget);
+void ei_toplevel_geomnotifyfunc(ei_widget_t widget);
 
 /**
  * @brief   Returns the natural size of a toplevel

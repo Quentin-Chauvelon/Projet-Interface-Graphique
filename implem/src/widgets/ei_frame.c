@@ -10,12 +10,12 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 
-ei_widget_t frame_allocfunc()
+ei_widget_t ei_frame_allocfunc()
 {
-    return widget_allocfunc(sizeof(ei_frame_t));
+    return ei_widget_allocfunc(sizeof(ei_frame_t));
 }
 
-void frame_releasefunc(ei_widget_t widget)
+void ei_frame_releasefunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
@@ -28,7 +28,7 @@ void frame_releasefunc(ei_widget_t widget)
     frame = NULL;
 }
 
-void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
+void ei_frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
@@ -46,14 +46,14 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
+    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
     free(children_clipper);
 }
 
-void frame_setdefaultsfunc(ei_widget_t widget)
+void ei_frame_setdefaultsfunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
@@ -74,7 +74,7 @@ void frame_setdefaultsfunc(ei_widget_t widget)
     frame->frame_appearance.image.anchor = ei_anc_center;
 }
 
-void frame_geomnotifyfunc(ei_widget_t widget)
+void ei_frame_geomnotifyfunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 

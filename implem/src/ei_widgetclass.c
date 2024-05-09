@@ -80,11 +80,11 @@ void ei_widgetclass_register_all()
     }
 
     strcpy(frame->name, "frame");
-    frame->allocfunc = &frame_allocfunc;
-    frame->releasefunc = &frame_releasefunc;
-    frame->drawfunc = &frame_drawfunc;
-    frame->setdefaultsfunc = &frame_setdefaultsfunc;
-    frame->geomnotifyfunc = &frame_geomnotifyfunc;
+    frame->allocfunc = &ei_frame_allocfunc;
+    frame->releasefunc = &ei_frame_releasefunc;
+    frame->drawfunc = &ei_frame_drawfunc;
+    frame->setdefaultsfunc = &ei_frame_setdefaultsfunc;
+    frame->geomnotifyfunc = &ei_frame_geomnotifyfunc;
     frame->next = NULL;
 
     ei_widgetclass_t *button = malloc(sizeof(ei_widgetclass_t));
@@ -97,11 +97,11 @@ void ei_widgetclass_register_all()
     }
 
     strcpy(button->name, "button");
-    button->allocfunc = &button_allocfunc;
-    button->releasefunc = &button_releasefunc;
-    button->drawfunc = &button_drawfunc;
-    button->setdefaultsfunc = &button_setdefaultsfunc;
-    button->geomnotifyfunc = &button_geomnotifyfunc;
+    button->allocfunc = &ei_button_allocfunc;
+    button->releasefunc = &ei_button_releasefunc;
+    button->drawfunc = &ei_button_drawfunc;
+    button->setdefaultsfunc = &ei_button_setdefaultsfunc;
+    button->geomnotifyfunc = &ei_button_geomnotifyfunc;
     button->next = NULL;
 
     ei_widgetclass_t *toplevel = malloc(sizeof(ei_widgetclass_t));
@@ -114,11 +114,11 @@ void ei_widgetclass_register_all()
     }
 
     strcpy(toplevel->name, "toplevel");
-    toplevel->allocfunc = &toplevel_allocfunc;
-    toplevel->releasefunc = &toplevel_releasefunc;
-    toplevel->drawfunc = &toplevel_drawfunc;
-    toplevel->setdefaultsfunc = &toplevel_setdefaultsfunc;
-    toplevel->geomnotifyfunc = &toplevel_geomnotifyfunc;
+    toplevel->allocfunc = &ei_toplevel_allocfunc;
+    toplevel->releasefunc = &ei_toplevel_releasefunc;
+    toplevel->drawfunc = &ei_toplevel_drawfunc;
+    toplevel->setdefaultsfunc = &ei_toplevel_setdefaultsfunc;
+    toplevel->geomnotifyfunc = &ei_toplevel_geomnotifyfunc;
     toplevel->next = NULL;
 
     ei_widgetclass_register(frame);

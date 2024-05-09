@@ -50,10 +50,10 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
 
     // If the area of the intersection is at least 20% of both rectangles, invalidate the intersection.
     // Otherwise, most of rectangles will be drawn twice.
-    if (get_intersection_percentage(widget->screen_location, *new_screen_location) >= RECTANGLES_MERGE_THRESHOLD)
+    if (ei_get_intersection_percentage(widget->screen_location, *new_screen_location) >= RECTANGLES_MERGE_THRESHOLD)
     {
         DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", widget->screen_location.top_left.x, widget->screen_location.top_left.y, widget->screen_location.size.width, widget->screen_location.size.height, new_screen_location->top_left.x, new_screen_location->top_left.y, new_screen_location->size.width, new_screen_location->size.height) : 0;
-        ei_rect_t merged_rectange = merge_rectangles(widget->screen_location, *new_screen_location);
+        ei_rect_t merged_rectange = ei_merge_rectangles(widget->screen_location, *new_screen_location);
         ei_app_invalidate_rect(&merged_rectange);
     }
     else

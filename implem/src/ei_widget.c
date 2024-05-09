@@ -50,7 +50,7 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
         exit(1);
     }
 
-    *(widget->pick_color) = get_color_from_id(widget->pick_id);
+    *(widget->pick_color) = ei_get_color_from_id(widget->pick_id);
 
     widget->wclass = wclass;
 
@@ -216,7 +216,7 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
     uint8_t blue = buffer[offset + ib];
     uint8_t alpha = buffer[offset + ia];
 
-    int id = get_id_from_color((ei_color_t){red, green, blue, alpha});
+    int id = ei_get_id_from_color((ei_color_t){red, green, blue, alpha});
 
     ei_widget_t root = ei_app_root_widget();
     ei_widget_t *result = ei_get_widget_from_pick_id(&root, id);
@@ -255,7 +255,7 @@ ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
     return NULL;
 }
 
-ei_widget_t widget_allocfunc(size_t widget_size)
+ei_widget_t ei_widget_allocfunc(size_t widget_size)
 {
     ei_widget_t widget = malloc(widget_size);
 
@@ -280,7 +280,7 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
         int height = 0;
         hw_text_compute_size(text.label, text.font, &width, &height);
 
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), text.anchor);
+        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), text.anchor);
 
         ei_draw_text(surface, &where, text.label, text.font, text.color, clipper);
     }
@@ -288,16 +288,16 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
     // Draw the image
     if (image.data != NULL)
     {
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, image.rect == NULL ? hw_surface_get_size(image.data) : image.rect->size, image.anchor);
+        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image.rect == NULL ? hw_surface_get_size(image.data) : image.rect->size, image.anchor);
 
         ei_draw_image(surface, image.data, image.rect, &where, clipper);
     }
 }
 
-ei_rect_t get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper)
+ei_rect_t ei_get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper)
 {
     return clipper != NULL
-               ? get_intersection_rectangle(content_rect, *clipper)
+               ? ei_get_intersection_rectangle(content_rect, *clipper)
                : content_rect;
 }
 

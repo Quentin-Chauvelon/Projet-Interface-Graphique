@@ -92,7 +92,7 @@ void ei_app_run(void)
 
         hw_event_wait_next(event);
 
-        handle_event(*event);
+        ei_handle_event(*event);
     }
 
     free(event);
@@ -138,17 +138,17 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         while (true)
         {
             // If the rectangle is fully included in another rectangle, we don't need it
-            if (rect_included_in_rect(*rect, current_invalid_rect->rect))
+            if (ei_rect_included_in_rect(*rect, current_invalid_rect->rect))
             {
                 return;
             }
 
             // If two rectangles have a big enough common area, merge them, overwrite the current rectangle in
             // the linked list and return since we don't need the new rectangle anymore
-            if (get_intersection_percentage(*rect, current_invalid_rect->rect) >= RECTANGLES_MERGE_THRESHOLD)
+            if (ei_get_intersection_percentage(*rect, current_invalid_rect->rect) >= RECTANGLES_MERGE_THRESHOLD)
             {
                 DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
-                current_invalid_rect->rect = merge_rectangles(*rect, current_invalid_rect->rect);
+                current_invalid_rect->rect = ei_merge_rectangles(*rect, current_invalid_rect->rect);
                 return;
             }
 

@@ -244,7 +244,7 @@ static void ei_update_pick_color_from_id(ei_widget_t *widget, int multiplier)
     }
 
     // Update the pick color
-    *(*widget)->pick_color = get_color_from_id((*widget)->pick_id * multiplier);
+    *(*widget)->pick_color = ei_get_color_from_id((*widget)->pick_id * multiplier);
 
     for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
     {

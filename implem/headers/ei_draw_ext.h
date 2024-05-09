@@ -28,7 +28,7 @@
  *
  * @return  An array of points representing the arc.
  */
-ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
+ei_point_t *ei_get_arc_points(ei_point_t center, int radius, int start_angle, int end_angle);
 
 /**
  * @brief   Creates an array of points forming a rounded frame
@@ -39,7 +39,7 @@ ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle);
  *
  * @return  An array of points representing the rounded frame.
  */
-ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
+ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
  * @brief   Draws a plain rectanglee.

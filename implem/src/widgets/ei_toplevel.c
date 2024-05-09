@@ -14,12 +14,12 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 
-ei_widget_t toplevel_allocfunc()
+ei_widget_t ei_toplevel_allocfunc()
 {
-    return widget_allocfunc(sizeof(ei_toplevel_t));
+    return ei_widget_allocfunc(sizeof(ei_toplevel_t));
 }
 
-void toplevel_releasefunc(ei_widget_t widget)
+void ei_toplevel_releasefunc(ei_widget_t widget)
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
@@ -32,7 +32,7 @@ void toplevel_releasefunc(ei_widget_t widget)
     toplevel = NULL;
 }
 
-void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
+void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
     DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
@@ -67,7 +67,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     int width = 0;
     int height = 0;
     hw_text_compute_size(toplevel->title, ei_default_font, &width, &height);
-    ei_point_t where = get_position_in_parent_from_anchor(title_bar, ei_size(width, height), ei_anc_west);
+    ei_point_t where = ei_get_position_in_parent_from_anchor(title_bar, ei_size(width, height), ei_anc_west);
 
     // Draw the text
     ei_draw_text(surface, &where, toplevel->title, ei_default_font, (ei_color_t){255, 255, 255, 255}, clipper);
@@ -86,7 +86,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
+    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
@@ -102,7 +102,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     }
 }
 
-void toplevel_setdefaultsfunc(ei_widget_t widget)
+void ei_toplevel_setdefaultsfunc(ei_widget_t widget)
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
@@ -128,7 +128,7 @@ void toplevel_setdefaultsfunc(ei_widget_t widget)
     *toplevel->min_size = ei_toplevel_get_natural_size(toplevel);
 }
 
-void toplevel_geomnotifyfunc(ei_widget_t widget)
+void ei_toplevel_geomnotifyfunc(ei_widget_t widget)
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 

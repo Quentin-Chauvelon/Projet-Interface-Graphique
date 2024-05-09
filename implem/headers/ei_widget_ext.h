@@ -93,7 +93,7 @@ ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id);
  *
  * @return	The widget allocated
  */
-ei_widget_t widget_allocfunc(size_t widget_size);
+ei_widget_t ei_widget_allocfunc(size_t widget_size);
 
 /**
  * @brief   Draws the frame appearance (text and image) of the frame and button widgets.
@@ -115,7 +115,7 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
  *
  * @return  The intersection of the content rect and the clipper if it is not NULL.
  */
-ei_rect_t get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper);
+ei_rect_t ei_get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper);
 
 /**
  * @brief   Calculates the natural size of a widget containing a ei_frame_appearance_t and a border.

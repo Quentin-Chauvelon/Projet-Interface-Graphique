@@ -4,7 +4,7 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_types_ext.h"
 
-ei_color_t get_color_from_id(int id)
+ei_color_t ei_get_color_from_id(int id)
 {
     ei_color_t color = {0, 0, 0, 255};
 
@@ -21,7 +21,7 @@ ei_color_t get_color_from_id(int id)
     return color;
 }
 
-int get_id_from_color(ei_color_t color)
+int ei_get_id_from_color(ei_color_t color)
 {
     // To convert a color back to an id, we can do the opposite of the previous function.
     // By shifting the bits left, we put each component at the right position with 0s added to the right.
@@ -29,7 +29,7 @@ int get_id_from_color(ei_color_t color)
     return (color.red << 16) + (color.green << 8) + color.blue;
 }
 
-bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2)
+bool ei_rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2)
 {
     // Inspired from https://stackoverflow.com/a/306332
     // This works by checking if the left edge of rect1 is to the right edge of rect2,
@@ -44,7 +44,7 @@ bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2)
            rect1.top_left.y + rect1.size.height > rect2.top_left.y;
 }
 
-bool rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2)
+bool ei_rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2)
 {
     // Check if the top left corner and the bottom right corner of rect1 are inside rect2.
     // If they are, then rect1 is included in rect2
@@ -54,10 +54,10 @@ bool rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2)
            rect1.top_left.y + rect1.size.height <= rect2.top_left.y + rect2.size.height;
 }
 
-ei_rect_t get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2)
+ei_rect_t ei_get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2)
 {
     // If the rectangles don't intersect, the intersection is a rectangle of size 0
-    if (!rect_intersects_rect(rect1, rect2))
+    if (!ei_rect_intersects_rect(rect1, rect2))
     {
         return ei_rect_zero();
     }
@@ -75,9 +75,9 @@ ei_rect_t get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2)
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
 
-int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
+int ei_get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
 {
-    ei_rect_t intersection = get_intersection_rectangle(rect1, rect2);
+    ei_rect_t intersection = ei_get_intersection_rectangle(rect1, rect2);
     int intersection_area = intersection.size.width * intersection.size.height;
     int area_rect1 = rect1.size.width * rect1.size.height;
     int area_rect2 = rect2.size.width * rect2.size.height;
@@ -100,9 +100,9 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
     return ((intersection_area * 100) / ((area_rect1 + area_rect2) - intersection_area));
 }
 
-ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
+ei_rect_t ei_merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
 {
-    // This uses the same principle as get_intersection_rectangle() but with inverted conditions
+    // This uses the same principle as ei_get_intersection_rectangle() but with inverted conditions
 
     ei_point_t top_left = ei_point(
         rect1.top_left.x < rect2.top_left.x ? rect1.top_left.x : rect2.top_left.x,
@@ -115,12 +115,12 @@ ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2)
     return ei_rect(top_left, ei_size(bottom_right.x - top_left.x, bottom_right.y - top_left.y));
 }
 
-bool equal_sizes(ei_size_t size1, ei_size_t size2)
+bool ei_equal_sizes(ei_size_t size1, ei_size_t size2)
 {
     return size1.width == size2.width && size1.height == size2.height;
 }
 
-ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor)
+ei_point_t ei_get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor)
 {
     switch (anchor)
     {
@@ -156,7 +156,7 @@ ei_rect_t ei_rect_move(ei_rect_t rect, int x, int y, ei_rect_t *clipper)
     // If the clipper is not NULL, crop the rectangle to fit in the clipper
     if (clipper != NULL)
     {
-        rect = get_intersection_rectangle(rect, *clipper);
+        rect = ei_get_intersection_rectangle(rect, *clipper);
     }
 
     return rect;
@@ -187,7 +187,7 @@ bool ei_is_point_in_circle(ei_point_t point, ei_point_t center, int radius)
     return sqrt(pow(point.x - center.x, 2) + pow(point.y - center.y, 2)) <= radius;
 }
 
-ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color)
+ei_hsl_color_t ei_convert_rgb_to_hsl(ei_color_t color)
 {
     float r = color.red / 255.0;
     float g = color.green / 255.0;
@@ -271,7 +271,7 @@ static float convert_hue_to_rgb(float p, float q, float hue)
     return p;
 }
 
-ei_color_t convert_hsl_to_rgb(ei_hsl_color_t hsl)
+ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl)
 {
     float r = 0;
     float g = 0;

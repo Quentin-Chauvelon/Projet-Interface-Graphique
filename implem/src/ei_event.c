@@ -205,7 +205,7 @@ static bool handle_mouse_button_down_event(ei_event_t event)
     return false;
 }
 
-void handle_event(ei_event_t event)
+void ei_handle_event(ei_event_t event)
 {
     ei_event_bind_t *current_event = first_event_bind;
 

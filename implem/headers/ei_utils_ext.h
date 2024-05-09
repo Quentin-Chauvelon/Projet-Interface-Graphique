@@ -30,7 +30,7 @@ static const int RECTANGLES_MERGE_THRESHOLD = 20;
  *
  * @return  The color corresponding to the id
  */
-ei_color_t get_color_from_id(int id);
+ei_color_t ei_get_color_from_id(int id);
 
 /**
  * @brief   Returns the id corresponding to the color
@@ -40,7 +40,7 @@ ei_color_t get_color_from_id(int id);
  *
  * @return  The id corresponding to the color
  */
-int get_id_from_color(ei_color_t color);
+int ei_get_id_from_color(ei_color_t color);
 
 /**
  * @brief   Returns if the two given rectangles intersect
@@ -50,7 +50,7 @@ int get_id_from_color(ei_color_t color);
  *
  * @return  True if the rectangles intersect, false otherwise
  */
-bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2);
+bool ei_rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2);
 
 /**
  * @brief   Returns if the first rectangle is included in the second rectangle
@@ -60,7 +60,7 @@ bool rect_intersects_rect(ei_rect_t rect1, ei_rect_t rect2);
  *
  * @return  True if the first rectangle is included in the second rectangle, false otherwise
  */
-bool rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2);
+bool ei_rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2);
 
 /**
  * @brief   Returns the rectangle representing the intersection of the two given rectangles
@@ -70,7 +70,7 @@ bool rect_included_in_rect(ei_rect_t rect1, ei_rect_t rect2);
  *
  * @return  The rectangle representing the intersection of the two given rectangles
  */
-ei_rect_t get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2);
+ei_rect_t ei_get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2);
 
 /**
  * @brief   Returns the area of the intersection over the area of the two rectangles as a percentage
@@ -80,7 +80,7 @@ ei_rect_t get_intersection_rectangle(ei_rect_t rect1, ei_rect_t rect2);
  *
  * @return  The area of the intersection over the area of the two rectangles as a percentage
  */
-int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2);
+int ei_get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2);
 
 /**
  * @brief   Returns the rectangle representing the merging ot the two given rectangles
@@ -90,7 +90,7 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2);
  *
  * @return  The rectangle representing the merging ot the two given rectangles
  */
-ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2);
+ei_rect_t ei_merge_rectangles(ei_rect_t rect1, ei_rect_t rect2);
 
 /**
  * @brief   Compares two sizes for equality
@@ -100,7 +100,7 @@ ei_rect_t merge_rectangles(ei_rect_t rect1, ei_rect_t rect2);
  *
  * @return  Returns true if the sizes are equal, false otherwise
  */
-bool equal_sizes(ei_size_t size1, ei_size_t size2);
+bool ei_equal_sizes(ei_size_t size1, ei_size_t size2);
 
 /**
  * @brief   Returns the position of a child in its parent based on the given anchor
@@ -111,7 +111,7 @@ bool equal_sizes(ei_size_t size1, ei_size_t size2);
  *
  * @return  The position of the child in its parent based on the given anchor
  */
-ei_point_t get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor);
+ei_point_t ei_get_position_in_parent_from_anchor(ei_rect_t parent, ei_size_t child, ei_anchor_t anchor);
 
 /**
  * @brief   Returns the given rectangle moved by the given x and y
@@ -169,7 +169,7 @@ bool ei_is_point_in_circle(ei_point_t point, ei_point_t center, int radius);
  *
  * @see     https://en.wikipedia.org/wiki/HSL_and_HSV for the formula and https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
  */
-ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color);
+ei_hsl_color_t ei_convert_rgb_to_hsl(ei_color_t color);
 
 /**
  * @brief   Converts a color from HSL to RGB.
@@ -181,6 +181,6 @@ ei_hsl_color_t convert_rgb_to_hsl(ei_color_t color);
  * @see     https://en.wikipedia.org/wiki/HSL_and_HSV for the formula and https://axonflux.com/handy-rgb-to-hsl-and-rgb-to-hsv-color-model-c
 
 */
-ei_color_t convert_hsl_to_rgb(ei_hsl_color_t hsl);
+ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl);
 
 #endif

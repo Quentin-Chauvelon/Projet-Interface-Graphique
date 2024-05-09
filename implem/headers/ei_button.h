@@ -36,7 +36,7 @@ typedef struct
  * @return			A block of memory big enough to represent a widget of this class,
  * 				with all bytes set to 0.
  */
-ei_widget_t button_allocfunc();
+ei_widget_t ei_button_allocfunc();
 
 /**
  * \brief	A function that releases the memory used by a widget before it is destroyed.
@@ -46,7 +46,7 @@ ei_widget_t button_allocfunc();
  *
  * @param	widget		The widget which resources are to be freed.
  */
-void button_releasefunc(ei_widget_t widget);
+void ei_button_releasefunc(ei_widget_t widget);
 
 /**
  * \brief	A function that draws a button.
@@ -59,14 +59,14 @@ void button_releasefunc(ei_widget_t widget);
  * @param	clipper		If not NULL, the drawing is restricted within this rectangle
  *				(expressed in the surface reference frame).
  */
-void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
+void ei_button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
 
 /**
  * \brief	A function that sets the default values for a button.
  *
  * @param	widget		A pointer to the widget instance to initialize.
  */
-void button_setdefaultsfunc(ei_widget_t widget);
+void ei_button_setdefaultsfunc(ei_widget_t widget);
 
 /**
  * \brief 	A function that is called to notify the widget that its geometry has been modified
@@ -75,7 +75,7 @@ void button_setdefaultsfunc(ei_widget_t widget);
  *
  * @param	widget		The widget instance to notify of a geometry change.
  */
-void button_geomnotifyfunc(ei_widget_t widget);
+void ei_button_geomnotifyfunc(ei_widget_t widget);
 
 /**
  * @brief   Returns the natural size of a button
