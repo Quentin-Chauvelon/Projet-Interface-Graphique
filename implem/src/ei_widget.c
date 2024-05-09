@@ -302,3 +302,30 @@ ei_rect_t get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper)
                ? get_intersection_rectangle(content_rect, *clipper)
                : content_rect;
 }
+
+void ei_calculate_frame_appearance_natural_size(ei_frame_appearance_t frame_appearance, int border_width, ei_size_t *size)
+{
+    if (border_width > 0)
+    {
+        size->width += border_width * 2;
+        size->height += border_width * 2;
+    }
+
+    if (frame_appearance.text.label != NULL)
+    {
+        int width = 0;
+        int height = 0;
+        hw_text_compute_size(frame_appearance.text.label, frame_appearance.text.font, &width, &height);
+
+        size->width += width;
+        size->height += height;
+    }
+
+    if (frame_appearance.image.data != NULL)
+    {
+        ei_size_t image_size = frame_appearance.image.rect == NULL ? hw_surface_get_size(frame_appearance.image.data) : frame_appearance.image.rect->size;
+
+        size->width += image_size.width;
+        size->height += image_size.height;
+    }
+}
