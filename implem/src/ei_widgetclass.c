@@ -5,6 +5,7 @@
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_toplevel.h"
+#include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_implementation.h"
 
 // Keep a pointer to the first widget class registered
@@ -121,9 +122,27 @@ void ei_widgetclass_register_all()
     toplevel->geomnotifyfunc = &ei_toplevel_geomnotifyfunc;
     toplevel->next = NULL;
 
+    ei_widgetclass_t *entry = malloc(sizeof(ei_widgetclass_t));
+
+    // If malloc failed, return
+    if (entry == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the entry widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    strcpy(entry->name, "entry");
+    entry->allocfunc = &ei_entry_allocfunc;
+    entry->releasefunc = &ei_entry_releasefunc;
+    entry->drawfunc = &ei_entry_drawfunc;
+    entry->setdefaultsfunc = &ei_entry_setdefaultsfunc;
+    entry->geomnotifyfunc = &ei_entry_geomnotifyfunc;
+    entry->next = NULL;
+
     ei_widgetclass_register(frame);
     ei_widgetclass_register(button);
     ei_widgetclass_register(toplevel);
+    ei_widgetclass_register(entry);
 }
 
 void ei_widgetclass_free_all()

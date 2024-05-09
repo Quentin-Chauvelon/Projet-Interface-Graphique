@@ -1,6 +1,7 @@
 #include "../api/ei_widget.h"
 #include "../api/ei_types.h"
 #include "../api/ei_widget_attributes.h"
+#include "../api/ei_widget_configure.h"
 #include "../implem/headers/ei_implementation.h"
 
 ei_widgetclass_t *ei_widget_get_class(ei_widget_t widget)
@@ -45,7 +46,18 @@ const ei_size_t *ei_widget_get_requested_size(ei_widget_t widget)
 
 void ei_widget_set_requested_size(ei_widget_t widget, ei_size_t requested_size)
 {
-    (*widget).requested_size = requested_size;
+    if (strcmp(widget->wclass->name, "frame") == 0)
+    {
+        ei_frame_configure(widget, &requested_size, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else if (strcmp(widget->wclass->name, "button") == 0)
+    {
+        ei_button_configure(widget, &requested_size, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else if (strcmp(widget->wclass->name, "toplevel") == 0)
+    {
+        ei_toplevel_configure(widget, &requested_size, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
 }
 
 const ei_rect_t *ei_widget_get_screen_location(ei_widget_t widget)
@@ -60,6 +72,18 @@ const ei_rect_t *ei_widget_get_content_rect(ei_widget_t widget)
 
 void ei_widget_set_content_rect(ei_widget_t widget, const ei_rect_t *content_rect)
 {
+    if (strcmp(widget->wclass->name, "frame") == 0)
+    {
+        ei_frame_configure(widget, &((ei_rect_t *)content_rect)->size, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else if (strcmp(widget->wclass->name, "button") == 0)
+    {
+        ei_button_configure(widget, &((ei_rect_t *)content_rect)->size, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else if (strcmp(widget->wclass->name, "toplevel") == 0)
+    {
+        ei_toplevel_configure(widget, &((ei_rect_t *)content_rect)->size, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+
     widget->content_rect->top_left = content_rect->top_left;
-    widget->content_rect->size = content_rect->size;
 }
