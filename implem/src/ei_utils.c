@@ -87,6 +87,14 @@ int get_intersection_percentage(ei_rect_t rect1, ei_rect_t rect2)
         return 0;
     }
 
+    // If the intersection area is equal to the sum of the two rectangles areas,
+    // then return 100, otherwise the following division will divide by 0
+    // and raise an arithmetic exception
+    if (area_rect1 + area_rect2 == intersection_area)
+    {
+        return 100;
+    }
+
     // Calculate the total area of the two rectangles minus the intersection area
     // We then return the percentage of the intersection area over that total area
     return ((intersection_area * 100) / ((area_rect1 + area_rect2) - intersection_area));
