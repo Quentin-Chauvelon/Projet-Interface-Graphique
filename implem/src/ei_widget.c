@@ -56,7 +56,7 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
     if (user_data != NULL)
     {
-        widget->user_data = &user_data;
+        widget->user_data = user_data;
     }
     else
     {
@@ -173,16 +173,6 @@ void ei_widget_destroy(ei_widget_t widget)
     // Don't free the geom_params field since it has already be freed in the geometry manager's unmap function
 
     free(widget->pick_color);
-
-    if (widget->user_data != NULL)
-    {
-        free(widget->user_data);
-    }
-
-    if (widget->destructor != NULL)
-    {
-        free(widget->destructor);
-    }
 
     widget->wclass->releasefunc(widget);
     widget = NULL;
