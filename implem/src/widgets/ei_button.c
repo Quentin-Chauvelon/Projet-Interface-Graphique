@@ -104,10 +104,23 @@ void button_setdefaultsfunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
-    button->widget_appearance.color = (ei_color_t){0, 0, 0, 255};
+    button->widget = *widget;
+
+    button->widget_appearance.color = ei_default_background_color;
     button->widget_appearance.border_width = k_default_button_border_width;
-    button->corner_radius = k_default_button_corner_radius;
+
     button->frame_appearance.relief = ei_relief_raised;
+    button->frame_appearance.text.label = NULL;
+
+    button->frame_appearance.text.font = ei_default_font;
+    button->frame_appearance.text.color = ei_font_default_color;
+    button->frame_appearance.text.anchor = ei_anc_center;
+
+    button->frame_appearance.image.data = NULL;
+    button->frame_appearance.image.rect = NULL;
+    button->frame_appearance.image.anchor = ei_anc_center;
+
+    button->corner_radius = k_default_button_corner_radius;
     button->callback = NULL;
     button->user_param = NULL;
 }

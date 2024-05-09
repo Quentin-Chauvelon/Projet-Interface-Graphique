@@ -14,21 +14,6 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 
-/**
- * @brief	Closes the toplevel. Called when a user clicks on the close button
- *
- * @param	widget		The widget for which the event was generated.
- * @param	event		The event containing all its parameters (type, etc.)
- * @param	user_param	The user parameters that was provided by the caller when registering
- *      				this callback.
- *
- */
-static bool ei_toplevel_close(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
-{
-    printf("Closing toplevel\n");
-    return true;
-}
-
 ei_widget_t toplevel_allocfunc()
 {
     ei_toplevel_t *toplevel = malloc(sizeof(ei_toplevel_t));
@@ -140,8 +125,10 @@ void toplevel_setdefaultsfunc(ei_widget_t widget)
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
     toplevel->widget = *widget;
+
     toplevel->widget_appearance.color = ei_default_background_color;
     toplevel->widget_appearance.border_width = 4;
+
     toplevel->title = (ei_string_t){"Toplevel"};
     toplevel->closable = true;
     toplevel->resizable = ei_axis_both;

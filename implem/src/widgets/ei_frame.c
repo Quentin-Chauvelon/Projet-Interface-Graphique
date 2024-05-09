@@ -93,7 +93,20 @@ void frame_setdefaultsfunc(ei_widget_t widget)
     ei_frame_t *frame = (ei_frame_t *)widget;
 
     frame->widget = *widget;
-    ei_frame_set_color(frame, (ei_color_t){0, 0, 0, 255});
+
+    frame->widget_appearance.color = ei_default_background_color;
+    frame->widget_appearance.border_width = 0;
+
+    frame->frame_appearance.relief = ei_relief_none;
+    frame->frame_appearance.text.label = NULL;
+
+    frame->frame_appearance.text.font = ei_default_font;
+    frame->frame_appearance.text.color = ei_font_default_color;
+    frame->frame_appearance.text.anchor = ei_anc_center;
+
+    frame->frame_appearance.image.data = NULL;
+    frame->frame_appearance.image.rect = NULL;
+    frame->frame_appearance.image.anchor = ei_anc_center;
 }
 
 void frame_geomnotifyfunc(ei_widget_t widget)
