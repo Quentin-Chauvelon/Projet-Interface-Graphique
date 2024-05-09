@@ -9,11 +9,6 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 
-// Redefine M_PI if it is not defined since we didn't manage to use M_PI from the math or SDL libraries
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 ei_point_t *arc(ei_point_t center, int radius, int start_angle, int end_angle)
 {
     int nb_points = ei_get_nb_points_in_arc(start_angle, end_angle, radius);
