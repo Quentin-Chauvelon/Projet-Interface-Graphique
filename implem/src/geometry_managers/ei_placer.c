@@ -53,8 +53,8 @@ void ei_place(ei_widget_t widget,
     placer_geom_param->anchor = anchor != NULL && *anchor != ei_anc_none ? *anchor : ei_anc_northwest;
     placer_geom_param->x = x != NULL ? *x : 0;
     placer_geom_param->y = y != NULL ? *y : 0;
-    placer_geom_param->width = 0;
-    placer_geom_param->height = 0;
+    placer_geom_param->width = width != NULL ? *width : 0;
+    placer_geom_param->height = height != NULL ? *height : 0;
     placer_geom_param->rel_x = rel_x != NULL ? *rel_x : 0.0;
     placer_geom_param->rel_y = rel_y != NULL ? *rel_y : 0.0;
     placer_geom_param->rel_width = rel_width != NULL ? *rel_width : 0.0;
@@ -134,32 +134,32 @@ void ei_placer_runfunc(ei_widget_t widget)
     case ei_anc_north:
     case ei_anc_center:
     case ei_anc_south:
-        new_screen_location.top_left.x -= widget->content_rect->size.width / 2;
+        new_screen_location.top_left.x -= widget->screen_location.size.width / 2;
         break;
     case ei_anc_northeast:
     case ei_anc_east:
     case ei_anc_southeast:
-        new_screen_location.top_left.x -= widget->content_rect->size.width;
+        new_screen_location.top_left.x -= widget->screen_location.size.width;
         break;
     default:
         break;
     }
 
-        // Move the widget on the y axis based on the anchor
-        switch (widget_geom_params->anchor)
-        {
-        case ei_anc_west:
-        case ei_anc_center:
-        case ei_anc_east:
-            new_screen_location.top_left.y -= widget->screen_location.size.height / 2;
-            break;
-        case ei_anc_southwest:
-        case ei_anc_south:
-        case ei_anc_southeast:
-            new_screen_location.top_left.y -= widget->screen_location.size.height;
-            break;
-        default:
-            break;
+    // Move the widget on the y axis based on the anchor
+    switch (widget_geom_params->anchor)
+    {
+    case ei_anc_west:
+    case ei_anc_center:
+    case ei_anc_east:
+        new_screen_location.top_left.y -= widget->screen_location.size.height / 2;
+        break;
+    case ei_anc_southwest:
+    case ei_anc_south:
+    case ei_anc_southeast:
+        new_screen_location.top_left.y -= widget->screen_location.size.height;
+        break;
+    default:
+        break;
     }
 
     // Must be the last function call before returning
