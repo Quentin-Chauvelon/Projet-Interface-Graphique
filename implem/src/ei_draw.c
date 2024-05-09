@@ -76,9 +76,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270);
-        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 315);
-        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 135, 180);
+        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
+        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 315);
+        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 135, 180);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
@@ -96,8 +96,8 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
         memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
         // The two following points are used to get the shape defined in the subject (figure A.1 d))
-        point_array[nb_points_arc_1 + nb_points_arc_2] = (ei_point_t){rect.top_left.x + rect.size.width - h, rect.top_left.y + h};
-        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = (ei_point_t){rect.top_left.x + h, rect.top_left.y + rect.size.height - h};
+        point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
+        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
         memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
 
         free(arc_1);
@@ -124,9 +124,9 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90);
-        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 135);
-        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 315, 360);
+        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
+        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 135);
+        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 315, 360);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
@@ -144,8 +144,8 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
         memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
         memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
         // The two following points are used to get the shape defined in the subject (figure A.1 d))
-        point_array[nb_points_arc_1 + nb_points_arc_2] = (ei_point_t){rect.top_left.x + h, rect.top_left.y + rect.size.height - h};
-        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = (ei_point_t){rect.top_left.x + rect.size.width - h, rect.top_left.y + h};
+        point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
+        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
         memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
 
         free(arc_1);
@@ -167,10 +167,10 @@ ei_point_t *rounded_frame(ei_rect_t rect, int radius, ei_rounded_frame_part_t pa
             return NULL;
         }
 
-        ei_point_t *arc_1 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + radius}, radius, 180, 270);
-        ei_point_t *arc_2 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius}, radius, 270, 360);
-        ei_point_t *arc_3 = arc((ei_point_t){rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius}, radius, 0, 90);
-        ei_point_t *arc_4 = arc((ei_point_t){rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius}, radius, 90, 180);
+        ei_point_t *arc_1 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
+        ei_point_t *arc_2 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 360);
+        ei_point_t *arc_3 = arc(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
+        ei_point_t *arc_4 = arc(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 180);
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL || arc_4 == NULL)
@@ -322,13 +322,13 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
     ei_point_t *p = point_array;
 
-    *point_array = (ei_point_t)rec.top_left;
+    *point_array = rec.top_left;
     point_array++;
-    *point_array = (ei_point_t){rec.top_left.x, rec.top_left.y + h};
+    *point_array = ei_point(rec.top_left.x, rec.top_left.y + h);
     point_array++;
-    *point_array = (ei_point_t){rec.top_left.x + l, rec.top_left.y + h};
+    *point_array = ei_point(rec.top_left.x + l, rec.top_left.y + h);
     point_array++;
-    *point_array = (ei_point_t){rec.top_left.x + l, rec.top_left.y};
+    *point_array = ei_point(rec.top_left.x + l, rec.top_left.y);
 
     ei_draw_polygon(surface, p, 4, *color, clipper);
 
