@@ -5,6 +5,7 @@
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_toplevel.h"
+#include "../implem/headers/ei_placer_ext.h"
 
 /**
  * @brief	Configures the attributes of widgets of the class "frame".
@@ -65,21 +66,146 @@ void ei_frame_configure(ei_widget_t widget,
 
     ei_frame_t *frame = (ei_frame_t *)widget;
 
-    color != NULL ? ei_frame_set_color(frame, *color) : ei_frame_set_color(frame, ei_default_background_color);
-    border_width != NULL ? ei_frame_set_border_width(frame, *border_width) : ei_frame_set_border_width(frame, 0);
-    relief != NULL ? ei_frame_set_relief(frame, *relief) : ei_frame_set_relief(frame, ei_relief_none);
-    text != NULL ? ei_frame_set_text_label(frame, *text) : ei_frame_set_text_label(frame, NULL);
-    text_font != NULL ? ei_frame_set_text_font(frame, *text_font) : ei_frame_set_text_font(frame, ei_default_font);
-    text_color != NULL ? ei_frame_set_text_color(frame, *text_color) : ei_frame_set_text_color(frame, ei_font_default_color);
-    text_anchor != NULL &&*text_anchor != ei_anc_none ? ei_frame_set_text_anchor(frame, *text_anchor) : ei_frame_set_text_anchor(frame, ei_anc_center);
-    img != NULL ? ei_frame_set_image_data(frame, *img) : ei_frame_set_image_data(frame, NULL);
-    img_rect != NULL ? ei_frame_set_image_rect(frame, *img_rect) : ei_frame_set_image_rect(frame, NULL);
-    img_anchor != NULL &&*img_anchor != ei_anc_none ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
+    // If the color is NULL, override the color only if it's the first time this function is called on the widget
+    if (color != NULL)
+    {
+        frame->widget_appearance.color = *color;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->widget_appearance.color = ei_default_background_color;
+        }
+    }
+
+    if (border_width != NULL)
+    {
+        frame->widget_appearance.border_width = *border_width;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->widget_appearance.border_width = 0;
+        }
+    }
+
+    if (relief != NULL)
+    {
+        frame->frame_appearance.relief = *relief;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.relief = ei_relief_none;
+        }
+    }
+
+    if (text != NULL)
+    {
+        if (frame->frame_appearance.text.label != NULL)
+        {
+            free(frame->frame_appearance.text.label);
+        }
+
+        frame->frame_appearance.text.label = malloc(strlen(*text) + 1);
+        strcpy(frame->frame_appearance.text.label, *text);
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.text.label = NULL;
+        }
+    }
+
+    if (text_font != NULL)
+    {
+        frame->frame_appearance.text.font = *text_font;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.text.font = ei_default_font;
+        }
+    }
+
+    if (text_color != NULL)
+    {
+        frame->frame_appearance.text.color = *text_color;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.text.color = ei_font_default_color;
+        }
+    }
+
+    if (text_anchor != NULL)
+    {
+        frame->frame_appearance.text.anchor = *text_anchor;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.text.anchor = ei_anc_center;
+        }
+    }
+
+    if (img != NULL)
+    {
+        frame->frame_appearance.image.data = *img;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.image.data = NULL;
+        }
+    }
+
+    if (img_rect != NULL)
+    {
+        frame->frame_appearance.image.rect = *img_rect;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.image.rect = NULL;
+        }
+    }
+
+    if (img_anchor != NULL)
+    {
+        frame->frame_appearance.image.anchor = *img_anchor;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            frame->frame_appearance.image.anchor = ei_anc_center;
+        }
+    }
+
+    // Save the widget as instantiated so that any values set by the user won't overriden
+    // later on if another call is made with NULL values
+    frame->widget.instantiated = true;
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_frame_get_natural_size(frame);
     widget->screen_location.size = widget->requested_size;
 
-    // Update the content rect of the frame
+    // Update the geometry of the widget in case the size has changed
+    if (ei_widget_is_displayed(widget))
+    {
+        widget->geom_params->manager->runfunc(widget);
+    }
+
     widget->wclass->geomnotifyfunc(widget);
 }
 
@@ -123,24 +249,181 @@ void ei_button_configure(ei_widget_t widget,
 
     ei_button_t *button = (ei_button_t *)widget;
 
-    button->widget_appearance.color = color != NULL ? *color : ei_default_background_color;
-    button->widget_appearance.border_width = border_width != NULL ? *border_width : k_default_button_border_width;
-    button->corner_radius = corner_radius != NULL ? *corner_radius : k_default_button_corner_radius;
-    button->frame_appearance.relief = relief != NULL ? *relief : ei_relief_raised;
-    button->frame_appearance.text.label = text != NULL ? *text : NULL;
-    button->frame_appearance.text.font = text_font != NULL ? *text_font : ei_default_font;
-    button->frame_appearance.text.color = text_color != NULL ? *text_color : ei_font_default_color;
-    button->frame_appearance.text.anchor = text_anchor != NULL && *text_anchor != ei_anc_none ? *text_anchor : ei_anc_center;
-    button->frame_appearance.image.data = img != NULL ? *img : NULL;
-    button->frame_appearance.image.rect = img_rect != NULL ? *img_rect : NULL;
-    button->frame_appearance.image.anchor = img_anchor != NULL && *img_anchor != ei_anc_none ? *img_anchor : ei_anc_center;
-    button->callback = callback != NULL ? *callback : NULL;
-    button->user_param = user_param != NULL ? *user_param : NULL;
+    if (color != NULL)
+    {
+        button->widget_appearance.color = *color;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->widget_appearance.color = ei_default_background_color;
+        }
+    }
+
+    if (border_width != NULL)
+    {
+        button->widget_appearance.border_width = *border_width;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->widget_appearance.border_width = k_default_button_border_width;
+        }
+    }
+
+    if (corner_radius != NULL)
+    {
+        button->corner_radius = *corner_radius;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->corner_radius = k_default_button_corner_radius;
+        }
+    }
+
+    if (relief != NULL)
+    {
+        button->frame_appearance.relief = *relief;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.relief = ei_relief_raised;
+        }
+    }
+
+    if (text != NULL)
+    {
+        if (button->frame_appearance.text.label != NULL)
+        {
+            free(button->frame_appearance.text.label);
+        }
+
+        button->frame_appearance.text.label = malloc(strlen(*text) + 1);
+        strcpy(button->frame_appearance.text.label, *text);
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.text.label = NULL;
+        }
+    }
+
+    if (text_font != NULL)
+    {
+        button->frame_appearance.text.font = *text_font;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.text.font = ei_default_font;
+        }
+    }
+
+    if (text_color != NULL)
+    {
+        button->frame_appearance.text.color = *text_color;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.text.color = ei_font_default_color;
+        }
+    }
+
+    if (text_anchor != NULL)
+    {
+        button->frame_appearance.text.anchor = *text_anchor;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.text.anchor = ei_anc_center;
+        }
+    }
+
+    if (img != NULL)
+    {
+        button->frame_appearance.image.data = *img;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.image.data = NULL;
+        }
+    }
+
+    if (img_rect != NULL)
+    {
+        button->frame_appearance.image.rect = *img_rect;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.image.rect = NULL;
+        }
+    }
+
+    if (img_anchor != NULL)
+    {
+        button->frame_appearance.image.anchor = *img_anchor;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->frame_appearance.image.anchor = ei_anc_center;
+        }
+    }
+
+    if (callback != NULL)
+    {
+        button->callback = *callback;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->callback = NULL;
+        }
+    }
+
+    if (user_param != NULL)
+    {
+        button->user_param = *user_param;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            button->user_param = NULL;
+        }
+    }
+
+    // Save the widget as instantiated so that any values set by the user won't overriden
+    // later on if another call is made with NULL values
+    button->widget.instantiated = true;
 
     widget->requested_size = requested_size != NULL ? *requested_size : ei_button_get_natural_size(button);
     widget->screen_location.size = widget->requested_size;
 
-    // Update the content rect of the button
+    // Update the geometry of the widget in case the size has changed
+    if (ei_widget_is_displayed(widget))
+    {
+        widget->geom_params->manager->runfunc(widget);
+    }
+
     widget->wclass->geomnotifyfunc(widget);
 }
 
@@ -178,10 +461,53 @@ void ei_toplevel_configure(ei_widget_t widget,
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
-    toplevel->widget_appearance.color = color != NULL ? *color : ei_default_background_color;
-    toplevel->widget_appearance.border_width = border_width != NULL ? *border_width : 4;
-    toplevel->title = title != NULL ? *title : "Toplevel";
-    toplevel->closable = closable != NULL ? *closable : true;
+    if (color != NULL)
+    {
+        toplevel->widget_appearance.color = *color;
+    }
+    else
+    {
+        if (!toplevel->widget.instantiated)
+        {
+            toplevel->widget_appearance.color = ei_default_background_color;
+        }
+    }
+
+    if (border_width != NULL)
+    {
+        toplevel->widget_appearance.border_width = *border_width;
+    }
+    else
+    {
+        if (!toplevel->widget.instantiated)
+        {
+            toplevel->widget_appearance.border_width = 4;
+        }
+    }
+
+    if (title != NULL)
+    {
+        toplevel->title = *title;
+    }
+    else
+    {
+        if (!toplevel->widget.instantiated)
+        {
+            toplevel->title = "Toplevel";
+        }
+    }
+
+    if (closable != NULL)
+    {
+        toplevel->closable = *closable;
+    }
+    else
+    {
+        if (!toplevel->widget.instantiated)
+        {
+            toplevel->closable = true;
+        }
+    }
 
     // Instantiate the close button if closable became true
     if (toplevel->closable && toplevel->close_button == NULL)
@@ -189,25 +515,38 @@ void ei_toplevel_configure(ei_widget_t widget,
         toplevel->close_button = ei_toplevel_instantiate_close_button(toplevel);
     }
 
-    toplevel->resizable = resizable != NULL ? *resizable : ei_axis_both;
-
-    if (min_size == NULL)
+    if (resizable != NULL)
     {
-        ei_size_t *default_min_size = malloc(sizeof(ei_size_t));
-        *default_min_size = ei_size_zero();
-
-        toplevel->min_size = default_min_size;
+        toplevel->resizable = *resizable;
     }
     else
     {
+        if (!toplevel->widget.instantiated)
+        {
+            toplevel->resizable = ei_axis_both;
+        }
+    }
+
+    if (min_size != NULL)
+    {
         toplevel->min_size = *min_size;
+    }
+    else
+    {
+        if (toplevel->min_size == NULL)
+        {
+            ei_size_t *default_min_size = malloc(sizeof(ei_size_t));
+            *default_min_size = ei_size(160, 120);
+
+            toplevel->min_size = default_min_size;
+        }
     }
 
     int width = 0;
     int height = 0;
     ei_toplevel_get_min_size(widget, &width, &height);
 
-    // If the user set the min_size to low, set it to the default min_size
+    // If the user set the min_size too low, set it to the default min_size
     if (toplevel->min_size->width < width)
     {
         toplevel->min_size->width = width;
@@ -217,6 +556,10 @@ void ei_toplevel_configure(ei_widget_t widget,
     {
         toplevel->min_size->height = height;
     }
+
+    // Save the widget as instantiated so that any values set by the user won't overriden
+    // later on if another call is made with NULL values
+    toplevel->widget.instantiated = true;
 
     // Increase the requested size to take into account the decorations (title bar and border)
     *requested_size = ei_size_add(*requested_size, ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width));
@@ -235,6 +578,11 @@ void ei_toplevel_configure(ei_widget_t widget,
 
     widget->screen_location.size = widget->requested_size;
 
-    // Update the content rect of the toplevel
+    // Update the geometry of the widget in case the size has changed
+    if (ei_widget_is_displayed(widget))
+    {
+        widget->geom_params->manager->runfunc(widget);
+    }
+
     widget->wclass->geomnotifyfunc(widget);
 }
