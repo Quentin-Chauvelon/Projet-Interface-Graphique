@@ -86,14 +86,7 @@ void toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    if (clipper != NULL)
-    {
-        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
-    }
-    else
-    {
-        *children_clipper = *widget->content_rect;
-    }
+    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 

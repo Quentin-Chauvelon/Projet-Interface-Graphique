@@ -8,6 +8,7 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_widget_ext.h"
+#include "../implem/headers/ei_draw_ext.h"
 
 int pick_id = 0;
 
@@ -270,4 +271,34 @@ ei_widget_t widget_allocfunc(size_t widget_size)
     memset(widget, 0, widget_size);
 
     return widget;
+}
+
+void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_properties_t text, ei_image_properties_t image, const ei_rect_t *clipper)
+{
+    // Draw the text
+    if (text.label != NULL)
+    {
+        int width = 0;
+        int height = 0;
+        hw_text_compute_size(text.label, text.font, &width, &height);
+
+        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), text.anchor);
+
+        ei_draw_text(surface, &where, text.label, text.font, text.color, clipper);
+    }
+
+    // Draw the image
+    if (image.data != NULL)
+    {
+        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, image.rect == NULL ? hw_surface_get_size(image.data) : image.rect->size, image.anchor);
+
+        ei_draw_image(surface, image.data, image.rect, &where, clipper);
+    }
+}
+
+ei_rect_t get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipper)
+{
+    return clipper != NULL
+               ? get_intersection_rectangle(content_rect, *clipper)
+               : content_rect;
 }

@@ -37,25 +37,8 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     // Draw the visible frame
     ei_draw_straight_frame(surface, widget->screen_location, frame->widget_appearance.border_width, frame->widget_appearance.color, frame->frame_appearance.relief, NULL);
 
-    // Draw the text
-    if (frame->frame_appearance.text.label != NULL)
-    {
-        int width = 0;
-        int height = 0;
-        hw_text_compute_size(frame->frame_appearance.text.label, frame->frame_appearance.text.font, &width, &height);
-
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), frame->frame_appearance.text.anchor);
-
-        ei_draw_text(surface, &where, frame->frame_appearance.text.label, frame->frame_appearance.text.font, frame->frame_appearance.text.color, clipper);
-    }
-
-    // Draw the image
-    if (frame->frame_appearance.image.data != NULL)
-    {
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, frame->frame_appearance.image.rect == NULL ? hw_surface_get_size(frame->frame_appearance.image.data) : frame->frame_appearance.image.rect->size, frame->frame_appearance.image.anchor);
-
-        ei_draw_image(surface, frame->frame_appearance.image.data, frame->frame_appearance.image.rect, &where, clipper);
-    }
+    // Draw the frame appearance (text and image)
+    ei_draw_frame_appearance(surface, widget, frame->frame_appearance.text, frame->frame_appearance.image, clipper);
 
     // Draw the frame on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, 0, *widget->pick_color, ei_relief_none, clipper);
@@ -63,14 +46,7 @@ void frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    if (clipper != NULL)
-    {
-        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
-    }
-    else
-    {
-        *children_clipper = *widget->content_rect;
-    }
+    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 

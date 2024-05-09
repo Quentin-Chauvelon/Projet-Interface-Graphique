@@ -44,25 +44,8 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
     // Draw the visible button
     ei_draw_rounded_frame(surface, widget->screen_location, button->widget_appearance.border_width, button->corner_radius, button->widget_appearance.color, button->frame_appearance.relief, clipper);
 
-    // Draw the text
-    if (button->frame_appearance.text.label != NULL)
-    {
-        int width = 0;
-        int height = 0;
-        hw_text_compute_size(button->frame_appearance.text.label, button->frame_appearance.text.font, &width, &height);
-
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, ei_size(width, height), button->frame_appearance.text.anchor);
-
-        ei_draw_text(surface, &where, button->frame_appearance.text.label, button->frame_appearance.text.font, button->frame_appearance.text.color, clipper);
-    }
-
-    // Draw the image
-    if (button->frame_appearance.image.data != NULL)
-    {
-        ei_point_t where = get_position_in_parent_from_anchor(*widget->content_rect, button->frame_appearance.image.rect == NULL ? hw_surface_get_size(button->frame_appearance.image.data) : button->frame_appearance.image.rect->size, button->frame_appearance.image.anchor);
-
-        ei_draw_image(surface, button->frame_appearance.image.data, button->frame_appearance.image.rect, &where, clipper);
-    }
+    // Draw the frame appearance (text and image)
+    ei_draw_frame_appearance(surface, widget, button->frame_appearance.text, button->frame_appearance.image, clipper);
 
     // Only draw the button on the offscreen picking surface if it's not the close button of a toplevel
     if (strcmp(widget->parent->wclass->name, "toplevel") != 0 ||
@@ -75,14 +58,7 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-    if (clipper != NULL)
-    {
-        *children_clipper = get_intersection_rectangle(*widget->content_rect, *clipper);
-    }
-    else
-    {
-        *children_clipper = *widget->content_rect;
-    }
+    *children_clipper = get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
