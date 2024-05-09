@@ -335,11 +335,6 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
     // free(p);
 }
 
-static ei_size_t get_intersection_size(ei_size_t size1, ei_size_t size2)
-{
-    return (ei_size_t){size1.width < size2.width ? size1.width : size2.width, size1.height < size2.height ? size1.height : size2.height};
-}
-
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
 {
     ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
@@ -348,7 +343,7 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
     // If the surfaces after clipping don't have the same size, resize them
     if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
-        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? dst_size_after_clipping.width : src_size_after_clipping.width;
+        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
         dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
     }
 
