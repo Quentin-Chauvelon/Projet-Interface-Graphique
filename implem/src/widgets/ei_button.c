@@ -7,6 +7,7 @@
 #include "../api/ei_widget_configure.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_button.h"
+#include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
@@ -74,8 +75,13 @@ void button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick
         ei_draw_image(surface, button->frame_appearance.image.data, button->frame_appearance.image.rect, &where, clipper);
     }
 
-    // Draw the button on the offscreen picking surface
-    ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, button->corner_radius, *widget->pick_color, ei_relief_none, clipper);
+    // Only draw the button on the offscreen picking surface if it's not the close button of a toplevel
+    if (strcmp(widget->parent->wclass->name, "toplevel") != 0 ||
+        ((ei_toplevel_t *)widget->parent)->close_button == NULL ||
+        (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button != (ei_widget_t *)widget)
+    {
+        ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, button->corner_radius, *widget->pick_color, ei_relief_none, clipper);
+    }
 
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
