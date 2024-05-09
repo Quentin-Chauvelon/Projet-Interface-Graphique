@@ -146,6 +146,12 @@ ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
 {
     ei_widget_t close_button = ei_widget_create("button", (ei_widget_t)toplevel, NULL, NULL);
 
+    // Remove the close button from the hierarchy since we have a direct
+    // reference from the close_button attribute of the top level.
+    // We still need to create the close button with a parent though,
+    // otherwise it would segfault when placing it
+    toplevel->widget.children_head = close_button->next_sibling;
+
     ei_button_configure(close_button,
                         &((ei_size_t){k_default_toplevel_close_button_size, k_default_toplevel_close_button_size}),
                         &(ei_color_t){255, 0, 0, 255},
