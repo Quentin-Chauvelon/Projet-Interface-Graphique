@@ -53,11 +53,35 @@ ei_point_t *ei_get_arc_points(ei_point_t center, int radius, int start_angle, in
 
 ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw)
 {
-    if (part_to_draw == ei_rounded_frame_top)
+    if (part_to_draw != ei_rounded_frame_full)
     {
-        int nb_points_arc_1 = ei_get_nb_points_in_arc(180, 270, radius); // 90° top left angle
-        int nb_points_arc_2 = ei_get_nb_points_in_arc(270, 315, radius); // 45° top right angle
-        int nb_points_arc_3 = ei_get_nb_points_in_arc(135, 180, radius); // 45° bottom left angle
+        // Define the values for each angle based on the part to draw
+        int arc_1_start_angle, arc_1_end_angle;
+        int arc_2_start_angle, arc_2_end_angle;
+        int arc_3_start_angle, arc_3_end_angle;
+
+        if (part_to_draw == ei_rounded_frame_top)
+        {
+            arc_1_start_angle = 180; // 90° top left angle
+            arc_1_end_angle = 270;
+            arc_2_start_angle = 270;
+            arc_2_end_angle = 315; // 45° top right angle
+            arc_3_start_angle = 135;
+            arc_3_end_angle = 180; // 45° bottom left angle
+        }
+        else if (part_to_draw == ei_rounded_frame_bottom)
+        {
+            arc_1_start_angle = 0; // 90° bottom right angle
+            arc_1_end_angle = 90;
+            arc_2_start_angle = 90; // 45° bottom left angle
+            arc_2_end_angle = 135;
+            arc_3_start_angle = 315; // 45° top right angle
+            arc_3_end_angle = 360;
+        }
+
+        int nb_points_arc_1 = ei_get_nb_points_in_arc(arc_1_start_angle, arc_1_end_angle, radius);
+        int nb_points_arc_2 = ei_get_nb_points_in_arc(arc_2_start_angle, arc_2_end_angle, radius);
+        int nb_points_arc_3 = ei_get_nb_points_in_arc(arc_3_start_angle, arc_3_end_angle, radius);
 
         ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
 
@@ -71,9 +95,19 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
         // Calculate the minimum between half the width and half the height of the rectangle
         int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
 
-        ei_point_t *arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, 180, 270);
-        ei_point_t *arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 270, 315);
-        ei_point_t *arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 135, 180);
+        ei_point_t *arc_1, *arc_2, *arc_3;
+        if (part_to_draw == ei_rounded_frame_top)
+        {
+            arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + radius), radius, arc_1_start_angle, arc_1_end_angle);
+            arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, arc_2_start_angle, arc_2_end_angle);
+            arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, arc_3_start_angle, arc_3_end_angle);
+        }
+        else
+        {
+            arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, arc_1_start_angle, arc_1_end_angle);
+            arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, arc_2_start_angle, arc_2_end_angle);
+            arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, arc_3_start_angle, arc_3_end_angle);
+        }
 
         // If calloc failed on one of the arcs, return NULL
         if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
@@ -90,9 +124,19 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
 
         memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
         memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
-        // The two following points are used to get the shape defined in the subject (figure A.1 d))
-        point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
-        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
+
+        // The two following points are used to get the shape defined in the subject (figure A.1 c))
+        if (part_to_draw == ei_rounded_frame_top)
+        {
+            point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
+            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + h);
+        }
+        else if (part_to_draw == ei_rounded_frame_bottom)
+        {
+            point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + rect.size.height - h);
+            point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
+        }
+
         memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
 
         free(arc_1);
@@ -101,55 +145,7 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
 
         return point_array;
     }
-    else if (part_to_draw == ei_rounded_frame_bottom)
-    {
-        int nb_points_arc_1 = ei_get_nb_points_in_arc(0, 90, radius);    // 90° bottom right angle
-        int nb_points_arc_2 = ei_get_nb_points_in_arc(90, 135, radius);  // 45° bottom left angle
-        int nb_points_arc_3 = ei_get_nb_points_in_arc(315, 360, radius); // 45° top right angle
-
-        ei_point_t *point_array = malloc((nb_points_arc_1 + nb_points_arc_2 + nb_points_arc_3 + 2) * sizeof(ei_point_t));
-
-        // If malloc failed, return NULL
-        if (point_array == NULL)
-        {
-            printf("\033[0;31mError: Couldn't allocate memory to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-            return NULL;
-        }
-
-        // Calculate the minimum between half the width and half the height of the rectangle
-        int h = rect.size.width / 2 < rect.size.height / 2 ? rect.size.width / 2 : rect.size.height / 2;
-
-        ei_point_t *arc_1 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + rect.size.height - radius), radius, 0, 90);
-        ei_point_t *arc_2 = ei_get_arc_points(ei_point(rect.top_left.x + radius, rect.top_left.y + rect.size.height - radius), radius, 90, 135);
-        ei_point_t *arc_3 = ei_get_arc_points(ei_point(rect.top_left.x + rect.size.width - radius, rect.top_left.y + radius), radius, 315, 360);
-
-        // If calloc failed on one of the arcs, return NULL
-        if (arc_1 == NULL || arc_2 == NULL || arc_3 == NULL)
-        {
-            printf("\033[0;31mError: Couldn't allocate to draw rounded frame.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-
-            // Free all arcs in case only one of them couldn't be allocated
-            free(arc_1);
-            free(arc_2);
-            free(arc_3);
-
-            return NULL;
-        }
-
-        memcpy(point_array, arc_1, nb_points_arc_1 * sizeof(ei_point_t));
-        memcpy(point_array + nb_points_arc_1, arc_2, nb_points_arc_2 * sizeof(ei_point_t));
-        // The two following points are used to get the shape defined in the subject (figure A.1 d))
-        point_array[nb_points_arc_1 + nb_points_arc_2] = ei_point(rect.top_left.x + h, rect.top_left.y + rect.size.height - h);
-        point_array[nb_points_arc_1 + nb_points_arc_2 + 1] = ei_point(rect.top_left.x + rect.size.width - h, rect.top_left.y + h);
-        memcpy(point_array + nb_points_arc_1 + nb_points_arc_2 + 2, arc_3, nb_points_arc_3 * sizeof(ei_point_t));
-
-        free(arc_1);
-        free(arc_2);
-        free(arc_3);
-
-        return point_array;
-    }
-    else if (part_to_draw == ei_rounded_frame_full)
+    else
     {
         int nb_points_per_arc = ei_get_nb_points_in_arc(0, 90, radius);
 
