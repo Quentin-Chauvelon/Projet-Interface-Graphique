@@ -7,6 +7,7 @@
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_application_ext.h"
 
 // Redefine M_PI if it is not defined since we didn't manage to use M_PI from the math or SDL libraries
 #ifndef M_PI
@@ -334,16 +335,21 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
     // free(p);
 }
 
+static ei_size_t get_intersection_size(ei_size_t size1, ei_size_t size2)
+{
+    return (ei_size_t){size1.width < size2.width ? size1.width : size2.width, size1.height < size2.height ? size1.height : size2.height};
+}
+
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
 {
     ei_size_t src_size_after_clipping = src_rect == NULL ? hw_surface_get_size(source) : src_rect->size;
     ei_size_t dst_size_after_clipping = dst_rect == NULL ? hw_surface_get_size(destination) : dst_rect->size;
 
-    // If the surfaces after clipping don't have the same size, return 1
+    // If the surfaces after clipping don't have the same size, resize them
     if (!equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
-        printf("\033[0;33mWarning: The source and destination areas must have the same size to copy.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        return 1;
+        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? dst_size_after_clipping.width : src_size_after_clipping.width;
+        dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width ? src_size_after_clipping.width : dst_size_after_clipping.width;
     }
 
     // Calculate the rectangles represensenting the areas to copy/paste after clipping
