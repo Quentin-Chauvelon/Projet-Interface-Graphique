@@ -18,6 +18,13 @@ size_t ei_widget_struct_size()
 
 void ei_widgetclass_register(ei_widgetclass_t *widgetclass)
 {
+    // If a widget class already exists with the same name, return
+    if (ei_widgetclass_from_name(widgetclass->name) != NULL)
+    {
+        printf("\033[0;31mError: A widget class called \"%s\" already exists.\n\t at %s (%s:%d)\033[0m\n", widgetclass->name, __func__, __FILE__, __LINE__);
+        return;
+    }
+
     // If no widget class have been registered yet, set the first one
     if (first_widgetclass == NULL)
     {
@@ -127,7 +134,18 @@ void ei_widgetclass_free_all()
     while (current != NULL)
     {
         next = current->next;
-        free(current);
+
+        // Only free the widget classes that were created by the library,
+        // it is up to the programmer to free any widget class they
+        // would have added
+        if (strcmp(current->name, "frame") == 0 ||
+            strcmp(current->name, "button") == 0 ||
+            strcmp(current->name, "toplevel") == 0 ||
+            strcmp(current->name, "entry") == 0)
+        {
+            free(current);
+        }
+
         current = next;
     }
 }

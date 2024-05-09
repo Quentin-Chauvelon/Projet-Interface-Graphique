@@ -80,6 +80,13 @@ void ei_geometry_run_finalize(ei_widget_t widget, ei_rect_t *new_screen_location
 
 void ei_geometrymanager_register(ei_geometrymanager_t *geometrymanager)
 {
+    // If a geometry manager already exists with the same name, return
+    if (ei_geometrymanager_from_name(geometrymanager->name) != NULL)
+    {
+        printf("\033[0;31mError: A geometry manager called \"%s\" already exists.\n\t at %s (%s:%d)\033[0m\n", geometrymanager->name, __func__, __FILE__, __LINE__);
+        return;
+    }
+
     // If no geometry manager have been registered yet, set the first one
     if (first_geometrymanager == NULL)
     {
@@ -168,7 +175,15 @@ void ei_geometrymanager_free_all()
     while (current != NULL)
     {
         next = current->next;
-        free(current);
+
+        // Only free the geometry managers that were created by the library,
+        // it is up to the programmer to free any geometry manager they
+        // would have added
+        if (strcmp(current->name, "placer") == 0)
+        {
+            free(current);
+        }
+
         current = next;
     }
 }
