@@ -160,26 +160,22 @@ void ei_placer_runfunc(ei_widget_t widget)
 
     ei_placer_t *widget_geom_params = (ei_placer_t *)ei_widget_get_geom_params(widget);
 
-    ei_rect_t new_screen_location = ei_rect(widget->parent->content_rect->top_left, ei_size_zero());
+    ei_rect_t new_screen_location;
 
-    // If the widget is the close button of the toplevel, don't use the widget's content_rect.
-    // Instead, we want to use the screen location
+    // If the widget is the close button of the toplevel, don't use the widget's content_rect,
+    // instead, we want to use the screen location
     if (strcmp(widget->parent->wclass->name, "toplevel") == 0 &&
         ((ei_toplevel_t *)widget->parent)->close_button != NULL &&
         (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button == (ei_widget_t *)widget)
     {
         new_screen_location.top_left = widget->parent->screen_location.top_left;
-
-        // Add the absolute position
-        new_screen_location.top_left.x += widget_geom_params->x;
-        new_screen_location.top_left.y += widget_geom_params->y;
-
-        // Add the absolute size
-        new_screen_location.size.width += widget_geom_params->width;
-        new_screen_location.size.height += widget_geom_params->height;
     }
     else
     {
+        new_screen_location.top_left = widget->parent->content_rect->top_left;
+    }
+
+    new_screen_location.size = ei_size_zero();
         // Add the relative position
         new_screen_location.top_left.x += widget_geom_params->rel_x * widget->parent->content_rect->size.width;
         new_screen_location.top_left.y += widget_geom_params->rel_y * widget->parent->content_rect->size.height;
@@ -228,7 +224,6 @@ void ei_placer_runfunc(ei_widget_t widget)
             break;
         default:
             break;
-        }
     }
 
     // Must be the last function call before returning
