@@ -301,6 +301,42 @@ void ei_entry_add_character(ei_entry_t *entry, char character)
     }
 }
 
+void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character)
+{
+    // If the cursor is pointing to the fake character, return
+    if (character == entry->first_character)
+    {
+        return;
+    }
+
+    character->previous->next = character->next;
+
+    if (character->next != NULL)
+    {
+        character->next->previous = character->previous;
+    }
+
+    // If the cursor pointed to the last character, update it
+    if (character == entry->last_character)
+    {
+        entry->last_character = character->previous;
+    }
+
+    ei_entry_character_t *character_to_delete = character;
+    free(character_to_delete);
+
+    entry->cursor = character->previous;
+
+    if (entry->cursor->previous != NULL)
+    {
+        ei_compute_positions_after_character(entry, entry->cursor->previous);
+    }
+    else
+    {
+        ei_compute_positions_after_character(entry, entry->cursor);
+    }
+}
+
 void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character)
 {
     ei_entry_character_t *current_character = character->next;

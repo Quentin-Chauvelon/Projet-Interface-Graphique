@@ -308,18 +308,100 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         // Move to the next character is there is one
         if (entry->cursor != NULL && entry->cursor->next != NULL)
         {
-            entry->cursor = entry->cursor->next;
-            printf("char %c\n", entry->cursor->character);
+            // if the user also pressed ctrl, move to the next word
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+                ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+            {
+                // If the first next character is a space, skip it
+                if (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
+                {
+                    entry->cursor = entry->cursor->next;
+                }
+
+                while (entry->cursor->next)
+                {
+                    if (entry->cursor->next->character == ' ')
+                    {
+                        break;
+                    }
+
+                    entry->cursor = entry->cursor->next;
+                }
+            }
+            // Otherwise, move to the next character
+            else
+            {
+                entry->cursor = entry->cursor->next;
+            }
         }
 
         return true;
     }
     else if (event->param.key_code == SDLK_LEFT)
     {
-        // Move to the previous character is there is one
-        if (entry->cursor != NULL && entry->cursor->previous != NULL)
+        // if the user also pressed ctrl, move to the previous word
+        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+            ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+        {
+            // If the first previous character is a space, skip it
+            if (entry->cursor->previous != NULL && entry->cursor->previous->character == ' ')
+            {
+                entry->cursor = entry->cursor->previous;
+            }
+
+            while (entry->cursor->previous)
+            {
+                if (entry->cursor->previous->character == ' ')
+                {
+                    entry->cursor = entry->cursor->previous;
+                    break;
+                }
+
+                entry->cursor = entry->cursor->previous;
+            }
+        }
+        // Otherwise, move to the previous character
+        else
         {
             entry->cursor = entry->cursor->previous;
+        }
+
+        // If the cursor is pointing not pointing anything,
+        // move it back to the fake character
+        if (entry->cursor == NULL)
+        {
+            entry->cursor = entry->first_character;
+        }
+
+        return true;
+    }
+    // Move to the first character
+    else if (event->param.key_code == SDLK_HOME)
+    {
+        entry->cursor = entry->first_character;
+
+        return true;
+    }
+    // move to the last character
+    else if (event->param.key_code == SDLK_END)
+    {
+        entry->cursor = entry->last_character;
+
+        return true;
+    }
+    // Erase the character at cursor position
+    else if (event->param.key_code == SDLK_BACKSPACE)
+    {
+        ei_entry_erase_character(entry, entry->cursor);
+
+        return true;
+    }
+    // Erase the character after the cursor
+    else if (event->param.key_code == SDLK_DELETE)
+    {
+        if (entry->cursor->next)
+        {
+            ei_entry_erase_character(entry, entry->cursor->next);
         }
 
         return true;
@@ -371,7 +453,7 @@ static void ei_update_pick_color_from_id(ei_widget_t *widget, int multiplier)
 
 static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    if (event->param.key_code == SDLK_g)
+    if (event->param.key_code == SDLK_g && ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left))
     {
         // Custom parameter to act as a backup of the root surface so that
         // it can be redrawn when turning off the offscreen picking surface.

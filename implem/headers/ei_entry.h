@@ -157,6 +157,14 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
 void ei_entry_add_character(ei_entry_t *entry, char character);
 
 /**
+ * @brief   Erase the character at cursor position for the given entry
+ *
+ * @param   entry       The entry for which to erase the character
+ * @param   character   A pointer to the charcter to erase
+ */
+void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character);
+
+/**
  * @brief   Recompute the position of all the characters after the give one.
  *          This is primarly used when writing a character in the middle of the entry
  *          since we need to shift the position of all the characters at the right
