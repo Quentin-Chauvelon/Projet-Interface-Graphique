@@ -23,6 +23,20 @@ void ei_entry_releasefunc(ei_widget_t widget)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
+    // Relink the previous entry
+    if (entry->previous != NULL)
+    {
+        entry->previous->next = entry->next;
+    }
+
+    // Relink the next entry and focus on the next entry if there is one
+    if (entry->next != NULL)
+    {
+        entry->next->previous = entry->previous;
+
+        ei_entry_give_focus((ei_widget_t)entry->next);
+    }
+
     free(entry);
     entry = NULL;
 }
@@ -319,6 +333,9 @@ void ei_entry_add_character(ei_entry_t *entry, char character)
         {
             ei_entry_erase_character(entry, entry->cursor);
         }
+
+        // Erase one last time to remove the first character of the selection
+        ei_entry_erase_character(entry, entry->cursor);
 
         ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
     }

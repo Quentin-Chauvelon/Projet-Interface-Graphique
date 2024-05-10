@@ -22,6 +22,7 @@ static const int ei_entry_default_padding = 8;
 static const int ei_entry_default_letter_spacing = 0;
 static const int ei_entry_default_cursor_width = 1;
 static const int ei_entry_default_blinking_interval = 700;
+static const int ei_entry_max_double_click_interval = 600;
 static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
 static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
 static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 150};
@@ -60,6 +61,7 @@ typedef struct ei_entry_t
     bool focused;                                    // Boolean indicating if the entry is focused
     int characters_position_offset;                  // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
     void *blinking_app_id;                           // Id of the blinking application-generated event. Allows to cancel blinking whenever an event related to the entry is raised
+    void *multiple_click_app_id;                     // Id of the double or triple click application-generated event. Allows to cancel the event if the user clicked twice or three times fast enough to trigger a double or triple click
 } ei_entry_t;
 
 /**
@@ -69,7 +71,8 @@ typedef struct ei_entry_t
  * @return			A block of memory big enough to represent a widget of this class,
  * 				with all bytes set to 0.
  */
-ei_widget_t ei_entry_allocfunc();
+ei_widget_t
+ei_entry_allocfunc();
 
 void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper);
 

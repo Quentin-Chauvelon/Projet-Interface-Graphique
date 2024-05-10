@@ -4,6 +4,7 @@
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_types_ext.h"
+#include "../implem/headers/ei_internal_callbacks.h"
 
 ei_event_bind_t *first_event_bind = NULL;
 
@@ -224,6 +225,7 @@ void ei_handle_event(ei_event_t event)
 
         ei_app_event_params_t *params = (ei_app_event_params_t *)event.param.application.user_param;
 
+        // Handle the blinking timer
         if (params->id == 1)
         {
             ei_entry_t *entry = (ei_entry_t *)params->data;
@@ -237,6 +239,24 @@ void ei_handle_event(ei_event_t event)
 
             entry->blinking_app_id = NULL;
             ei_restart_blinking_timer(entry, false);
+        }
+        // Handle double click too slow
+        else if (params->id == 2)
+        {
+            ei_entry_t *entry = (ei_entry_t *)params->data;
+
+            ei_unbind(ei_ev_mouse_buttondown, &entry->widget, NULL, ei_entry_double_click, NULL);
+
+            entry->multiple_click_app_id = NULL;
+        }
+        // Handle triple click too slow
+        else if (params->id == 3)
+        {
+            ei_entry_t *entry = (ei_entry_t *)params->data;
+
+            ei_unbind(ei_ev_mouse_buttondown, &entry->widget, NULL, ei_entry_triple_click, NULL);
+
+            entry->multiple_click_app_id = NULL;
         }
 
         free(params);

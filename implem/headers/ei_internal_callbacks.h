@@ -112,9 +112,32 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  true
  */
 static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the use clicks on an entry for the second time
+ *
+ * @param   widget      The entry the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  true
+ */
+bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the use clicks on an entry for the third time
+ *          after a valid double click
+ *
+ * @param   widget      The entry the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  true
+ */
+bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
  * @brief   Callback function that is called when the use presses a key after focusing on an entry.

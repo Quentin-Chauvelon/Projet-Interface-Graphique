@@ -251,6 +251,13 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
+    // If a double or triple click event is scheduled, we don't
+    // want to handle single clicks for now, so return
+    if (entry->multiple_click_app_id != NULL)
+    {
+        return false;
+    }
+
     entry->cursor = ei_get_character_at_position(entry, event->param.mouse.where);
 
     // Remove the selection if the user clicks on the entry once
@@ -258,7 +265,107 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 
     ei_entry_give_focus(widget);
 
-    return false;
+    ei_app_event_params_t *params = malloc(sizeof(ei_app_event_params_t));
+    params->id = 2;
+    params->data = entry;
+
+    // Schedule an event that will unbind the double click callback in a set amount of time
+    entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, params);
+
+    // Bind the event to listen for a double click
+    ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, NULL);
+
+    return true;
+}
+
+bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
+    // Cancel the scheduled event since the user clicked twice fast enough
+    if (entry->multiple_click_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->multiple_click_app_id);
+        entry->multiple_click_app_id = NULL;
+    }
+
+    // Check if the user clicked the same characters twice, otherwise it shouldn't select
+    if (ei_get_character_at_position(entry, event->param.mouse.where) == entry->cursor)
+    {
+        ei_entry_character_t *start_character = entry->cursor;
+        ei_entry_character_t *end_character = entry->cursor;
+
+        // Find previous space or beginning of text
+        while (start_character != NULL && start_character->character != ' ' && start_character->previous != NULL)
+        {
+            start_character = start_character->previous;
+        }
+
+        // Find next space or end of text
+        while (end_character != NULL && end_character->character != ' ' && end_character->next != NULL)
+        {
+            end_character = end_character->next;
+        }
+
+        // If the start character is the fake character, move to the next character
+        if (start_character != NULL && start_character == entry->first_character)
+        {
+            start_character = entry->first_character->next;
+        }
+
+        // If the start character is a space, move to the next character
+        if (start_character != NULL && &start_character->character != NULL && start_character->character == ' ')
+        {
+            start_character = start_character->next;
+        }
+
+        // If the end character is a space, move to the previous character
+        if (end_character != NULL && end_character->character == ' ')
+        {
+            end_character = end_character->previous;
+        }
+
+        ei_set_selection_characters(entry, start_character, end_character, ei_selection_direction_right);
+
+        ei_app_event_params_t *params = malloc(sizeof(ei_app_event_params_t));
+        params->id = 3;
+        params->data = entry;
+
+        // Schedule an event that will unbind the triple click callback in a set amount of time
+        entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, params);
+
+        // Bind the triple click event
+        ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
+    }
+
+    // Unbind the double click event
+    ei_unbind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, user_param);
+
+    return true;
+}
+
+bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
+    // Cancel the scheduled event since the user clicked twice fast enough
+    if (entry->multiple_click_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->multiple_click_app_id);
+        entry->multiple_click_app_id = NULL;
+    }
+
+    // Check if the user clicked the same characters three times, otherwise it shouldn't select
+    if (ei_get_character_at_position(entry, event->param.mouse.where) == entry->cursor)
+    {
+        // Select the whole text
+        ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+    }
+
+    // Unbind the triple click event
+    ei_unbind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
+
+    return true;
 }
 
 bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -461,11 +568,11 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
                 // Otherwise, remove the selection
                 else
                 {
-                    // If there already was a selection, the cursor shouldn't move right and only remove the selection
-                    // therefore, we move the cursor back since it will be moved forward at the end of this function
-                    if (entry->selection_direction != ei_selection_direction_none && entry->cursor->previous != NULL)
+                    // If there already was a selection, the cursor should be moved to the end of the selection,
+                    // therefore, we move the cursor before the end since it will be moved forward at the end of this function
+                    if (entry->selection_direction != ei_selection_direction_none && entry->selection_end_character->previous != NULL)
                     {
-                        entry->cursor = entry->cursor->previous;
+                        entry->cursor = entry->selection_end_character->previous;
                     }
 
                     ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
@@ -621,11 +728,10 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
             // Otherwise, remove the selection
             else
             {
-                // If there already was a selection, the cursor shouldn't move left and only remove the selection
-                // therefore, we move the cursor forward since it will be moved back at the end of this function
+                // If there already was a selection, the cursor should be moved to the start of the selection
                 if (entry->selection_direction != ei_selection_direction_none && entry->cursor->next != NULL)
                 {
-                    entry->cursor = entry->cursor->next;
+                    entry->cursor = entry->selection_start_character;
                 }
 
                 ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
@@ -758,13 +864,27 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         // If the key pressed in a displayable character, add it to the entry
         if (event->param.key_code >= 32 && event->param.key_code <= 126)
         {
-            // If the shift key is pressed, make the letter uppercase
-            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left))
-            {
-                event->param.key_code = toupper(event->param.key_code);
-            }
 
-            ei_entry_add_character(entry, event->param.key_code);
+            // If the user pressed ctrl+A, select all the text
+            if (event->param.key_code == SDLK_a &&
+                (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+                 ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right)))
+            {
+                entry->cursor = entry->first_character;
+                ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+            }
+            else
+            {
+
+                // If the shift key is pressed, make the letter uppercase
+                if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
+                    ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right))
+                {
+                    event->param.key_code = toupper(event->param.key_code);
+                }
+
+                ei_entry_add_character(entry, event->param.key_code);
+            }
 
             handled = true;
         }
