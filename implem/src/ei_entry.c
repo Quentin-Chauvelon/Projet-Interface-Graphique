@@ -186,4 +186,7 @@ void ei_entry_give_focus(ei_widget_t widget)
 
     entry->focused = true;
     entry->cursor_visible = true;
+
+    // Start blinking the cursor
+    ei_restart_blinking_timer((ei_entry_t *)widget, true);
 }

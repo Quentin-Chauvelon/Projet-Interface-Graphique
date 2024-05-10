@@ -249,6 +249,13 @@ void ei_entry_release_focus(ei_widget_t widget)
     // Unbind the event for this entry
     ei_unbind(ei_ev_keydown, widget, NULL, ei_entry_keyboard_key_down, NULL);
 
+    // Cancel application-generated event if there is one
+    if (entry->blinking_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->blinking_app_id);
+        entry->blinking_app_id = NULL;
+    }
+
     entry->focused = false;
     entry->cursor_visible = false;
 }
@@ -378,5 +385,25 @@ void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_
                                           : 0;
 
         current_character = current_character->next;
+    }
+}
+
+void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible)
+{
+    // Cancel application-generated event if there is one and generate a new one
+    if (entry->blinking_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->blinking_app_id);
+    }
+
+    ei_app_event_params_t *params = malloc(sizeof(ei_app_event_params_t));
+    params->id = 1;
+    params->data = entry;
+
+    entry->blinking_app_id = hw_event_schedule_app(ei_entry_default_blinking_interval, params);
+
+    if (force_visible)
+    {
+        entry->cursor_visible = true;
     }
 }

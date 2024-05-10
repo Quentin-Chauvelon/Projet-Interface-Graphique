@@ -21,6 +21,7 @@
 static const int ei_entry_default_padding = 8;
 static const int ei_entry_default_letter_spacing = 0;
 static const int ei_entry_default_cursor_width = 1;
+static const int ei_entry_default_blinking_interval = 700;
 static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
 static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
 static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 204};
@@ -36,18 +37,21 @@ typedef struct ei_entry_character_t
 
 typedef struct ei_entry_t
 {
-    ei_impl_widget_t widget;                  // Common attributes for all types of widgets
-    ei_widget_appearance_t widget_appearance; // Appearance fields common to frame, buttons, toplevels, and entries
-    ei_text_properties_t text;                // Text properties
-    int text_length;                          // Number of characters in the entry
-    struct ei_entry_t *previous;              // Pointer to the previous entry
-    struct ei_entry_t *next;                  // Pointer to the next entry
-    ei_entry_character_t *first_character;    // First character of the entry
-    ei_entry_character_t *last_character;     // Last character of the entry
-    ei_entry_character_t *cursor;             // Position of the cursor
-    bool cursor_visible;                      // Boolean indicating if the cursor is visible (blinking)
-    bool focused;                             // Boolean indicating if the entry is focused
-    int characters_position_offset;           // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
+    ei_impl_widget_t widget;                         // Common attributes for all types of widgets
+    ei_widget_appearance_t widget_appearance;        // Appearance fields common to frame, buttons, toplevels, and entries
+    ei_text_properties_t text;                       // Text properties
+    int text_length;                                 // Number of characters in the entry
+    struct ei_entry_t *previous;                     // Pointer to the previous entry
+    struct ei_entry_t *next;                         // Pointer to the next entry
+    ei_entry_character_t *first_character;           // First character of the entry
+    ei_entry_character_t *last_character;            // Last character of the entry
+    ei_entry_character_t *cursor;                    // Position of the cursor
+    ei_entry_character_t *selection_start_character; // Pointer to the first character of the selection
+    ei_entry_character_t *selection_end_character;   // Pointer to the last character of the selection
+    bool cursor_visible;                             // Boolean indicating if the cursor is visible (blinking)
+    bool focused;                                    // Boolean indicating if the entry is focused
+    int characters_position_offset;                  // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
+    void *blinking_app_id;                           // Id of the blinking application-generated event. Allows to cancel blinking whenever an event related to the entry is raised
 } ei_entry_t;
 
 /**
@@ -176,5 +180,14 @@ void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character
  * @param   character   The character after which to recompute the positions
  */
 void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character);
+
+/**
+ * @brief   Restart the blinking timer of the given entry. Cancel the previous event
+ *          if there is one and schedule the next one
+ *
+ * @param   entry           The entry for which to restart the blinking timer
+ * @param   force_visible   If true, the cursor will be set to visible
+ */
+void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible);
 
 #endif

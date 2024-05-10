@@ -34,4 +34,13 @@ typedef struct ei_hsl_color_t
     unsigned char alpha; ///< The transparency of the color. 0 is invisible, 255 is totally opaque.
 } ei_hsl_color_t;
 
+/**
+ * @brief   Type to handle application-generated events.
+ */
+typedef struct ei_app_event_params_t
+{
+    int id;     ///< Id representing the type of the event.
+    void *data; ///< Data concerning the event.
+} ei_app_event_params_t;
+
 #endif

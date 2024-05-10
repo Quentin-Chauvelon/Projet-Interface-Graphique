@@ -6,6 +6,7 @@
 #include "../api/ei_placer.h"
 #include "../api/ei_application.h"
 #include "../api/ei_entry.h"
+#include "../api/hw_interface.h"
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_entry.h"
@@ -260,6 +261,8 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
+
+    ei_restart_blinking_timer(entry, true);
 
     // Unfocus the entry if the user presses the escape key
     if (event->param.key_code == SDLK_RETURN)

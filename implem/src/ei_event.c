@@ -1,8 +1,9 @@
 #include "../api/ei_event.h"
+#include "../api/ei_application.h"
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_button.h"
-
-#include "../api/ei_application.h"
+#include "../implem/headers/ei_entry.h"
+#include "../implem/headers/ei_types_ext.h"
 
 ei_event_bind_t *first_event_bind = NULL;
 
@@ -212,6 +213,36 @@ static bool handle_mouse_button_down_event(ei_event_t event)
 void ei_handle_event(ei_event_t event)
 {
     ei_event_bind_t *current_event = first_event_bind;
+
+    // Handle application-generated events
+    if (event.type == ei_ev_app)
+    {
+        if (event.param.application.user_param == NULL)
+        {
+            return;
+        }
+
+        ei_app_event_params_t *params = (ei_app_event_params_t *)event.param.application.user_param;
+
+        if (params->id == 1)
+        {
+            ei_entry_t *entry = (ei_entry_t *)params->data;
+
+            entry->cursor_visible = !entry->cursor_visible;
+
+            if (ei_widget_is_displayed(&entry->widget))
+            {
+                entry->widget.geom_params->manager->runfunc(&entry->widget);
+            }
+
+            entry->blinking_app_id = NULL;
+            ei_restart_blinking_timer(entry, false);
+        }
+
+        free(params);
+
+        return;
+    }
 
     // Keep a reference to the widget beneath the mouse cursor, this way, we don't have
     // to call the function multiple times in the callback functions
