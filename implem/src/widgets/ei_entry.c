@@ -84,7 +84,7 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
     {
         // Put the cursor between the character it is pointing to and the next one
         cursor_position = ei_point(
-            entry->widget.screen_location.top_left.x + entry->cursor->position + entry->cursor->character_width + ei_entry_default_padding + ei_entry_default_letter_spacing / 2,
+            entry->widget.screen_location.top_left.x + entry->cursor->position + entry->cursor->character_width + ei_entry_default_padding + ei_entry_default_letter_spacing / 2 - entry->characters_position_offset,
             entry->widget.screen_location.top_left.y + ei_entry_default_padding);
     }
     else
@@ -95,15 +95,37 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
             entry->widget.screen_location.top_left.y + ei_entry_default_padding);
     }
 
+    // If the cursor is out of bounds of the entry, move the text left/right
+    if (cursor_position.x > entry->widget.content_rect->top_left.x + entry->widget.content_rect->size.width)
+    {
+        // Increase the offset by the number of pixels the cursor is out of bounds
+        entry->characters_position_offset -= (entry->widget.content_rect->top_left.x + entry->widget.content_rect->size.width) - cursor_position.x;
+
+        cursor_position.x = entry->widget.content_rect->top_left.x + entry->widget.content_rect->size.width;
+    }
+    else if (cursor_position.x < entry->widget.content_rect->top_left.x)
+    {
+        // Decrease the offset by the number of pixels the cursor is out of bounds
+        entry->characters_position_offset -= entry->widget.content_rect->top_left.x - cursor_position.x;
+
+        cursor_position.x = entry->widget.content_rect->top_left.x;
+    }
+
     ei_rect_t cursor_rect = ei_rect(
         cursor_position,
-        ei_size(1, entry->widget.screen_location.size.height - ei_entry_default_padding * 2));
+        ei_size(ei_entry_default_cursor_width, entry->widget.screen_location.size.height - ei_entry_default_padding * 2));
 
     ei_color_t cursor_color = entry->cursor_visible
                                   ? ei_entry_default_focused_border_color
                                   : entry->widget_appearance.color;
 
-    ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, entry->widget.content_rect);
+    // The text is clipped to the content rect of the entry but the cursor
+    // can be drawn to the left or the right the text, hence, we need to
+    // increase the size of the clipper to the left and the right of the cursor
+    // by 2 times its size to allow to make sure that the cursor is always visible
+    const ei_rect_t cursor_clipper = ei_rect_add(*entry->widget.content_rect, -ei_entry_default_cursor_width * 2, 0, ei_entry_default_cursor_width * 2 * 2, 0);
+
+    ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, &cursor_clipper);
 }
 
 void ei_draw_entry_text(ei_entry_t *entry)
@@ -118,8 +140,13 @@ void ei_draw_entry_text(ei_entry_t *entry)
         char text[2] = {character->character, '\0'};
 
         ei_point_t where = ei_point(
-            entry->widget.screen_location.top_left.x + ei_entry_default_padding + character->position,
+            entry->widget.screen_location.top_left.x + ei_entry_default_padding + character->position - entry->characters_position_offset,
             entry->widget.screen_location.top_left.y + ei_entry_default_padding);
+
+        if (where.x < entry->widget.content_rect->top_left.x || where.x > entry->widget.content_rect->top_left.x + entry->widget.content_rect->size.width)
+        {
+            continue;
+        }
 
         ei_draw_text(ei_app_root_surface(), &where, text, entry->text.font, entry->text.color, entry->widget.content_rect);
     }
@@ -172,6 +199,7 @@ void ei_entry_setdefaultsfunc(ei_widget_t widget)
 
     entry->cursor_visible = false;
     entry->focused = false;
+    entry->characters_position_offset = 0;
 }
 
 void ei_entry_geomnotifyfunc(ei_widget_t widget)
@@ -239,11 +267,11 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
         }
 
         // If the position is between the character and the next one, return the closest one
-        if (position.x > position_x && position.x < position_x + character->character_width)
+        if (position.x >= position_x - entry->characters_position_offset && position.x <= position_x + character->character_width - entry->characters_position_offset)
         {
             return position.x - position_x < position_x + character->character_width - position.x
-                       ? character
-                       : character->next;
+                       ? character->previous
+                       : character;
         }
 
         // Increase the position by the size of the character + the padding
@@ -335,6 +363,8 @@ void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character
     {
         ei_compute_positions_after_character(entry, entry->cursor);
     }
+
+    entry->text_length--;
 }
 
 void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character)

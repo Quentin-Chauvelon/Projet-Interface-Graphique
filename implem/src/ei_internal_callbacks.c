@@ -392,14 +392,59 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // Erase the character at cursor position
     else if (event->param.key_code == SDLK_BACKSPACE)
     {
-        ei_entry_erase_character(entry, entry->cursor);
+        // If the user also pressed ctrl, delete the whole word
+        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+            ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+        {
+            while (entry->cursor->previous)
+            {
+                if (entry->cursor->previous->character == ' ')
+                {
+                    ei_entry_erase_character(entry, entry->cursor);
+                    break;
+                }
+
+                ei_entry_erase_character(entry, entry->cursor);
+            }
+        }
+        // Otherwise, only erase the previous character
+        else
+        {
+            ei_entry_erase_character(entry, entry->cursor);
+        }
 
         return true;
     }
     // Erase the character after the cursor
     else if (event->param.key_code == SDLK_DELETE)
     {
-        if (entry->cursor->next)
+        // If the user also pressed ctrl, delete the whole word
+        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+            ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+        {
+            // If the first next character is a space, erase it
+            if (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
+            {
+                ei_entry_erase_character(entry, entry->cursor->next);
+            }
+
+            while (entry->cursor->next)
+            {
+                if (entry->cursor->next == NULL)
+                {
+                    break;
+                }
+
+                if (entry->cursor->next->character == ' ')
+                {
+                    break;
+                }
+
+                ei_entry_erase_character(entry, entry->cursor->next);
+            }
+        }
+        // Otherwise, only erase the previous character
+        else if (entry->cursor->next)
         {
             ei_entry_erase_character(entry, entry->cursor->next);
         }

@@ -139,16 +139,28 @@ void ei_entry_set_text(ei_widget_t widget, ei_const_string_t text)
     {
         ei_entry_add_character(entry, text[i]);
     }
+
+    // Move the cursor back to the first character so that if it's a long
+    // that doesn't fit in the entry, it shows the begginning of the text
+    // instead of the end
+    entry->cursor = entry->first_character;
 }
 
 ei_const_string_t ei_entry_get_text(ei_widget_t widget)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
+    // Since the first character is a fake one and its character is '\0',
+    // skip it. Otherwise, the text would end instantly
+    if (entry->first_character->next == NULL)
+    {
+        return NULL;
+    }
+
     char *text = malloc(sizeof(char) * entry->text_length + 1);
     int i = 0;
 
-    ei_entry_character_t *character = entry->first_character;
+    ei_entry_character_t *character = entry->first_character->next;
     while (character != NULL)
     {
         text[i++] = character->character;

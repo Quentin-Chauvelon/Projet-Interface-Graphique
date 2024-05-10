@@ -20,6 +20,7 @@
 
 static const int ei_entry_default_padding = 8;
 static const int ei_entry_default_letter_spacing = 0;
+static const int ei_entry_default_cursor_width = 1;
 static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
 static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
 static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 204};
@@ -46,6 +47,7 @@ typedef struct ei_entry_t
     ei_entry_character_t *cursor;             // Position of the cursor
     bool cursor_visible;                      // Boolean indicating if the cursor is visible (blinking)
     bool focused;                             // Boolean indicating if the entry is focused
+    int characters_position_offset;           // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
 } ei_entry_t;
 
 /**
