@@ -262,14 +262,14 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
-    ei_restart_blinking_timer(entry, true);
+    bool handled = false;
 
     // Unfocus the entry if the user presses the escape key
     if (event->param.key_code == SDLK_RETURN)
     {
         ei_entry_release_focus(widget);
 
-        return true;
+        handled = true;
     }
     else if (event->param.key_code == SDLK_TAB)
     {
@@ -286,7 +286,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
 
                 ei_entry_give_focus(&entry->previous->widget);
 
-                return true;
+                handled = true;
             }
         }
         // Focus the next entry if the user presses tab
@@ -302,7 +302,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
 
                 ei_entry_give_focus(&entry->next->widget);
 
-                return true;
+                handled = true;
             }
         }
     }
@@ -338,7 +338,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
             }
         }
 
-        return true;
+        handled = true;
     }
     else if (event->param.key_code == SDLK_LEFT)
     {
@@ -376,21 +376,21 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
             entry->cursor = entry->first_character;
         }
 
-        return true;
+        handled = true;
     }
     // Move to the first character
     else if (event->param.key_code == SDLK_HOME)
     {
         entry->cursor = entry->first_character;
 
-        return true;
+        handled = true;
     }
     // move to the last character
     else if (event->param.key_code == SDLK_END)
     {
         entry->cursor = entry->last_character;
 
-        return true;
+        handled = true;
     }
     // Erase the character at cursor position
     else if (event->param.key_code == SDLK_BACKSPACE)
@@ -416,7 +416,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
             ei_entry_erase_character(entry, entry->cursor);
         }
 
-        return true;
+        handled = true;
     }
     // Erase the character after the cursor
     else if (event->param.key_code == SDLK_DELETE)
@@ -452,7 +452,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
             ei_entry_erase_character(entry, entry->cursor->next);
         }
 
-        return true;
+        handled = true;
     }
     else
     {
@@ -467,11 +467,17 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
 
             ei_entry_add_character(entry, event->param.key_code);
 
-            return true;
+            handled = true;
         }
     }
 
-    return false;
+    // Reset the blinking timer if the key press has been handled by the event
+    if (handled)
+    {
+        ei_restart_blinking_timer(entry, true);
+    }
+
+    return handled;
 }
 
 /**
