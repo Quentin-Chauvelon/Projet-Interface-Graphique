@@ -51,6 +51,21 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Draw the cursor
     ei_draw_cursor(surface, entry, clipper);
 
+    // Draw the selection background (which will override the cursor since
+    // it shouldn't be drawn if a selection is active)
+    if (entry->selection_start_character != NULL && entry->selection_end_character != NULL)
+    {
+        ei_rect_t selection_rect = ei_rect(
+            ei_point(
+                entry->widget.screen_location.top_left.x + entry->selection_start_character->position - entry->characters_position_offset + ei_entry_default_padding,
+                entry->widget.screen_location.top_left.y + ei_entry_default_padding),
+            ei_size(
+                entry->selection_end_character->position + entry->selection_end_character->character_width - entry->selection_start_character->position + 1,
+                entry->widget.screen_location.size.height - ei_entry_default_padding * 2));
+
+        ei_draw_rectangle(surface, selection_rect, ei_entry_default_selection_color, entry->widget.content_rect);
+    }
+
     // Draw the text
     ei_draw_entry_text(entry);
 
@@ -256,6 +271,9 @@ void ei_entry_release_focus(ei_widget_t widget)
         entry->blinking_app_id = NULL;
     }
 
+    // Reset the selection
+    ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+
     entry->focused = false;
     entry->cursor_visible = false;
 }
@@ -292,6 +310,19 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
 
 void ei_entry_add_character(ei_entry_t *entry, char character)
 {
+    // If a selection is active, erase the selected text
+    if (entry->selection_start_character != NULL && entry->selection_end_character != NULL)
+    {
+        entry->cursor = entry->selection_end_character;
+
+        while (entry->cursor->previous != NULL && entry->cursor != entry->selection_start_character)
+        {
+            ei_entry_erase_character(entry, entry->cursor);
+        }
+
+        ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+    }
+
     ei_entry_character_t *entry_character = malloc(sizeof(ei_entry_character_t));
 
     entry_character->character = *(char *)malloc(sizeof(char));
@@ -406,4 +437,11 @@ void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible)
     {
         entry->cursor_visible = true;
     }
+}
+
+void ei_set_selection_characters(ei_entry_t *entry, ei_entry_character_t *start_character, ei_entry_character_t *end_character, ei_selection_direction_t direction)
+{
+    entry->selection_start_character = start_character;
+    entry->selection_end_character = end_character;
+    entry->selection_direction = direction;
 }

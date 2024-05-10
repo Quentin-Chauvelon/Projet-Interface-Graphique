@@ -24,7 +24,7 @@ static const int ei_entry_default_cursor_width = 1;
 static const int ei_entry_default_blinking_interval = 700;
 static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
 static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
-static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 204};
+static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 150};
 
 typedef struct ei_entry_character_t
 {
@@ -34,6 +34,13 @@ typedef struct ei_entry_character_t
     int position;                          // Position of the character based on the first character
     int character_width;                   // Width of the character
 } ei_entry_character_t;
+
+typedef enum ei_selection_direction_t
+{
+    ei_selection_direction_none = 0,
+    ei_selection_direction_left,
+    ei_selection_direction_right
+} ei_selection_direction_t;
 
 typedef struct ei_entry_t
 {
@@ -48,6 +55,7 @@ typedef struct ei_entry_t
     ei_entry_character_t *cursor;                    // Position of the cursor
     ei_entry_character_t *selection_start_character; // Pointer to the first character of the selection
     ei_entry_character_t *selection_end_character;   // Pointer to the last character of the selection
+    ei_selection_direction_t selection_direction;    // Direction of the selection (left, right or none (if no selection)). This allows to know if the selection should expand or shrink based on the keys pressed
     bool cursor_visible;                             // Boolean indicating if the cursor is visible (blinking)
     bool focused;                                    // Boolean indicating if the entry is focused
     int characters_position_offset;                  // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
@@ -189,5 +197,7 @@ void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_
  * @param   force_visible   If true, the cursor will be set to visible
  */
 void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible);
+
+void ei_set_selection_characters(ei_entry_t *entry, ei_entry_character_t *start_character, ei_entry_character_t *end_character, ei_selection_direction_t direction);
 
 #endif

@@ -253,6 +253,9 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 
     entry->cursor = ei_get_character_at_position(entry, event->param.mouse.where);
 
+    // Remove the selection if the user clicks on the entry once
+    ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+
     ei_entry_give_focus(widget);
 
     return false;
@@ -263,6 +266,16 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     ei_entry_t *entry = (ei_entry_t *)widget;
 
     bool handled = false;
+
+    // Store the entry to get focus in a variable because we must
+    // cancel the bliking timer event before giving focus (otherwise
+    // it will restart), which can only be done at the very end of
+    // this function, so we need to save the entry and give focus
+    // at the very end after cancelling the event.
+    // The reason we can't cancel the event right now is because
+    // we don't want to reset the bliking for all keys (not if the
+    // user presses ctrl/shift/alt alone for example)
+    ei_entry_t *entry_to_give_focus_to = NULL;
 
     // Unfocus the entry if the user presses the escape key
     if (event->param.key_code == SDLK_RETURN)
@@ -284,7 +297,13 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
                     entry->previous->cursor = entry->previous->first_character;
                 }
 
-                ei_entry_give_focus(&entry->previous->widget);
+                // When moving to the previous entry, select all text if there is some. Set the origin to the first character
+                if (entry->previous->text_length > 0)
+                {
+                    ei_set_selection_characters(entry->previous, entry->previous->first_character, entry->previous->last_character, ei_selection_direction_right);
+                }
+
+                entry_to_give_focus_to = entry->previous;
 
                 handled = true;
             }
@@ -300,7 +319,13 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
                     entry->next->cursor = entry->next->first_character;
                 }
 
-                ei_entry_give_focus(&entry->next->widget);
+                // When moving to the next entry, select all text if there is some. Set the origin to the first character
+                if (entry->next->text_length > 0)
+                {
+                    ei_set_selection_characters(entry->next, entry->next->first_character, entry->next->last_character, ei_selection_direction_right);
+                }
+
+                entry_to_give_focus_to = entry->next;
 
                 handled = true;
             }
@@ -311,62 +336,310 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         // Move to the next character is there is one
         if (entry->cursor != NULL && entry->cursor->next != NULL)
         {
-            // if the user also pressed ctrl, move to the next word
+            // If the user also pressed ctrl, move to the next word
             if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
                 ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
             {
-                // If the first next character is a space, skip it
-                if (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
+                ei_entry_character_t *first_character = entry->cursor->next;
+                bool set_end_character = entry->selection_end_character == NULL || entry->cursor == entry->selection_end_character;
+                bool shift_pressed = ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) || ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right);
+
+                // While we have spaces, skip them
+                while (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
                 {
+                    // If the user pressed shift, select all spaces
+                    if (shift_pressed)
+                    {
+                        entry->selection_start_character != NULL
+                            ? set_end_character
+                                  ? ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor->next, ei_selection_direction_right)
+                                  : ei_set_selection_characters(entry, entry->cursor->next, entry->selection_end_character, ei_selection_direction_right)
+                        : set_end_character
+                            ? ei_set_selection_characters(entry, entry->cursor->next, entry->cursor->next, ei_selection_direction_right)
+                            : ei_set_selection_characters(entry, entry->cursor->next, entry->selection_end_character, ei_selection_direction_right);
+                    }
+
                     entry->cursor = entry->cursor->next;
                 }
 
                 while (entry->cursor->next)
                 {
+                    // Once we reach a space, it's the end of the word, so stop
                     if (entry->cursor->next->character == ' ')
                     {
+                        // If the selection is going from right to left and we have not reached the end,
+                        // the last character of the word will be included in the selection, which
+                        // we don't want, so move the selection start right
+                        if (shift_pressed && !set_end_character && first_character != entry->selection_start_character)
+                        {
+                            ei_set_selection_characters(entry, entry->cursor->next, entry->selection_end_character, ei_selection_direction_right);
+                        }
+
                         break;
                     }
 
+                    // If the user pressed shift, add the character to the selection
+                    if (shift_pressed)
+                    {
+                        // If there is no selection active, select the character, otherwise
+                        // only update the end of the selection
+                        // And if set_end_character is true, update the whole selection,
+                        // otherwise only update the start
+                        entry->selection_start_character != NULL
+                            ? set_end_character
+                                  ? ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor->next, ei_selection_direction_right)
+                                  : ei_set_selection_characters(entry, entry->cursor->next, entry->selection_end_character, ei_selection_direction_right)
+                        : set_end_character
+                            ? ei_set_selection_characters(entry, entry->cursor->next, entry->cursor->next, ei_selection_direction_right)
+                            : ei_set_selection_characters(entry, entry->cursor->next, entry->selection_end_character, ei_selection_direction_right);
+
+                        // If there already is a selection from the right to the left
+                        // and the cursor reaches the end of that selection, start
+                        // updating the end character to reverse the selection
+                        // and create a selection from that character towards the right
+                        if (entry->selection_end_character != NULL &&
+                            entry->cursor != NULL &&
+                            entry->cursor == entry->selection_end_character)
+                        {
+                            set_end_character = true;
+                        }
+                    }
+
                     entry->cursor = entry->cursor->next;
+                }
+
+                // If the user pressed shift and the start of the selection is
+                // the last character
+                if (shift_pressed)
+                {
+                    if (entry->selection_start_character != NULL &&
+                        entry->selection_end_character != NULL &&
+                        entry->selection_start_character == entry->last_character)
+                    {
+                        // If the start and end character are the same, that means only
+                        // the last character is selected and since which shouldn't happen
+                        // remove the selection.
+                        // Otherwise, if the start and end character are different, it means
+                        // that the start character is the last one and the end character is
+                        // the one prior to the last one (the selection is reversed) which
+                        // shouldn't happen either, so update the selection to only select
+                        // the last character.
+                        // Although both of these cases shouldn't happen, they do because
+                        // in the while loop above the selection is updated before moving
+                        // the cursor to the next character, and so, the last character
+                        // is not treated properly for the selection
+                        entry->selection_start_character == entry->selection_end_character
+                            ? ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none)
+                            : ei_set_selection_characters(entry, entry->selection_start_character, entry->selection_start_character, ei_selection_direction_right);
+                    }
                 }
             }
             // Otherwise, move to the next character
             else
             {
+                // If the user also pressed shift, select the next character
+                if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
+                    ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right))
+                {
+                    // If there is no selection active, select the next character
+                    if (entry->selection_direction == ei_selection_direction_none && entry->cursor->next != NULL)
+                    {
+                        ei_set_selection_characters(entry, entry->cursor->next, entry->cursor->next, ei_selection_direction_right);
+                    }
+                    // If there is a selection going to the right, update the end of the selection only
+                    else if (entry->selection_direction == ei_selection_direction_right && entry->cursor->next != NULL)
+                    {
+                        ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor->next, entry->selection_direction);
+                    }
+                    // If there is a selection going to the right, update the start of the selection only and move the
+                    // cursor by two spots otherwise it only updates the cursor position and not the selection
+                    else if (entry->selection_direction == ei_selection_direction_left && entry->cursor->next != NULL)
+                    {
+                        ei_set_selection_characters(entry, entry->cursor->next->next, entry->selection_end_character, entry->selection_direction);
+                    }
+                }
+                // Otherwise, remove the selection
+                else
+                {
+                    // If there already was a selection, the cursor shouldn't move right and only remove the selection
+                    // therefore, we move the cursor back since it will be moved forward at the end of this function
+                    if (entry->selection_direction != ei_selection_direction_none && entry->cursor->previous != NULL)
+                    {
+                        entry->cursor = entry->cursor->previous;
+                    }
+
+                    ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+                }
+
                 entry->cursor = entry->cursor->next;
             }
+        }
+
+        // If the selection is reversed (start after end), remove it
+        if (entry->selection_start_character != NULL &&
+            entry->selection_end_character != NULL &&
+            entry->selection_start_character->position > entry->selection_end_character->position)
+        {
+            ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+        }
+
+        // If the user is not pressing shift, remove the selection
+        if (!ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) &&
+            !ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right))
+        {
+            ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
         }
 
         handled = true;
     }
     else if (event->param.key_code == SDLK_LEFT)
     {
-        // if the user also pressed ctrl, move to the previous word
+        // If the user also pressed ctrl, move to the previous word
         if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
             ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
         {
-            // If the first previous character is a space, skip it
-            if (entry->cursor->previous != NULL && entry->cursor->previous->character == ' ')
+            ei_entry_character_t *last_character = entry->cursor;
+            ei_entry_character_t *first_selected_character = entry->selection_start_character;
+            bool set_start_character = entry->selection_start_character == NULL || (entry->cursor->next != NULL && entry->cursor->next == entry->selection_start_character);
+            bool shift_pressed = ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) || ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right);
+
+            // While we have spaces, skip them
+            while (entry->cursor->previous != NULL && entry->cursor->previous->character == ' ')
             {
+                // If the user pressed shift, select all spaces
+                entry->selection_end_character != NULL
+                    ? set_start_character
+                          ? ei_set_selection_characters(entry, entry->cursor, entry->selection_end_character, ei_selection_direction_left)
+                          : ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor, ei_selection_direction_left)
+                : set_start_character
+                    ? ei_set_selection_characters(entry, entry->cursor, entry->cursor, ei_selection_direction_left)
+                    : ei_set_selection_characters(entry, entry->selection_start_character, entry->selection_end_character, ei_selection_direction_left);
+
                 entry->cursor = entry->cursor->previous;
             }
 
             while (entry->cursor->previous)
             {
+                // Once we reach a space, it's the start of the word, so stop
                 if (entry->cursor->previous->character == ' ')
                 {
+                    // If the user pressed shift, add the character to the selection
+                    if (shift_pressed)
+                    {
+                        // If there is no selection active, select the character, otherwise
+                        // only update the start of the selection
+                        // And if set_start_character is true, update the whole selection,
+                        // otherwise only update the end
+                        entry->selection_end_character != NULL
+                            ? set_start_character
+                                  ? ei_set_selection_characters(entry, entry->cursor, entry->selection_end_character, ei_selection_direction_left)
+                                  : ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor, ei_selection_direction_left)
+                        : set_start_character
+                            ? ei_set_selection_characters(entry, entry->cursor, entry->cursor, ei_selection_direction_left)
+                            : ei_set_selection_characters(entry, entry->selection_start_character, entry->selection_end_character, ei_selection_direction_left);
+
+                        // If there already is a selection from the left to the right
+                        // and the cursor reaches the start of that selection, start
+                        // updating the start character to reverse the selection
+                        // and create a selection from that character towards the left
+                        if (entry->selection_start_character != NULL &&
+                            entry->cursor->next != NULL &&
+                            entry->cursor->next == entry->selection_start_character)
+                        {
+                            set_start_character = true;
+                        }
+
+                        // If the selection is going from left to right and we have not reached the start,
+                        // the first character of the word will be included in the selection, which
+                        // we don't want, so move the selection end left
+                        if (shift_pressed && !set_start_character && last_character != entry->selection_end_character)
+                        {
+                            ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor->previous, ei_selection_direction_left);
+                        }
+                    }
+
                     entry->cursor = entry->cursor->previous;
                     break;
                 }
 
+                // If the user pressed shift, add the character to the selection
+                if (shift_pressed)
+                {
+                    entry->selection_end_character != NULL
+                        ? set_start_character
+                              ? ei_set_selection_characters(entry, entry->cursor, entry->selection_end_character, ei_selection_direction_left)
+                              : ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor, ei_selection_direction_left)
+                    : set_start_character
+                        ? ei_set_selection_characters(entry, entry->cursor, entry->cursor, ei_selection_direction_left)
+                        : ei_set_selection_characters(entry, entry->selection_start_character, entry->selection_end_character, ei_selection_direction_left);
+                }
+
+                // If there already is a selection from the left to the right
+                // and the cursor reaches the start of that selection, start
+                // updating the start character to reverse the selection
+                // and create a selection from that character towards the left
+                if (entry->selection_start_character != NULL &&
+                    entry->cursor->next != NULL &&
+                    entry->cursor->next == entry->selection_start_character)
+                {
+                    set_start_character = true;
+                }
+
                 entry->cursor = entry->cursor->previous;
+            }
+
+            // If the user selected the first visible character from left to right
+            // and then moves the cursor to the left, the first character would
+            // still be selected, so remove the selection
+            if (first_selected_character != NULL &&
+                first_selected_character == entry->selection_start_character &&
+                first_selected_character == entry->selection_end_character)
+            {
+                ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
             }
         }
         // Otherwise, move to the previous character
         else
         {
+            // If the user also pressed shift, select the previous character
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
+                ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right))
+            {
+                if (entry->selection_direction == ei_selection_direction_none && entry->cursor->previous != NULL)
+                {
+                    ei_set_selection_characters(entry, entry->cursor, entry->cursor, ei_selection_direction_left);
+                }
+                else if (entry->selection_direction == ei_selection_direction_left && entry->cursor->previous != NULL)
+                {
+                    ei_set_selection_characters(entry, entry->cursor, entry->selection_end_character, entry->selection_direction);
+                }
+                else if (entry->selection_direction == ei_selection_direction_right && entry->cursor->previous != NULL)
+                {
+                    ei_set_selection_characters(entry, entry->selection_start_character, entry->cursor->previous, entry->selection_direction);
+                }
+            }
+            // Otherwise, remove the selection
+            else
+            {
+                // If there already was a selection, the cursor shouldn't move left and only remove the selection
+                // therefore, we move the cursor forward since it will be moved back at the end of this function
+                if (entry->selection_direction != ei_selection_direction_none && entry->cursor->next != NULL)
+                {
+                    entry->cursor = entry->cursor->next;
+                }
+
+                ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+            }
+
             entry->cursor = entry->cursor->previous;
+        }
+
+        // If the selection is reversed (start after end), remove it
+        if (entry->selection_start_character != NULL &&
+            entry->selection_end_character != NULL &&
+            entry->selection_start_character->position > entry->selection_end_character->position)
+        {
+            ei_set_selection_characters(entry, entry->selection_end_character, entry->selection_end_character, ei_selection_direction_none);
         }
 
         // If the cursor is pointing not pointing anything,
@@ -381,6 +654,19 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // Move to the first character
     else if (event->param.key_code == SDLK_HOME)
     {
+        // If the user pressed shift, select all characters from the cursor to the start
+        if ((ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
+             ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right)) &&
+            entry->cursor != entry->first_character)
+        {
+            ei_set_selection_characters(entry, entry->first_character, entry->cursor, ei_selection_direction_left);
+        }
+        // Otherwise, remove the selection
+        else
+        {
+            ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+        }
+
         entry->cursor = entry->first_character;
 
         handled = true;
@@ -388,6 +674,19 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // move to the last character
     else if (event->param.key_code == SDLK_END)
     {
+        // If the user pressed shift, select all characters from the cursor to the end
+        if ((ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
+             ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right)) &&
+            entry->cursor->next != NULL)
+        {
+            ei_set_selection_characters(entry, entry->cursor->next, entry->last_character, ei_selection_direction_right);
+        }
+        // Otherwise, remove the selection
+        else
+        {
+            ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+        }
+
         entry->cursor = entry->last_character;
 
         handled = true;
@@ -475,6 +774,12 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     if (handled)
     {
         ei_restart_blinking_timer(entry, true);
+    }
+
+    // Give the focus to the entry that was saved to get focus
+    if (entry_to_give_focus_to != NULL)
+    {
+        ei_entry_give_focus(&entry_to_give_focus_to->widget);
     }
 
     return handled;
