@@ -73,6 +73,7 @@ set(LIB_EI_SOURCES
 	${SRC}/src/widgets/ei_frame.c
 	${SRC}/src/widgets/ei_button.c
 	${SRC}/src/widgets/ei_toplevel.c
+	${SRC}/src/widgets/ei_entry.c
 	${SRC}/src/ei_application.c
 	${SRC}/src/ei_widget.c
 	${SRC}/src/ei_widget_configure.c
@@ -84,6 +85,7 @@ set(LIB_EI_SOURCES
 	${SRC}/src/ei_event.c
 	${SRC}/src/ei_internal_callbacks.c
 	${SRC}/src/ei_implementation.c
+	${SRC}/src/ei_entry.c
 )
 
 add_library(ei STATIC			${LIB_EI_SOURCES})
