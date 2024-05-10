@@ -5,8 +5,10 @@
 #include "../api/ei_utils.h"
 #include "../api/ei_placer.h"
 #include "../api/ei_application.h"
+#include "../api/ei_entry.h"
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_toplevel.h"
+#include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 #include "../implem/headers/ei_application_ext.h"
@@ -244,6 +246,87 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
     return false;
 }
 
+static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
+    entry->cursor = ei_get_character_at_position(entry, event->param.mouse.where);
+
+    ei_entry_give_focus(widget);
+
+    return false;
+}
+
+bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
+    // Unfocus the entry if the user presses the escape key
+    if (event->param.key_code == SDLK_RETURN)
+    {
+        ei_entry_release_focus(widget);
+
+        return true;
+    }
+    else if (event->param.key_code == SDLK_TAB)
+    {
+        // Focus the previous entry if the user presses shift+tab
+        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left))
+        {
+            if (entry->previous != NULL)
+            {
+                // If the cursor is not over any character, put it to the first one
+                if (entry->previous->cursor == NULL)
+                {
+                    entry->previous->cursor = entry->previous->first_character;
+                }
+
+                ei_entry_give_focus(&entry->previous->widget);
+
+                return true;
+            }
+        }
+        // Focus the next entry if the user presses tab
+        else
+        {
+            if (entry->next != NULL)
+            {
+                // If the cursor is not over any character, put it to the first one
+                if (entry->next->cursor == NULL)
+                {
+                    entry->next->cursor = entry->next->first_character;
+                }
+
+                ei_entry_give_focus(&entry->next->widget);
+
+                return true;
+            }
+        }
+    }
+    else if (event->param.key_code == SDLK_RIGHT)
+    {
+        // Move to the next character is there is one
+        if (entry->cursor != NULL && entry->cursor->next != NULL)
+        {
+            entry->cursor = entry->cursor->next;
+        }
+
+        return true;
+    }
+    else if (event->param.key_code == SDLK_LEFT)
+    {
+        // Move to the previous character is there is one
+        if (entry->cursor != NULL && entry->cursor->previous != NULL)
+        {
+            entry->cursor = entry->cursor->previous;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * @brief   Update the pick color based on a certain multiplier of the pick id
  *          This implements a tree preorder traversal algorithm.
@@ -323,6 +406,7 @@ void ei_bind_all_internal_callbacks()
 {
     ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
+    ei_bind(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL);
 
     ei_surface_t root_surface_copy = NULL;
     ei_bind(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &root_surface_copy);

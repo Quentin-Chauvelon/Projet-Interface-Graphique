@@ -106,6 +106,28 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
 static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
+ * @brief   Callback function that is called when the use clicks on an entry
+ *
+ * @param   widget      The entry the user pressed
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  false
+ */
+static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the use presses a key after focusing on an entry.
+ *
+ * @param   widget      The currently focused entry
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  True if the event was handled, false otherwise
+ */
+bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
  * @brief   Binds all the internal callbacks to the corresponding widgets/tags
  */
 void ei_bind_all_internal_callbacks();

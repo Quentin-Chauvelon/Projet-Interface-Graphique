@@ -253,7 +253,8 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
     }
 
     // Resize the rectangle to account for the border width
-    screen_location = ei_rect_add(screen_location, border_width, border_width, border_width * -2, border_width * -2);
+    // Remove 1 otherwise, the rectangle is always 1 pixel larger and overrides the border
+    screen_location = ei_rect_add(screen_location, border_width, border_width, (-border_width * 2) - 1, (-border_width * 2) - 1);
 
     ei_point_t *point_array;
 

@@ -4,11 +4,14 @@
 #include "../api/ei_application.h"
 #include "../api/ei_draw.h"
 #include "../api/ei_utils.h"
+#include "../api/ei_event.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
+#include "../implem/headers/ei_entry_ext.h"
+#include "../implem/headers/ei_internal_callbacks.h"
 
 ei_widget_t ei_entry_allocfunc()
 {
@@ -32,12 +35,23 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Draw the visible entry
     if (entry->focused)
     {
-        ei_draw_straight_frame(surface, widget->screen_location, entry->widget_appearance.border_width - 1, entry->widget_appearance.color, ei_relief_none, clipper);
+        ei_draw_frame(surface, widget->screen_location, entry->widget_appearance.border_width, 0, entry->widget_appearance.color, ei_relief_none, &ei_entry_default_focused_border_color, clipper);
     }
     else
     {
-        ei_draw_straight_frame(surface, widget->screen_location, entry->widget_appearance.border_width, ei_entry_default_focused_border_color, ei_relief_none, clipper);
+        // The border should be 1 pixels smaller than on focus but also always be at least 2 pixels
+        int border_width = entry->widget_appearance.border_width > 2
+                               ? entry->widget_appearance.border_width - 1
+                               : 2;
+
+        ei_draw_frame(surface, widget->screen_location, border_width, 0, entry->widget_appearance.color, ei_relief_none, &ei_entry_default_unfocused_border_color, clipper);
     }
+
+    // Draw the cursor
+    ei_draw_cursor(surface, entry, clipper);
+
+    // Draw the text
+    ei_draw_entry_text(entry);
 
     // Draw the entry on the offscreen picking surface
     ei_draw_straight_frame(pick_surface, widget->screen_location, 0, *widget->pick_color, ei_relief_none, clipper);
@@ -62,6 +76,58 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     free(children_clipper);
 }
 
+void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
+{
+    ei_point_t cursor_position;
+    if (entry->cursor != NULL)
+    {
+        // Put the cursor between the character it is pointing to and the next one
+        cursor_position = ei_point(
+            entry->widget.screen_location.top_left.x + entry->cursor->position + ei_entry_default_padding + ei_entry_default_letter_spacing / 2,
+            entry->widget.screen_location.top_left.y + ei_entry_default_padding);
+    }
+    else
+    {
+        // Put the cursor at the start of the entry
+        cursor_position = ei_point(
+            entry->widget.screen_location.top_left.x + ei_entry_default_padding,
+            entry->widget.screen_location.top_left.y + ei_entry_default_padding);
+    }
+
+    ei_rect_t cursor_rect = ei_rect(
+        cursor_position,
+        ei_size(1, entry->widget.screen_location.size.height - ei_entry_default_padding * 2));
+
+    ei_color_t cursor_color = entry->cursor_visible
+                                  ? ei_entry_default_focused_border_color
+                                  : entry->widget_appearance.color;
+
+    ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, NULL);
+}
+
+void ei_draw_entry_text(ei_entry_t *entry)
+{
+    if (entry->first_character == NULL)
+    {
+        return;
+    }
+
+    for (ei_entry_character_t *character = entry->first_character; character != NULL; character = character->next)
+    {
+        char text[2] = {character->character, '\0'};
+        ei_surface_t text_surface = hw_text_create_surface(text, entry->text.font, entry->text.color);
+
+        ei_rect_t dst_rect = ei_rect(
+            ei_point(entry->widget.screen_location.top_left.x + ei_entry_default_padding + character->position,
+                     entry->widget.screen_location.top_left.y + ei_entry_default_padding),
+            hw_surface_get_size(text_surface));
+
+        ei_copy_surface(ei_app_root_surface(), &dst_rect, text_surface, NULL, true);
+
+        entry->text_length++;
+    }
+}
+
 void ei_entry_setdefaultsfunc(ei_widget_t widget)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
@@ -80,6 +146,18 @@ void ei_entry_setdefaultsfunc(ei_widget_t widget)
 
     entry->previous = NULL;
     entry->next = NULL;
+
+    // Find the entry before this one in the widget tree
+    // If there is one, link them
+    ei_widget_t root = ei_app_root_widget();
+    ei_widget_t *previous_entry = NULL;
+    ei_get_previous_entry(&root, (ei_widget_t *)entry, &previous_entry);
+
+    if (previous_entry != NULL)
+    {
+        entry->previous = (ei_entry_t *)previous_entry;
+        ((ei_entry_t *)previous_entry)->next = entry;
+    }
 
     entry->first_character = NULL;
     entry->last_character = NULL;
@@ -132,14 +210,43 @@ void ei_update_requested_char_size(ei_entry_t *entry, int requested_char_size)
     entry->widget.screen_location.size = entry->widget.requested_size;
 }
 
-void ei_entry_set_text(ei_widget_t widget, ei_const_string_t text)
+void ei_entry_release_focus(ei_widget_t widget)
 {
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
+    // Unbind the event for this entry
+    ei_unbind(ei_ev_keydown, widget, NULL, ei_entry_keyboard_key_down, NULL);
+
+    entry->focused = false;
+    entry->cursor_visible = false;
 }
 
-ei_const_string_t ei_entry_get_text(ei_widget_t widget)
+ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t position)
 {
-}
+    ei_entry_character_t *character = entry->first_character;
+    int position_x = entry->widget.screen_location.top_left.x + ei_entry_default_padding;
 
-void ei_entry_give_focus(ei_widget_t widget)
-{
+    while (character != NULL)
+    {
+        // If it is the last character, return it
+        if (character->next == NULL)
+        {
+            return character;
+        }
+
+        // If the position is between the character and the next one, return the closest one
+        if (position.x > position_x && position.x < position_x + character->character_width)
+        {
+            return position.x - position_x < position_x + character->character_width - position.x
+                       ? character
+                       : character->next;
+        }
+
+        // Increase the position by the size of the character + the padding
+        position_x += character->character_width + ei_entry_default_letter_spacing;
+
+        character = character->next;
+    }
+
+    return NULL;
 }

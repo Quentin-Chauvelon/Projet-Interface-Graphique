@@ -11,16 +11,17 @@
  * @authors Quentin CHAUVELON
  */
 
-#ifndef EI_ENTRY_H
-#define EI_ENTRY_H
+#ifndef EI_ENTRY_WIDGET_H
+#define EI_ENTRY_WIDGET_H
 
 #include "../api/ei_types.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_widget_ext.h"
 
-static const int ei_entry_default_padding = 5;
-static const int ei_entry_default_letter_spacing = 2;
-static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){230, 230, 230, 255};
+static const int ei_entry_default_padding = 8;
+static const int ei_entry_default_letter_spacing = 0;
+static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
+static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
 static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 204};
 
 typedef struct ei_entry_character_t
@@ -56,6 +57,8 @@ typedef struct ei_entry_t
  * 				with all bytes set to 0.
  */
 ei_widget_t ei_entry_allocfunc();
+
+void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper);
 
 /**
  * \brief	A function that releases the memory used by a widget before it is destroyed.
@@ -111,5 +114,39 @@ ei_size_t ei_entry_get_natural_size(ei_entry_t *entry);
  * @param   requested_char_size The number of times the entry should be able to hold the 'm' character
  */
 void ei_update_requested_char_size(ei_entry_t *entry, int requested_char_size);
+
+/**
+ * @brief	Release the focus from the entry widget
+ *
+ * @param	widget  The widget to release focus from
+ */
+void ei_entry_release_focus(ei_widget_t widget);
+
+/**
+ * @brief   Draw the cursor of the given entry
+ *
+ * @param	surface 	Where to draw the text. The surface must be *locked* by
+ *				        \ref hw_surface_lock.
+ * @param	entry		The entry for which to draw the cursor.
+ * @param	clipper		If not NULL, the drawing is restricted within this rectangle.
+ */
+void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper);
+
+/**
+ * @brief   Draw the text of the given entry
+ *
+ * @param   entry   The entry for which to draw the text
+ */
+void ei_draw_entry_text(ei_entry_t *entry);
+
+/**
+ * @brief   Return the character that is closest to the given position (where the user clicked)
+ *
+ * @param   entry       The entry for which to get the character
+ * @param   position    The position where the user clicked
+ *
+ * @return  The character that is closest to the given position
+ */
+ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t position);
 
 #endif
