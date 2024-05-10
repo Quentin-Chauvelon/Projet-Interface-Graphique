@@ -309,6 +309,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         if (entry->cursor != NULL && entry->cursor->next != NULL)
         {
             entry->cursor = entry->cursor->next;
+            printf("char %c\n", entry->cursor->character);
         }
 
         return true;
@@ -322,6 +323,22 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         }
 
         return true;
+    }
+    else
+    {
+        // If the key pressed in a displayable character, add it to the entry
+        if (event->param.key_code >= 32 && event->param.key_code <= 126)
+        {
+            // If the shift key is pressed, make the letter uppercase
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left))
+            {
+                event->param.key_code = toupper(event->param.key_code);
+            }
+
+            ei_entry_add_character(entry, event->param.key_code);
+
+            return true;
+        }
     }
 
     return false;

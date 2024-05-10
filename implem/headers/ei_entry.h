@@ -46,7 +46,6 @@ typedef struct ei_entry_t
     ei_entry_character_t *cursor;             // Position of the cursor
     bool cursor_visible;                      // Boolean indicating if the cursor is visible (blinking)
     bool focused;                             // Boolean indicating if the entry is focused
-    ei_string_t placeholder_text;             // Placeholder text
 } ei_entry_t;
 
 /**
@@ -148,5 +147,24 @@ void ei_draw_entry_text(ei_entry_t *entry);
  * @return  The character that is closest to the given position
  */
 ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t position);
+
+/**
+ * @brief   Add a character at cursor position for the given entry
+ *
+ * @param   entry       The entry for which to add the character
+ * @param   character   The character to add
+ */
+void ei_entry_add_character(ei_entry_t *entry, char character);
+
+/**
+ * @brief   Recompute the position of all the characters after the give one.
+ *          This is primarly used when writing a character in the middle of the entry
+ *          since we need to shift the position of all the characters at the right
+ *          of the one the user typed
+ *
+ * @param   entry       The entry for which to recompute the positions
+ * @param   character   The character after which to recompute the positions
+ */
+void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character);
 
 #endif

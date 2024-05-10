@@ -94,7 +94,7 @@ void ei_release_focused_entry(ei_widget_t *widget)
     }
 
     // If the widget is a focused entry, release the focus
-    if (strcmp((*widget)->wclass->name, "entry") == 0)
+    if (strcmp((*widget)->wclass->name, "entry") == 0 && ((ei_entry_t *)*widget)->focused)
     {
         ei_entry_release_focus(*widget);
     }
@@ -137,35 +137,7 @@ void ei_entry_set_text(ei_widget_t widget, ei_const_string_t text)
 
     for (int i = 0; i < strlen(text); i++)
     {
-        ei_entry_character_t *character = malloc(sizeof(ei_entry_character_t));
-
-        character->character = *(char *)malloc(sizeof(char));
-        strcpy(&character->character, &text[i]);
-
-        character->next = NULL;
-
-        // If the entry is empty, update the first chracter
-        if (entry->first_character == NULL)
-        {
-            entry->first_character = character;
-        }
-
-        character->previous = entry->last_character;
-        entry->last_character = character;
-
-        // If the previous is not NULL, set its next to this character
-        if (character->previous != NULL)
-        {
-            character->previous->next = character;
-        }
-
-        character->position = character->previous != NULL
-                                  ? character->previous->position + character->previous->character_width + ei_entry_default_letter_spacing
-                                  : 0;
-
-        char text[2] = {character->character, '\0'};
-        ei_surface_t text_surface = hw_text_create_surface(text, entry->text.font, entry->text.color);
-        character->character_width = hw_surface_get_size(text_surface).width;
+        ei_entry_add_character(entry, text[i]);
     }
 }
 

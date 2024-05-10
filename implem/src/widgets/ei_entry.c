@@ -5,6 +5,7 @@
 #include "../api/ei_draw.h"
 #include "../api/ei_utils.h"
 #include "../api/ei_event.h"
+#include "../api/ei_entry.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_draw_ext.h"
@@ -83,7 +84,7 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
     {
         // Put the cursor between the character it is pointing to and the next one
         cursor_position = ei_point(
-            entry->widget.screen_location.top_left.x + entry->cursor->position + ei_entry_default_padding + ei_entry_default_letter_spacing / 2,
+            entry->widget.screen_location.top_left.x + entry->cursor->position + entry->cursor->character_width + ei_entry_default_padding + ei_entry_default_letter_spacing / 2,
             entry->widget.screen_location.top_left.y + ei_entry_default_padding);
     }
     else
@@ -102,7 +103,7 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
                                   ? ei_entry_default_focused_border_color
                                   : entry->widget_appearance.color;
 
-    ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, NULL);
+    ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, entry->widget.content_rect);
 }
 
 void ei_draw_entry_text(ei_entry_t *entry)
@@ -115,16 +116,12 @@ void ei_draw_entry_text(ei_entry_t *entry)
     for (ei_entry_character_t *character = entry->first_character; character != NULL; character = character->next)
     {
         char text[2] = {character->character, '\0'};
-        ei_surface_t text_surface = hw_text_create_surface(text, entry->text.font, entry->text.color);
 
-        ei_rect_t dst_rect = ei_rect(
-            ei_point(entry->widget.screen_location.top_left.x + ei_entry_default_padding + character->position,
-                     entry->widget.screen_location.top_left.y + ei_entry_default_padding),
-            hw_surface_get_size(text_surface));
+        ei_point_t where = ei_point(
+            entry->widget.screen_location.top_left.x + ei_entry_default_padding + character->position,
+            entry->widget.screen_location.top_left.y + ei_entry_default_padding);
 
-        ei_copy_surface(ei_app_root_surface(), &dst_rect, text_surface, NULL, true);
-
-        entry->text_length++;
+        ei_draw_text(ei_app_root_surface(), &where, text, entry->text.font, entry->text.color, entry->widget.content_rect);
     }
 }
 
@@ -147,6 +144,20 @@ void ei_entry_setdefaultsfunc(ei_widget_t widget)
     entry->previous = NULL;
     entry->next = NULL;
 
+    // Add fake character at the start of the entry. We need this because
+    // for n characters, there is n + 1 cursor positions (1 character -->
+    // cursor can be on the left or right)
+    ei_entry_character_t *fake_character = malloc(sizeof(ei_entry_character_t));
+    fake_character->character = '\0';
+    fake_character->previous = NULL;
+    fake_character->next = NULL;
+    fake_character->position = 0;
+    fake_character->character_width = 0;
+
+    entry->first_character = fake_character;
+    entry->last_character = fake_character;
+    entry->cursor = fake_character;
+
     // Find the entry before this one in the widget tree
     // If there is one, link them
     ei_widget_t root = ei_app_root_widget();
@@ -159,14 +170,8 @@ void ei_entry_setdefaultsfunc(ei_widget_t widget)
         ((ei_entry_t *)previous_entry)->next = entry;
     }
 
-    entry->first_character = NULL;
-    entry->last_character = NULL;
-    entry->cursor = NULL;
     entry->cursor_visible = false;
-
     entry->focused = false;
-
-    entry->placeholder_text = NULL;
 }
 
 void ei_entry_geomnotifyfunc(ei_widget_t widget)
@@ -201,7 +206,6 @@ ei_size_t ei_entry_get_natural_size(ei_entry_t *entry)
 void ei_update_requested_char_size(ei_entry_t *entry, int requested_char_size)
 {
     ei_surface_t m_surface = hw_text_create_surface("m", entry->text.font, entry->text.color);
-
     ei_size_t size = hw_surface_get_size(m_surface);
 
     entry->widget.requested_size.width = size.width * requested_char_size + ei_entry_default_padding * 2;
@@ -249,4 +253,64 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
     }
 
     return NULL;
+}
+
+void ei_entry_add_character(ei_entry_t *entry, char character)
+{
+    ei_entry_character_t *entry_character = malloc(sizeof(ei_entry_character_t));
+
+    entry_character->character = *(char *)malloc(sizeof(char));
+    strcpy(&entry_character->character, &character);
+
+    entry_character->previous = NULL;
+    entry_character->next = NULL;
+
+    // Insert the character at the position of the cursor
+    entry_character->previous = entry->cursor;
+    entry_character->next = entry->cursor->next;
+
+    if (entry->cursor->next != NULL)
+    {
+        entry->cursor->next->previous = entry_character;
+    }
+
+    entry->cursor->next = entry_character;
+
+    // If the new character is the last one, update the last character
+    if (entry_character->next == NULL)
+    {
+        entry->last_character = entry_character;
+    }
+
+    entry_character->position = entry_character->previous != NULL
+                                    ? entry_character->previous->position + entry_character->previous->character_width + ei_entry_default_letter_spacing
+                                    : 0;
+
+    // Calculate the width of the character
+    char text[2] = {entry_character->character, '\0'};
+    ei_surface_t text_surface = hw_text_create_surface(text, entry->text.font, entry->text.color);
+    entry_character->character_width = hw_surface_get_size(text_surface).width;
+
+    entry->cursor = entry_character;
+    entry->text_length++;
+
+    // Update the position of all the character after what we just wrote
+    if (entry_character->next != NULL)
+    {
+        ei_compute_positions_after_character(entry, entry->cursor);
+    }
+}
+
+void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character)
+{
+    ei_entry_character_t *current_character = character->next;
+
+    while (current_character != NULL)
+    {
+        current_character->position = current_character->previous != NULL
+                                          ? current_character->previous->position + current_character->previous->character_width + ei_entry_default_letter_spacing
+                                          : 0;
+
+        current_character = current_character->next;
+    }
 }
