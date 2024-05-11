@@ -73,41 +73,6 @@ void ei_app_run(void)
         hw_surface_lock(window_surface);
         hw_surface_lock(offscreen_picking);
 
-        // while (true)
-        // {
-        //     bool optimized = false;
-
-        //     for (ei_linked_rect_t *invalid_rect_1 = invalid_rects; invalid_rect_1 != NULL; invalid_rect_1 = invalid_rect_1->next)
-        //     {
-        //         for (ei_linked_rect_t *invalid_rect_2 = invalid_rects; invalid_rect_2 != NULL; invalid_rect_2 = invalid_rect_2->next)
-        //         {
-        //             if (invalid_rect_1 == invalid_rect_2)
-        //             {
-        //                 continue;
-        //             }
-
-        //             if (ei_get_intersection_percentage(invalid_rect_1->rect, invalid_rect_2->rect) >= RECTANGLES_MERGE_THRESHOLD)
-        //             {
-        //                 DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", invalid_rect_1->rect.top_left.x, invalid_rect_1->rect.top_left.y, invalid_rect_1->rect.size.width, invalid_rect_1->rect.size.height, invalid_rect_2->rect.top_left.x, invalid_rect_2->rect.top_left.y, invalid_rect_2->rect.size.width, invalid_rect_2->rect.size.height) : 0;
-        //                 invalid_rect_1->rect = ei_merge_rectangles(invalid_rect_1->rect, invalid_rect_2->rect);
-
-        //                 ei_linked_rect_t *next_invalid_rect = invalid_rect_2->next;
-        //                 free(invalid_rect_2);
-        //                 invalid_rect_2 = next_invalid_rect;
-
-        //                 optimized = true;
-        //             }
-        //         }
-        //     }
-
-        //     if (!optimized)
-        //     {
-        //         break;
-        //     }
-
-        //     printf("Optimized\n");
-        // }
-
         // Redraw all the widgets but use each invalid_rect as a clipper so that we don't redraw the whole screen every time
         if (invalid_rects != NULL)
         {
@@ -194,7 +159,7 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
 
             // If two rectangles have a big enough common area, merge them, overwrite the current rectangle in
             // the linked list and return since we don't need the new rectangle anymore
-            if (ei_get_intersection_percentage(*rect, current_invalid_rect->rect) >= RECTANGLES_MERGE_THRESHOLD)
+            if (ei_get_intersection_percentage(*rect, current_invalid_rect->rect) >= rectangles_merge_threshold)
             {
                 DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
                 current_invalid_rect->rect = ei_merge_rectangles(*rect, current_invalid_rect->rect);

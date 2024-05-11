@@ -52,16 +52,22 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_unbind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
     ei_unbind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
 
-    return true;
+    return false;
 }
 
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    // If the widget beneath the cursor is not the button, it means the user moved
-    // the cursor out of the button, and so, we want to release the button
-    if (ei_get_picking_widget() != widget)
+    ei_button_t *button = (ei_button_t *)widget;
+
+    // If the widget beneath the cursor is the button, show the button as pressed
+    if (ei_get_picking_widget() == widget)
     {
-        return ei_button_release(widget, event, user_param);
+        button->frame_appearance.relief = ei_relief_sunken;
+    }
+    // Otherwise, show the button as raised
+    else
+    {
+        button->frame_appearance.relief = ei_relief_raised;
     }
 
     return true;
@@ -259,8 +265,9 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
     ei_entry_t *entry = (ei_entry_t *)widget;
 
     // If a double or triple click event is scheduled, we don't
-    // want to handle single clicks for now, so return
-    if (entry->multiple_click_app_id != NULL)
+    // want to handle single clicks for now, except if the user clicked
+    // on another character, in which case it's not a double or triple click
+    if (entry->multiple_click_app_id != NULL && entry->cursor == ei_get_character_at_position(entry, event->param.mouse.where))
     {
         return false;
     }
@@ -931,25 +938,33 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // Erase the character at cursor position
     else if (event->param.key_code == SDLK_BACKSPACE)
     {
-        // If the user also pressed ctrl, delete the whole word
-        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
-            ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+        // If there is a selection active, erase it
+        if (entry->selection_direction != ei_selection_direction_none)
         {
-            while (entry->cursor->previous)
-            {
-                if (entry->cursor->previous->character == ' ')
-                {
-                    ei_entry_erase_character(entry, entry->cursor);
-                    break;
-                }
-
-                ei_entry_erase_character(entry, entry->cursor);
-            }
+            ei_erase_selection(entry);
         }
-        // Otherwise, only erase the previous character
         else
         {
-            ei_entry_erase_character(entry, entry->cursor);
+            // If the user also pressed ctrl, delete the whole word
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+                ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+            {
+                while (entry->cursor->previous)
+                {
+                    if (entry->cursor->previous->character == ' ')
+                    {
+                        ei_entry_erase_character(entry, entry->cursor);
+                        break;
+                    }
+
+                    ei_entry_erase_character(entry, entry->cursor);
+                }
+            }
+            // Otherwise, only erase the previous character
+            else
+            {
+                ei_entry_erase_character(entry, entry->cursor);
+            }
         }
 
         handled = true;

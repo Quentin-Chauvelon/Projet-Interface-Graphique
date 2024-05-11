@@ -20,7 +20,7 @@
 // If the area of the intersection of two rectangles over the area of both rectangles
 // is greater than this value, merge the two rectangles (20% seems low but if you draw
 // the rectangles, you will see that the merged rectangle seems to be the right choice)
-static const int RECTANGLES_MERGE_THRESHOLD = 20;
+static const int rectangles_merge_threshold = 20;
 
 /**
  * @brief   Returns the color corresponding to the id
