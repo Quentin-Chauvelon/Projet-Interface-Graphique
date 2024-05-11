@@ -61,6 +61,8 @@ void ei_place(ei_widget_t widget,
     placer_geom_param->rel_height = rel_height != NULL ? *rel_height : 0.0;
 
     ei_widget_set_geom_params(widget, (ei_geom_param_t)placer_geom_param);
+
+    placer_geom_param->geom_param.manager->runfunc(widget);
 }
 
 void ei_placer_runfunc(ei_widget_t widget)

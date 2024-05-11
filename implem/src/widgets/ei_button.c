@@ -21,15 +21,15 @@ void ei_button_releasefunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
-    if (button->frame_appearance.image.data != NULL)
+    if (button->frame_appearance.image.rect != NULL)
     {
-        free(button->frame_appearance.image.data);
+        free(button->frame_appearance.image.rect);
     }
 
-    if (button->user_param != NULL)
-    {
-        free(button->user_param);
-    }
+    // if (button->user_param != NULL)
+    // {
+    //     free(button->user_param);
+    // }
 
     free(button);
     button = NULL;
