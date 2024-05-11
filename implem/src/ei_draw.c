@@ -266,6 +266,14 @@ void ei_draw_frame(ei_surface_t surface, ei_rect_t screen_location, int border_w
     else
     {
 
+        // Since the inner rectangle (without the borders) is smaller than outer
+        // rectangle (with the borders), we need to reduce the corner radius, the
+        // equation for this is outer_radius = inner_radius + border_width (from
+        // this article: https://cloudfour.com/thinks/the-math-behind-nesting-rounded-corners/)
+        corner_radius = corner_radius > 0
+                            ? corner_radius - border_width
+                            : 0;
+
         point_array = ei_get_rounded_frame_points(screen_location, corner_radius, ei_rounded_frame_full);
 
         // If malloc failed, return
@@ -383,12 +391,27 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
     int src_line_length = src_size.width * sizeof(ei_color_t);
     int dst_line_length = dst_size.width * sizeof(ei_color_t);
 
+    ei_size_t screen_size = hw_surface_get_size(destination);
+
     // Iterate over each pixel to copy
     for (int y = 0; y < src_size_after_clipping.height; y++)
     {
+        // If we are out of the screen, break
+        if (y > screen_size.height)
+        {
+            break;
+        }
+
         // memcpy(hw_surface_get_buffer(destination) + dst_offset + y * dst_line_length, hw_surface_get_buffer(source) + src_offset + y * src_line_length, dst_size_after_clipping.width * sizeof(ei_color_t));
         for (int x = 0; x < src_size_after_clipping.width * sizeof(ei_color_t); x += 4)
         {
+            // If we are out of the screen, break, otherwise, we will
+            // write at the beggining of the next line
+            if (x > screen_size.width)
+            {
+                break;
+            }
+
             // Get a pointer to the first component of the pixel
             uint8_t *src_buffer = src_top_left_pixel + y * src_line_length + x;
             uint8_t *dst_buffer = dst_top_left_pixel + y * dst_line_length + x;
@@ -411,9 +434,6 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
             }
         }
     }
-
-    // Reset origin
-    hw_surface_set_origin(destination, ei_point_zero());
 
     return 0;
 }

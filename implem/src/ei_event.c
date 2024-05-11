@@ -101,7 +101,7 @@ void ei_unbind_all_events()
  *
  * @return true if the callback returned true (was handled), false otherwise
  */
-static bool call_callback_function(ei_callback_t callback, ei_widget_t widget, ei_event_t event, void *user_param)
+static bool ei_call_callback_function(ei_callback_t callback, ei_widget_t widget, ei_event_t event, void *user_param)
 {
     // Make a copy of the widget since the event might be unbinded in the callback function
     // and so, the widget will point to a random memory address
@@ -129,7 +129,7 @@ static bool call_callback_function(ei_callback_t callback, ei_widget_t widget, e
  *
  * @return true if the callback returned true (was handled), false otherwise
  */
-static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
+static bool ei_handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
 {
     // If the widget is not the same as the filter widget, if there is one, return false
     if (filter_widget != NULL && binded_event->widget != filter_widget)
@@ -137,7 +137,7 @@ static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event,
         return false;
     }
 
-    return call_callback_function(binded_event->callback, binded_event->widget, event, binded_event->user_param);
+    return ei_call_callback_function(binded_event->callback, binded_event->widget, event, binded_event->user_param);
 }
 
 /**
@@ -154,7 +154,7 @@ static bool handle_widget_event(ei_event_bind_t *binded_event, ei_event_t event,
  *
  * @return true if the event returned true (was handled), false otherwise
  */
-static bool handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
+static bool ei_handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event, ei_event_t event, ei_widget_t filter_widget)
 {
     if (widget == NULL)
     {
@@ -167,7 +167,7 @@ static bool handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event,
         // If the tag is "all" or the tag is the same as the widget class name (button, frame, ...), call the callback function
         if (strcmp(binded_event->tag, "all") == 0 || strcmp(binded_event->tag, (*widget)->wclass->name) == 0)
         {
-            bool handled = call_callback_function(binded_event->callback, *widget, event, binded_event->user_param);
+            bool handled = ei_call_callback_function(binded_event->callback, *widget, event, binded_event->user_param);
             if (handled)
             {
                 return true;
@@ -177,7 +177,7 @@ static bool handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event,
 
     for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
     {
-        bool handled = handle_tag_event(&children, binded_event, event, filter_widget);
+        bool handled = ei_handle_tag_event(&children, binded_event, event, filter_widget);
 
         if (handled)
         {
@@ -196,7 +196,7 @@ static bool handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_event,
  *
  * @return true if the event returned true (was handled), false otherwise
  */
-static bool handle_mouse_button_down_event(ei_event_t event)
+static bool ei_handle_mouse_button_down_event(ei_event_t event)
 {
     if (picking_widget != NULL && strcmp(picking_widget->wclass->name, "button") == 0)
     {
@@ -204,7 +204,7 @@ static bool handle_mouse_button_down_event(ei_event_t event)
 
         if (button->callback != NULL)
         {
-            return call_callback_function(button->callback, picking_widget, event, button->user_param);
+            return ei_call_callback_function(button->callback, picking_widget, event, button->user_param);
         }
     }
 
@@ -294,9 +294,10 @@ void ei_handle_event(ei_event_t event)
             // If the event is related to a widget
             if (current_event->widget != NULL)
             {
-                if (handle_widget_event(current_event, event, filter_widget))
+                if (ei_handle_widget_event(current_event, event, filter_widget))
                 {
-                    return;
+                    current_event = current_event->next;
+                    continue;
                 }
             }
 
@@ -305,9 +306,10 @@ void ei_handle_event(ei_event_t event)
             {
                 ei_widget_t root = ei_app_root_widget();
 
-                if (handle_tag_event(&root, current_event, event, filter_widget))
+                if (ei_handle_tag_event(&root, current_event, event, filter_widget))
                 {
-                    return;
+                    current_event = current_event->next;
+                    continue;
                 }
             }
         }
@@ -319,7 +321,7 @@ void ei_handle_event(ei_event_t event)
     if (event.type == ei_ev_mouse_buttondown)
     {
         // The return value of this function does not really matter since it is the last handled event
-        handle_mouse_button_down_event(event);
+        ei_handle_mouse_button_down_event(event);
     }
 }
 
