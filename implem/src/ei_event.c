@@ -298,7 +298,7 @@ void ei_handle_event(ei_event_t event)
                 if (ei_handle_widget_event(current_event, event, filter_widget))
                 {
                     current_event = current_event->next;
-                    continue;
+                    return;
                 }
             }
 
@@ -310,7 +310,7 @@ void ei_handle_event(ei_event_t event)
                 if (ei_handle_tag_event(&root, current_event, event, filter_widget))
                 {
                     current_event = current_event->next;
-                    continue;
+                    return;
                 }
             }
         }
@@ -318,11 +318,17 @@ void ei_handle_event(ei_event_t event)
         current_event = current_event->next;
     }
 
-    // User pressed a mouse button
-    if (event.type == ei_ev_mouse_buttondown)
+    // If the user released the mouse button, call the external
+    // callback function associated with the button if the mouse
+    // is over a button
+    if (event.type == ei_ev_mouse_buttonup)
     {
-        // The return value of this function does not really matter since it is the last handled event
-        ei_handle_mouse_button_down_event(event);
+        // Redraw the whole screen since we don't know what the callback
+        // might have done
+        if (ei_handle_mouse_button_down_event(event))
+        {
+            ei_app_invalidate_rect(&ei_app_root_widget()->screen_location);
+        }
     }
 }
 
