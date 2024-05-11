@@ -516,7 +516,8 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     {
         ei_entry_release_focus(widget);
 
-        handled = true;
+        // Set handled to false, otherwise, blinking will restart
+        handled = false;
     }
     else if (event->param.key_code == SDLK_TAB)
     {

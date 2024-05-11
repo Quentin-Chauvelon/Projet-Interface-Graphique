@@ -180,7 +180,11 @@ void ei_frame_configure(ei_widget_t widget,
 
     if (img_rect != NULL)
     {
-        frame->frame_appearance.image.rect = *img_rect;
+        frame->frame_appearance.image.rect = malloc(sizeof(ei_rect_t));
+        frame->frame_appearance.image.rect->top_left.x = (*img_rect)->top_left.x;
+        frame->frame_appearance.image.rect->top_left.y = (*img_rect)->top_left.y;
+        frame->frame_appearance.image.rect->size.width = (*img_rect)->size.width;
+        frame->frame_appearance.image.rect->size.height = (*img_rect)->size.height;
     }
     else
     {
@@ -386,7 +390,11 @@ void ei_button_configure(ei_widget_t widget,
 
     if (img_rect != NULL)
     {
-        button->frame_appearance.image.rect = *img_rect;
+        button->frame_appearance.image.rect = malloc(sizeof(ei_rect_t));
+        button->frame_appearance.image.rect->top_left.x = (*img_rect)->top_left.x;
+        button->frame_appearance.image.rect->top_left.y = (*img_rect)->top_left.y;
+        button->frame_appearance.image.rect->size.width = (*img_rect)->size.width;
+        button->frame_appearance.image.rect->size.height = (*img_rect)->size.height;
     }
     else
     {

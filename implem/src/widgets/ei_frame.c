@@ -19,9 +19,9 @@ void ei_frame_releasefunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
-    if (frame->frame_appearance.image.data != NULL)
+    if (frame->frame_appearance.image.rect != NULL)
     {
-        free(frame->frame_appearance.image.data);
+        free(frame->frame_appearance.image.rect);
     }
 
     free(frame);

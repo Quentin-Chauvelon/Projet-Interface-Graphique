@@ -31,12 +31,22 @@ void ei_entry_releasefunc(ei_widget_t widget)
         entry->previous->next = entry->next;
     }
 
-    // Relink the next entry and focus on the next entry if there is one
+    // Relink the next entry
     if (entry->next != NULL)
     {
         entry->next->previous = entry->previous;
 
-        ei_entry_give_focus((ei_widget_t)entry->next);
+        // If the entry is focused, focus on the next entry
+        if (entry->focused)
+        {
+            ei_entry_give_focus((ei_widget_t)entry->next);
+        }
+    }
+
+    // If the entry is focused, release the focus
+    if (entry->focused)
+    {
+        ei_entry_release_focus(widget);
     }
 
     if (entry->text.label != NULL)
