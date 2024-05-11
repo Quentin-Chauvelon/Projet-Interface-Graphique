@@ -37,4 +37,16 @@ void ei_release_focused_entry(ei_widget_t *widget);
  */
 void ei_get_previous_entry(ei_widget_t *widget, ei_widget_t *entry, ei_widget_t **previous);
 
+/**
+ * @brief   Returns a string representing the text between the two given characters
+ *          of the entry
+ *
+ * @param   widget          The current widget
+ * @param   first_character The first character to get the text from
+ * @param   last_character  The last character to get the text from
+ *
+ * @return  The text between the two characters
+ */
+ei_const_string_t ei_entry_get_text_between_characters(ei_widget_t widget, ei_entry_character_t *first_character, ei_entry_character_t *last_character);
+
 #endif

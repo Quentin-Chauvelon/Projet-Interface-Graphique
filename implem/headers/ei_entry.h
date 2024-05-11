@@ -25,7 +25,9 @@ static const int ei_entry_default_blinking_interval = 700;
 static const int ei_entry_max_double_click_interval = 600;
 static const ei_color_t ei_entry_default_unfocused_border_color = (ei_color_t){120, 120, 120, 255};
 static const ei_color_t ei_entry_default_focused_border_color = (ei_color_t){50, 50, 50, 255};
-static const ei_color_t ei_entry_default_selection_color = (ei_color_t){0, 116, 255, 150};
+static const ei_color_t ei_entry_default_selection_color = (ei_color_t){78, 143, 222, 255};
+
+extern ei_string_t clipboard;
 
 typedef struct ei_entry_character_t
 {
@@ -182,6 +184,13 @@ void ei_entry_add_character(ei_entry_t *entry, char character);
 void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character);
 
 /**
+ * @brief   Erase the characters in the selection
+ *
+ * @param   entry       The entry for which to erase the selection
+ */
+void ei_erase_selection(ei_entry_t *entry);
+
+/**
  * @brief   Recompute the position of all the characters after the give one.
  *          This is primarly used when writing a character in the middle of the entry
  *          since we need to shift the position of all the characters at the right
@@ -201,6 +210,23 @@ void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_
  */
 void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible);
 
+/**
+ * @brief   Update the selection by settings the first and last character
+ *          of said selection
+ *
+ * @param   entry           The entry for which to update the selection
+ * @param   start_character The first character of the selection
+ * @param   end_character   The last character of the selection
+ * @param   direction       The direction of the selection (left, right or none). Allows to know
+ *                          if the selection should expand or shrink based on the keys pressed
+ */
 void ei_set_selection_characters(ei_entry_t *entry, ei_entry_character_t *start_character, ei_entry_character_t *end_character, ei_selection_direction_t direction);
+
+/**
+ * @brief   Copy the characters in the selection to the clipboard
+ *
+ * @param   entry   The entry for which to copy the selection
+ */
+void ei_copy_to_clipboard(ei_entry_t *entry);
 
 #endif

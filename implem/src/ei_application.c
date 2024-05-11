@@ -18,6 +18,7 @@
 #include "../implem/headers/ei_widget_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_application_ext.h"
+#include "../implem/headers/ei_entry.h"
 
 static ei_widget_t root = NULL;
 static ei_surface_t window_surface = NULL;
@@ -115,6 +116,11 @@ void ei_app_free(void)
     ei_widgetclass_free_all();
 
     ei_geometrymanager_free_all();
+
+    if (clipboard != NULL)
+    {
+        free(clipboard);
+    }
 
     hw_surface_free(offscreen_picking);
     hw_quit();

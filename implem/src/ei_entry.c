@@ -7,6 +7,7 @@
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
+#include "../implem/headers/ei_entry_ext.h"
 
 void ei_entry_configure(ei_widget_t widget, int *requested_char_size, const ei_color_t *color, int *border_width, ei_font_t *text_font, ei_color_t *text_color)
 {
@@ -150,27 +151,73 @@ ei_const_string_t ei_entry_get_text(ei_widget_t widget)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
+    return ei_entry_get_text_between_characters(widget, entry->first_character, entry->last_character);
+}
+
+ei_const_string_t ei_entry_get_text_between_characters(ei_widget_t widget, ei_entry_character_t *first_character, ei_entry_character_t *last_character)
+{
+    ei_entry_t *entry = (ei_entry_t *)widget;
+
     // Since the first character is a fake one and its character is '\0',
     // skip it. Otherwise, the text would end instantly
     if (entry->first_character->next == NULL)
     {
-        return NULL;
+        return "";
     }
 
-    char *text = malloc(sizeof(char) * entry->text_length + 1);
+    int text_length = 0;
+
+    // If the first character is pointing to the fake character, move it
+    // to the first real character
+    if (first_character == entry->first_character)
+    {
+        first_character = entry->first_character->next;
+    }
+
+    // If the first and last character point respectively to the first and last
+    // characters of the text, we already know the lenth of the text
+    if (first_character == entry->first_character && last_character == entry->last_character)
+    {
+        text_length = entry->text_length;
+    }
+    else
+    {
+        // Calculate the length of the text between the two characters
+        ei_entry_character_t *character = first_character;
+
+        while (character != last_character)
+        {
+            text_length++;
+            character = character->next;
+        }
+
+        // Add the last character
+        text_length++;
+    }
+
+    // Free the previous label if there is one
+    if (entry->text.label != NULL)
+    {
+        free(entry->text.label);
+        entry->text.label = NULL;
+    }
+
+    entry->text.label = malloc(sizeof(char) * text_length + 1);
     int i = 0;
 
-    ei_entry_character_t *character = entry->first_character->next;
-    while (character != NULL)
+    entry->text.label[i++] = first_character->character;
+
+    ei_entry_character_t *character = first_character;
+    while (character != NULL && character != last_character)
     {
-        text[i++] = character->character;
         character = character->next;
+        entry->text.label[i++] = character->character;
     }
 
     // Add the terminating character at the end of the string
-    text[i] = '\0';
+    entry->text.label[i] = '\0';
 
-    return text;
+    return entry->text.label;
 }
 
 void ei_entry_give_focus(ei_widget_t widget)

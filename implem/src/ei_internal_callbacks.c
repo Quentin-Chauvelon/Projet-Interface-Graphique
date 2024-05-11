@@ -15,6 +15,7 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
+#include "../implem/headers/ei_entry_ext.h"
 
 typedef struct ei_move_top_level_params_t
 {
@@ -992,12 +993,40 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         {
 
             // If the user pressed ctrl+A, select all the text
-            if (event->param.key_code == SDLK_a &&
-                (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
-                 ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right)))
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+                ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
             {
-                entry->cursor = entry->first_character;
-                ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+                if (event->param.key_code == SDLK_a)
+                {
+                    entry->cursor = entry->first_character;
+                    ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+                }
+                else if (event->param.key_code == SDLK_c)
+                {
+                    ei_copy_to_clipboard(entry);
+                }
+                else if (event->param.key_code == SDLK_x)
+                {
+                    ei_copy_to_clipboard(entry);
+
+                    ei_erase_selection(entry);
+                }
+                else if (event->param.key_code == SDLK_v)
+                {
+                    if (clipboard != NULL)
+                    {
+                        // Save the character after the cursor since we want to move
+                        // the cursor at the end of the pasted text
+                        ei_entry_character_t *next_character = entry->cursor->next;
+
+                        ei_entry_set_text(&entry->widget, clipboard);
+
+                        // Move the cursor at the end of the pasted text
+                        entry->cursor = next_character != NULL
+                                            ? next_character->previous
+                                            : entry->last_character;
+                    }
+                }
             }
             else
             {

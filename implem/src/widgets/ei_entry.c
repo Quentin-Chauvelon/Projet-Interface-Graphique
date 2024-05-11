@@ -14,6 +14,8 @@
 #include "../implem/headers/ei_entry_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 
+ei_string_t clipboard = NULL;
+
 ei_widget_t ei_entry_allocfunc()
 {
     return ei_widget_allocfunc(sizeof(ei_entry_t));
@@ -35,6 +37,33 @@ void ei_entry_releasefunc(ei_widget_t widget)
         entry->next->previous = entry->previous;
 
         ei_entry_give_focus((ei_widget_t)entry->next);
+    }
+
+    if (entry->text.label != NULL)
+    {
+        free(entry->text.label);
+        entry->text.label = NULL;
+    }
+
+    // Free all characters
+    entry->cursor = entry->last_character;
+
+    while (entry->cursor->previous != NULL)
+    {
+        ei_entry_erase_character(entry, entry->cursor);
+    }
+
+    // Free the fake character
+    free(entry->first_character);
+
+    if (entry->blinking_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->blinking_app_id);
+    }
+
+    if (entry->multiple_click_app_id != NULL)
+    {
+        hw_event_cancel_app(entry->multiple_click_app_id);
     }
 
     free(entry);
@@ -331,21 +360,7 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
 
 void ei_entry_add_character(ei_entry_t *entry, char character)
 {
-    // If a selection is active, erase the selected text
-    if (entry->selection_start_character != NULL && entry->selection_end_character != NULL)
-    {
-        entry->cursor = entry->selection_end_character;
-
-        while (entry->cursor->previous != NULL && entry->cursor != entry->selection_start_character)
-        {
-            ei_entry_erase_character(entry, entry->cursor);
-        }
-
-        // Erase one last time to remove the first character of the selection
-        ei_entry_erase_character(entry, entry->cursor);
-
-        ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
-    }
+    ei_erase_selection(entry);
 
     ei_entry_character_t *entry_character = malloc(sizeof(ei_entry_character_t));
 
@@ -413,7 +428,6 @@ void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character
     }
 
     ei_entry_character_t *character_to_delete = character;
-    free(character_to_delete);
 
     entry->cursor = character->previous;
 
@@ -427,6 +441,27 @@ void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character
     }
 
     entry->text_length--;
+
+    free(character_to_delete);
+}
+
+void ei_erase_selection(ei_entry_t *entry)
+{
+    // If a selection is active, erase the selected text
+    if (entry->selection_start_character != NULL && entry->selection_end_character != NULL)
+    {
+        entry->cursor = entry->selection_end_character;
+
+        while (entry->cursor->previous != NULL && entry->cursor != entry->selection_start_character)
+        {
+            ei_entry_erase_character(entry, entry->cursor);
+        }
+
+        // Erase one last time to remove the first character of the selection
+        ei_entry_erase_character(entry, entry->cursor);
+
+        ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+    }
 }
 
 void ei_compute_positions_after_character(ei_entry_t *entry, ei_entry_character_t *character)
@@ -468,4 +503,41 @@ void ei_set_selection_characters(ei_entry_t *entry, ei_entry_character_t *start_
     entry->selection_start_character = start_character;
     entry->selection_end_character = end_character;
     entry->selection_direction = direction;
+}
+
+void ei_copy_to_clipboard(ei_entry_t *entry)
+{
+    // If there is no active selection, return
+    if (entry->selection_start_character == NULL || entry->selection_end_character == NULL)
+    {
+        return;
+    }
+
+    if (clipboard != NULL)
+    {
+        free(clipboard);
+    }
+
+    // If the first character of the selection is the fake character, skip it
+    if (entry->selection_start_character == entry->first_character)
+    {
+        entry->selection_start_character = entry->first_character->next;
+    }
+
+    int text_length = 0;
+
+    // Calculate the length of the text in the selection
+    ei_entry_character_t *character = entry->selection_start_character;
+
+    while (character != entry->selection_start_character)
+    {
+        text_length++;
+        character = character->next;
+    }
+
+    // Add the last character of the selection
+    text_length++;
+
+    clipboard = malloc(text_length + 1);
+    clipboard = strcpy(clipboard, ei_entry_get_text_between_characters(&entry->widget, entry->selection_start_character, entry->selection_end_character));
 }
