@@ -111,7 +111,7 @@ static bool call_callback_function(ei_callback_t callback, ei_widget_t widget, e
     // The callback must be called before computing the geometry since it might change the widget's geometry
     bool handled = callback(widget, &event, user_param);
 
-    if (ei_widget_is_displayed(widget_copy))
+    if (handled && widget_copy->wclass != NULL && ei_widget_is_displayed(widget_copy))
     {
         widget_copy->geom_params->manager->runfunc(widget_copy);
     }
@@ -240,6 +240,8 @@ void ei_handle_event(ei_event_t event)
 
             entry->blinking_app_id = NULL;
             ei_restart_blinking_timer(entry, false);
+
+            free(params);
         }
         // Handle double click too slow
         else if (params->id == 2)
@@ -249,6 +251,8 @@ void ei_handle_event(ei_event_t event)
             ei_unbind(ei_ev_mouse_buttondown, &entry->widget, NULL, ei_entry_double_click, NULL);
 
             entry->multiple_click_app_id = NULL;
+
+            free(params);
         }
         // Handle triple click too slow
         else if (params->id == 3)
@@ -258,9 +262,9 @@ void ei_handle_event(ei_event_t event)
             ei_unbind(ei_ev_mouse_buttondown, &entry->widget, NULL, ei_entry_triple_click, NULL);
 
             entry->multiple_click_app_id = NULL;
-        }
 
-        free(params);
+            free(params);
+        }
 
         return;
     }
