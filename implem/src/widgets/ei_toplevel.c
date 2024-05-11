@@ -89,24 +89,26 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, k_default_toplevel_title_corner_radius, *widget->pick_color, ei_relief_none, clipper);
     ei_draw_rectangle(pick_surface, ei_rect_move(widget->screen_location, 0, widget->screen_location.size.height - k_default_toplevel_title_corner_radius, &widget->screen_location), *widget->pick_color, clipper);
 
-    // Reduce the size of the clipper to the widget's content rect so that children
-    // can't be drawn outside the widget's content rect
-    ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
+    // If the widget doesn't have children, don't draw them
+    if (widget->children_head != NULL)
+    {
+        // Reduce the size of the clipper to the widget's content rect so that children
+        // can't be drawn outside the widget's content rect
+        ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
 
-    // If malloc failed, set the children clipper to the clipper
-    if (children_clipper == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        *children_clipper = *clipper;
-    }
-    else
-    {
+        // If malloc failed, return
+        if (children_clipper == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
         *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+
+        ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
+
+        free(children_clipper);
     }
-
-    ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
-
-    free(children_clipper);
 
     // Draw the resize square
     if (toplevel->resizable != ei_axis_none)

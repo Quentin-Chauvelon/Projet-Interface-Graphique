@@ -18,7 +18,7 @@
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -30,7 +30,7 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -42,7 +42,7 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -53,7 +53,7 @@ static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -65,7 +65,7 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -77,7 +77,7 @@ static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_para
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -89,7 +89,7 @@ static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -101,7 +101,7 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  false
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -112,7 +112,7 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  true
+ * @return  True if the event was handled, false otherwise
  */
 static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -123,7 +123,7 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  true
+ * @return  True if the event was handled, false otherwise
  */
 bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
@@ -135,7 +135,7 @@ bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
  * @param   event       The event information
  * @param   user_param  The user parameters
  *
- * @return  true
+ * @return  True if the event was handled, false otherwise
  */
 bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
