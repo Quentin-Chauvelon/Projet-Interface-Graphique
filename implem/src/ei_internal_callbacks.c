@@ -41,7 +41,7 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     ei_bind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
     ei_bind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
 
-    return false;
+    return true;
 }
 
 static bool ei_radiobutton_pressed( ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -89,7 +89,7 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_unbind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
     ei_unbind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
 
-    return false;
+    return true;
 }
 
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -101,7 +101,7 @@ static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user
         return ei_button_release(widget, event, user_param);
     }
 
-    return false;
+    return true;
 }
 
 static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -288,7 +288,7 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, user_param);
 
-    return false;
+    return true;
 }
 
 static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -537,6 +537,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     ei_entry_t *entry = (ei_entry_t *)widget;
 
     bool handled = false;
+    bool restart_blinking_timer = true;
 
     // Store the entry to get focus in a variable because we must
     // cancel the bliking timer event before giving focus (otherwise
@@ -554,7 +555,9 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         ei_entry_release_focus(widget);
 
         // Set handled to false, otherwise, blinking will restart
-        handled = false;
+        restart_blinking_timer = false;
+
+        handled = true;
     }
     else if (event->param.key_code == SDLK_TAB)
     {
@@ -1084,7 +1087,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     }
 
     // Reset the blinking timer if the key press has been handled by the event
-    if (handled)
+    if (restart_blinking_timer)
     {
         ei_restart_blinking_timer(entry, true);
     }
