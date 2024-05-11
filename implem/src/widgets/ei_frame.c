@@ -43,20 +43,24 @@ void ei_frame_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Draw the frame on the offscreen picking surface
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, 0, *widget->pick_color, ei_relief_none, clipper);
 
+    // If the widget doesn't have children, return
+    if (widget->children_head == NULL)
+    {
+        return;
+    }
+
     // Reduce the size of the clipper to the widget's content rect so that children
     // can't be drawn outside the widget's content rect
     ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
 
-    // If malloc failed, set the children clipper to the clipper
+    // If malloc failed, return
     if (children_clipper == NULL)
     {
         printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        *children_clipper = *clipper;
+        return;
     }
-    else
-    {
-        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
-    }
+
+    *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
 
     ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
 
