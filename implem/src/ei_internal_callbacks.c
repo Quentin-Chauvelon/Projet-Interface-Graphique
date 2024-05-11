@@ -22,6 +22,12 @@ typedef struct ei_move_top_level_params_t
     ei_point_t offset;
 } ei_move_top_level_params_t;
 
+typedef struct ei_entry_drag_params_t
+{
+    ei_widget_t widget;
+    ei_entry_character_t *previous_character;
+} ei_entry_drag_params_t;
+
 static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
     ei_button_t *button = (ei_button_t *)widget;
@@ -265,15 +271,39 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 
     ei_entry_give_focus(widget);
 
-    ei_app_event_params_t *params = malloc(sizeof(ei_app_event_params_t));
-    params->id = 2;
-    params->data = entry;
+    ei_app_event_params_t *click_params = malloc(sizeof(ei_app_event_params_t));
+
+    // If malloc failed, exit since the program can't run without the event
+    if (click_params == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to handle entry click.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
+    click_params->id = 2;
+    click_params->data = entry;
 
     // Schedule an event that will unbind the double click callback in a set amount of time
-    entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, params);
+    entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, click_params);
 
     // Bind the event to listen for a double click
     ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, NULL);
+
+    ei_entry_drag_params_t *params = malloc(sizeof(ei_entry_drag_params_t));
+
+    // If malloc failed, exit since the program can't run without the event
+    if (params == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to handle entry click.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
+    params->widget = widget;
+    params->previous_character = entry->cursor;
+
+    // Listen for mouse movement and release to select text by dragging the mouse
+    ei_bind(ei_ev_mouse_move, NULL, "all", ei_entry_move, params);
+    ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, params);
 
     return true;
 }
@@ -364,6 +394,102 @@ bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
 
     // Unbind the triple click event
     ei_unbind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
+
+    return true;
+}
+
+bool ei_entry_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    if (user_param == NULL)
+    {
+        return false;
+    }
+
+    ei_entry_drag_params_t params = *((ei_entry_drag_params_t *)user_param);
+    ei_entry_t *entry = (ei_entry_t *)params.widget;
+
+    ei_entry_character_t *character = ei_get_character_at_position(entry, event->param.mouse.where);
+
+    // If the character under the cursor is different from the one that was under the cursor at
+    // the last call to this callback function, we need to update the selection
+    if (character != NULL && params.previous_character != NULL && character != params.previous_character)
+    {
+        // If the character is more to the right than the previous one, or
+        // if we are at the first character (need this condition since the
+        // the first character has a size of 0, the > check will fail and
+        // we can't use >= since it has other side effects, so this is the
+        // easiest fix)
+        if (character->position > params.previous_character->position ||
+            (character->position == params.previous_character->position &&
+             character == entry->first_character->next))
+        {
+            // If there is no active selection, selection the character under the cursor
+            if (entry->selection_direction == ei_selection_direction_none)
+            {
+                ei_set_selection_characters(entry, character, character, ei_selection_direction_right);
+            }
+            else
+            {
+                // If there is already a selection going to the right, update the end of the selection
+                if (entry->selection_direction == ei_selection_direction_right)
+                {
+                    ei_set_selection_characters(entry, entry->selection_start_character, character, ei_selection_direction_right);
+                }
+                // If there is already a selection going to the left, update the start of the selection
+                // or remove the selection if we reached the end of the text (since we can't select any
+                // further characters)
+                else
+                {
+                    character->next != NULL
+                        ? ei_set_selection_characters(entry, character->next, entry->selection_end_character, ei_selection_direction_left)
+                        : ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+                }
+            }
+        }
+        else
+        {
+            // If there is no active selection, selection the character under the cursor
+            if (entry->selection_direction == ei_selection_direction_none)
+            {
+                ei_set_selection_characters(entry, character->next, character->next, ei_selection_direction_left);
+            }
+            else
+            {
+                // If there is already a selection going to the left, update the start of the selection
+                if (entry->selection_direction == ei_selection_direction_left)
+                {
+                    ei_set_selection_characters(entry, character->next, entry->selection_end_character, ei_selection_direction_left);
+                }
+                // If there is already a selection going to the right, update the end of the selection
+                else
+                {
+                    ei_set_selection_characters(entry, entry->selection_start_character, character, ei_selection_direction_right);
+                }
+            }
+        }
+
+        // If there was an active selection and the user unselected all the characters
+        // (selection is now reversed), remove the selection since no characters are selected
+        if (entry->selection_start_character != NULL &&
+            entry->selection_end_character != NULL &&
+            entry->selection_start_character->position > entry->selection_end_character->position)
+        {
+            ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+        }
+    }
+
+    entry->cursor = character;
+
+    // Update the previous character for the callback call
+    ((ei_entry_drag_params_t *)user_param)->previous_character = entry->cursor;
+
+    return true;
+}
+
+bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_unbind(ei_ev_mouse_move, NULL, "all", ei_entry_move, user_param);
+    ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, user_param);
 
     return true;
 }

@@ -106,7 +106,7 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
 static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
- * @brief   Callback function that is called when the use clicks on an entry
+ * @brief   Callback function that is called when the user clicks on an entry
  *
  * @param   widget      The entry the user pressed
  * @param   event       The event information
@@ -117,7 +117,7 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
 static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
- * @brief   Callback function that is called when the use clicks on an entry for the second time
+ * @brief   Callback function that is called when the user clicks on an entry for the second time
  *
  * @param   widget      The entry the user pressed
  * @param   event       The event information
@@ -128,7 +128,7 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
- * @brief   Callback function that is called when the use clicks on an entry for the third time
+ * @brief   Callback function that is called when the user clicks on an entry for the third time
  *          after a valid double click
  *
  * @param   widget      The entry the user pressed
@@ -140,7 +140,29 @@ bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
 bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
 
 /**
- * @brief   Callback function that is called when the use presses a key after focusing on an entry.
+ * @brief   Callback function that is called when the user moves the mouse after clicking on an entry
+ *
+ * @param   widget      The currently focused entry
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  True if the event was handled, false otherwise
+ */
+bool ei_entry_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the use releases the mouse button after clicking on an entry.
+ *
+ * @param   widget      The currently focused entry
+ * @param   event       The event information
+ * @param   user_param  The user parameters
+ *
+ * @return  True if the event was handled, false otherwise
+ */
+bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param);
+
+/**
+ * @brief   Callback function that is called when the user presses a key after focusing on an entry.
  *
  * @param   widget      The currently focused entry
  * @param   event       The event information

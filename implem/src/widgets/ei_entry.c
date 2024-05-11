@@ -297,6 +297,13 @@ ei_entry_character_t *ei_get_character_at_position(ei_entry_t *entry, ei_point_t
     ei_entry_character_t *character = entry->first_character;
     int position_x = entry->widget.screen_location.top_left.x + ei_entry_default_padding;
 
+    // If the mouse is on the left of the first character (outside of the entry content rect),
+    // return the first character
+    if (position.x - position_x - entry->characters_position_offset <= entry->first_character->position - entry->characters_position_offset)
+    {
+        return entry->first_character;
+    }
+
     while (character != NULL)
     {
         // If it is the last character, return it
