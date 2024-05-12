@@ -1,6 +1,8 @@
 #include "../api/ei_types.h"
 #include "../api/ei_widget_configure.h"
 #include "../api/ei_utils.h"
+#include "../api/ei_application.h"
+#include "../api/hw_interface.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_button.h"
@@ -171,7 +173,22 @@ void ei_frame_configure(ei_widget_t widget,
 
     if (img != NULL)
     {
-        frame->frame_appearance.image.data = *img;
+        if (frame->frame_appearance.image.data != NULL)
+        {
+            hw_surface_free(frame->frame_appearance.image.data);
+        }
+
+        ei_surface_t img_copy = hw_surface_create(ei_app_root_surface(), hw_surface_get_size(*img), true);
+
+        hw_surface_lock(*img);
+        hw_surface_lock(img_copy);
+
+        ei_copy_surface(img_copy, NULL, *img, NULL, true);
+
+        hw_surface_unlock(*img);
+        hw_surface_unlock(img_copy);
+
+        frame->frame_appearance.image.data = img_copy;
     }
     else
     {
@@ -379,9 +396,24 @@ void ei_button_configure(ei_widget_t widget,
         }
     }
 
-    if (img != NULL)
+    if (img != NULL && *img != NULL)
     {
-        button->frame_appearance.image.data = *img;
+        if (button->frame_appearance.image.data != NULL)
+        {
+            hw_surface_free(button->frame_appearance.image.data);
+        }
+
+        ei_surface_t img_copy = hw_surface_create(ei_app_root_surface(), hw_surface_get_size(*img), true);
+
+        hw_surface_lock(*img);
+        hw_surface_lock(img_copy);
+
+        ei_copy_surface(img_copy, NULL, *img, NULL, true);
+
+        hw_surface_unlock(*img);
+        hw_surface_unlock(img_copy);
+
+        button->frame_appearance.image.data = img_copy;
     }
     else
     {

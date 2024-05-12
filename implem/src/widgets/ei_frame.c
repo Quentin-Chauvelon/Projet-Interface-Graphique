@@ -24,6 +24,11 @@ void ei_frame_releasefunc(ei_widget_t widget)
         free(frame->frame_appearance.text.label);
     }
 
+    if (frame->frame_appearance.image.data != NULL)
+    {
+        hw_surface_free(frame->frame_appearance.image.data);
+    }
+
     if (frame->frame_appearance.image.rect != NULL)
     {
         free(frame->frame_appearance.image.rect);
