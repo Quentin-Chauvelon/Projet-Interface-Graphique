@@ -2,6 +2,7 @@
 #include "../api/ei_types.h"
 #include "../api/ei_widget_attributes.h"
 #include "../api/ei_widget_configure.h"
+#include "../api/ei_entry.h"
 #include "../implem/headers/ei_implementation.h"
 
 ei_widgetclass_t *ei_widget_get_class(ei_widget_t widget)
@@ -58,6 +59,10 @@ void ei_widget_set_requested_size(ei_widget_t widget, ei_size_t requested_size)
     {
         ei_toplevel_configure(widget, &requested_size, NULL, NULL, NULL, NULL, NULL, NULL);
     }
+    else
+    {
+        (*widget).requested_size = requested_size;
+    }
 }
 
 const ei_rect_t *ei_widget_get_screen_location(ei_widget_t widget)
@@ -83,6 +88,10 @@ void ei_widget_set_content_rect(ei_widget_t widget, const ei_rect_t *content_rec
     else if (strcmp(widget->wclass->name, "toplevel") == 0)
     {
         ei_toplevel_configure(widget, &((ei_rect_t *)content_rect)->size, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else
+    {
+        widget->content_rect->size = content_rect->size;
     }
 
     widget->content_rect->top_left = content_rect->top_left;

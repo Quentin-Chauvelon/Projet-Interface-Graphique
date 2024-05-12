@@ -48,6 +48,8 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_button_t *button = (ei_button_t *)widget;
     button->frame_appearance.relief = ei_relief_raised;
 
+    ei_app_invalidate_rect(&button->widget.screen_location);
+
     // Unbind the button release and move event
     ei_unbind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
     ei_unbind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
