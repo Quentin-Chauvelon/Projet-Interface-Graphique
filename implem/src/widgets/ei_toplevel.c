@@ -169,7 +169,7 @@ ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel)
 
 ei_button_t *ei_toplevel_instantiate_close_button(ei_toplevel_t *toplevel)
 {
-    ei_widget_t close_button = ei_widget_create("button", (ei_widget_t)toplevel, NULL, NULL);
+    ei_widget_t close_button = ei_widget_create("button", &toplevel->widget, NULL, NULL);
 
     // Remove the close button from the hierarchy since we have a direct
     // reference from the close_button attribute of the top level.

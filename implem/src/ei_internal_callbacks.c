@@ -295,6 +295,7 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
 
     // Schedule an event that will unbind the double click callback in a set amount of time
     entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, click_params);
+    entry->multiple_click_params = click_params;
 
     // Bind the event to listen for a double click
     ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, NULL);
@@ -327,6 +328,12 @@ bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
     {
         hw_event_cancel_app(entry->multiple_click_app_id);
         entry->multiple_click_app_id = NULL;
+
+        if (entry->multiple_click_params != NULL)
+        {
+            free(entry->multiple_click_params);
+            entry->multiple_click_params = NULL;
+        }
     }
 
     // Check if the user clicked the same characters twice, otherwise it shouldn't select
@@ -373,6 +380,7 @@ bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
 
         // Schedule an event that will unbind the triple click callback in a set amount of time
         entry->multiple_click_app_id = hw_event_schedule_app(ei_entry_max_double_click_interval, params);
+        entry->multiple_click_params = params;
 
         // Bind the triple click event
         ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
@@ -393,6 +401,12 @@ bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
     {
         hw_event_cancel_app(entry->multiple_click_app_id);
         entry->multiple_click_app_id = NULL;
+
+        if (entry->multiple_click_params != NULL)
+        {
+            free(entry->multiple_click_params);
+            entry->multiple_click_params = NULL;
+        }
     }
 
     // Check if the user clicked the same characters three times, otherwise it shouldn't select
