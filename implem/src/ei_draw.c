@@ -407,7 +407,7 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
         {
             // If we are out of the screen, break, otherwise, we will
             // write at the beggining of the next line
-            if (x > screen_size.width)
+            if (dst_rect->top_left.x * sizeof(ei_color_t) + x >= screen_size.width * sizeof(ei_color_t))
             {
                 break;
             }
