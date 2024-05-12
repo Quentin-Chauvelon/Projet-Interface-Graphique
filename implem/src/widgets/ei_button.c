@@ -26,15 +26,15 @@ void ei_button_releasefunc(ei_widget_t widget)
         free(button->frame_appearance.text.label);
     }
 
+    if (button->frame_appearance.image.data != NULL)
+    {
+        hw_surface_free(button->frame_appearance.image.data);
+    }
+
     if (button->frame_appearance.image.rect != NULL)
     {
         free(button->frame_appearance.image.rect);
     }
-
-    // if (button->user_param != NULL)
-    // {
-    //     free(button->user_param);
-    // }
 
     free(button);
     button = NULL;
