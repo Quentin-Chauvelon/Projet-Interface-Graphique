@@ -103,6 +103,8 @@ void ei_app_run(void)
         hw_event_wait_next(event);
 
         ei_handle_event(*event);
+
+        ei_unbind_events_registered_for_unbind();
     }
 
     free(event);
@@ -110,6 +112,8 @@ void ei_app_run(void)
 
 void ei_app_free(void)
 {
+    ei_unbind_events_registered_for_unbind();
+
     ei_unbind_all_events();
 
     ei_widget_destroy(ei_app_root_widget());
