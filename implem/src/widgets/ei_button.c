@@ -21,6 +21,11 @@ void ei_button_releasefunc(ei_widget_t widget)
 {
     ei_button_t *button = (ei_button_t *)widget;
 
+    if (button->frame_appearance.text.label != NULL)
+    {
+        free(button->frame_appearance.text.label);
+    }
+
     if (button->frame_appearance.image.rect != NULL)
     {
         free(button->frame_appearance.image.rect);

@@ -9,6 +9,7 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_widget_ext.h"
 #include "../implem/headers/ei_draw_ext.h"
+#include "../implem/headers/ei_toplevel.h"
 
 int pick_id = 0;
 
@@ -173,6 +174,11 @@ void ei_widget_destroy(ei_widget_t widget)
         ei_widget_destroy(current);
     }
 
+    if (widget->content_rect != NULL)
+    {
+        free(widget->content_rect);
+    }
+
     if (widget->destructor != NULL)
     {
         widget->destructor(widget);
@@ -227,17 +233,12 @@ ei_widget_t ei_widget_pick(ei_point_t *where)
     int id = ei_get_id_from_color((ei_color_t){red, green, blue, alpha});
 
     ei_widget_t root = ei_app_root_widget();
-    ei_widget_t *result = ei_get_widget_from_pick_id(&root, id);
+    ei_widget_t result = ei_get_widget_from_pick_id(&root, id);
 
-    if (result != NULL)
-    {
-        return *result;
-    }
-
-    return NULL;
+    return result;
 }
 
-ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
+ei_widget_t ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
 {
     if (widget == NULL)
     {
@@ -246,12 +247,12 @@ ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id)
 
     if ((*widget)->pick_id == pick_id)
     {
-        return widget;
+        return *widget;
     }
 
     for (ei_widget_t children = (*widget)->children_head; children != NULL; children = children->next_sibling)
     {
-        ei_widget_t *result = ei_get_widget_from_pick_id(&children, pick_id);
+        ei_widget_t result = ei_get_widget_from_pick_id(&children, pick_id);
 
         // If we found the right widget, return it
         if (result != NULL)
