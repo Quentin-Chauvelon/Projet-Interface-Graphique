@@ -37,7 +37,7 @@ void ei_entry_releasefunc(ei_widget_t widget)
         entry->next->previous = entry->previous;
 
         // If the entry is focused, focus on the next entry
-        if (entry->focused)
+        if (entry->focused && ei_is_app_running())
         {
             ei_entry_give_focus((ei_widget_t)entry->next);
         }
@@ -69,11 +69,23 @@ void ei_entry_releasefunc(ei_widget_t widget)
     if (entry->blinking_app_id != NULL)
     {
         hw_event_cancel_app(entry->blinking_app_id);
+
+        if (entry->blinking_params != NULL)
+        {
+            free(entry->blinking_params);
+            entry->blinking_params = NULL;
+        }
     }
 
     if (entry->multiple_click_app_id != NULL)
     {
         hw_event_cancel_app(entry->multiple_click_app_id);
+
+        if (entry->multiple_click_params != NULL)
+        {
+            free(entry->multiple_click_params);
+            entry->multiple_click_params = NULL;
+        }
     }
 
     free(entry);
@@ -322,6 +334,12 @@ void ei_entry_release_focus(ei_widget_t widget)
     {
         hw_event_cancel_app(entry->blinking_app_id);
         entry->blinking_app_id = NULL;
+
+        if (entry->blinking_params != NULL)
+        {
+            free(entry->blinking_params);
+            entry->blinking_params = NULL;
+        }
     }
 
     // Reset the selection
@@ -374,8 +392,7 @@ void ei_entry_add_character(ei_entry_t *entry, char character)
 
     ei_entry_character_t *entry_character = malloc(sizeof(ei_entry_character_t));
 
-    entry_character->character = *(char *)malloc(sizeof(char));
-    strcpy(&entry_character->character, &character);
+    entry_character->character = character;
 
     entry_character->previous = NULL;
     entry_character->next = NULL;
@@ -494,13 +511,27 @@ void ei_restart_blinking_timer(ei_entry_t *entry, bool force_visible)
     if (entry->blinking_app_id != NULL)
     {
         hw_event_cancel_app(entry->blinking_app_id);
+
+        if (entry->blinking_params != NULL)
+        {
+            free(entry->blinking_params);
+            entry->blinking_params = NULL;
+        }
     }
 
     ei_app_event_params_t *params = malloc(sizeof(ei_app_event_params_t));
     params->id = 1;
     params->data = entry;
 
+    // If malloc failed, return
+    if (params == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for blinking timer.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
     entry->blinking_app_id = hw_event_schedule_app(ei_entry_default_blinking_interval, params);
+    entry->blinking_params = params;
 
     if (force_visible)
     {

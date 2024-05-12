@@ -17,6 +17,7 @@
 #include "../api/ei_types.h"
 #include "../implem/headers/ei_implementation.h"
 #include "../implem/headers/ei_widget_ext.h"
+#include "../implem/headers/ei_types_ext.h"
 
 static const int ei_entry_default_padding = 8;
 static const int ei_entry_default_letter_spacing = 0;
@@ -63,7 +64,9 @@ typedef struct ei_entry_t
     bool focused;                                    // Boolean indicating if the entry is focused
     int characters_position_offset;                  // Offset of the characters position once the line reaches the end of the entry which allows to scroll left/right and display the right characters
     void *blinking_app_id;                           // Id of the blinking application-generated event. Allows to cancel blinking whenever an event related to the entry is raised
+    ei_app_event_params_t *blinking_params;          // Parameters of the blinking event. Need to keep a reference to them in case the event is cancelled to free them
     void *multiple_click_app_id;                     // Id of the double or triple click application-generated event. Allows to cancel the event if the user clicked twice or three times fast enough to trigger a double or triple click
+    ei_app_event_params_t *multiple_click_params;    // Parameters of the double or triple click event. Need to keep a reference to them in case the event is cancelled to free them
 } ei_entry_t;
 
 /**

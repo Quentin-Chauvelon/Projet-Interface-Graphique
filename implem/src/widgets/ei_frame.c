@@ -19,6 +19,11 @@ void ei_frame_releasefunc(ei_widget_t widget)
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
+    if (frame->frame_appearance.text.label != NULL)
+    {
+        free(frame->frame_appearance.text.label);
+    }
+
     if (frame->frame_appearance.image.rect != NULL)
     {
         free(frame->frame_appearance.image.rect);
