@@ -123,6 +123,14 @@ void ei_app_free(void)
         free(clipboard);
     }
 
+    ei_linked_rect_t *next_invalid_rect;
+    for (ei_linked_rect_t *invalid_rect = invalid_rects; invalid_rect != NULL; invalid_rect = next_invalid_rect)
+    {
+        next_invalid_rect = invalid_rect->next;
+        free(invalid_rect);
+    }
+    invalid_rects = NULL;
+
     hw_surface_free(offscreen_picking);
     hw_quit();
 }

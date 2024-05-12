@@ -38,7 +38,7 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     // Bind the button release and move event
     // The button should be released if the user releases the mouse button
     // or if they move the cursor out of the button
-    ei_bind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
+    ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, widget);
     ei_bind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
 
     return true;
@@ -88,8 +88,8 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_app_invalidate_rect(&button->widget.screen_location);
 
     // Unbind the button release and move event
-    ei_unbind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
-    ei_unbind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
+    ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, user_param);
+    ei_unbind(ei_ev_mouse_move, (ei_widget_t)user_param, NULL, ei_cursor_left_button, NULL);
 
     return false;
 }

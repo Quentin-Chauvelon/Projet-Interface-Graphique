@@ -82,7 +82,7 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
  *
  * @return	The widget matching the given pick id
  */
-ei_widget_t *ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id);
+ei_widget_t ei_get_widget_from_pick_id(ei_widget_t *widget, int pick_id);
 
 /**
  * @brief	A function that allocates a block of memory that is big enough to store the

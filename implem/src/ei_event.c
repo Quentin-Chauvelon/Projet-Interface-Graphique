@@ -9,6 +9,11 @@
 
 ei_event_bind_t *first_event_bind = NULL;
 
+/**
+ * @brief   Pointer to the widget under the mouse cursor
+ */
+ei_widget_t picking_widget = NULL;
+
 void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_callback_t callback, void *user_param)
 {
     ei_event_bind_t *event_bind = malloc(sizeof(ei_event_bind_t));
@@ -69,6 +74,8 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
             }
 
             free(current);
+            current = NULL;
+
             break;
         }
 
@@ -313,6 +320,11 @@ void ei_handle_event(ei_event_t event)
                     return;
                 }
             }
+        }
+
+        if (current_event == NULL)
+        {
+            break;
         }
 
         current_event = current_event->next;
