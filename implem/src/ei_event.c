@@ -7,6 +7,8 @@
 #include "../implem/headers/ei_internal_callbacks.h"
 
 ei_event_bind_t *first_event_bind = NULL;
+ei_event_bind_t *last_event_bind = NULL;
+ei_event_to_unbind_t *events_to_unbind = NULL;
 
 /**
  * @brief   Pointer to the widget under the mouse cursor
@@ -29,6 +31,7 @@ void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_call
     event_bind->tag = tag;
     event_bind->callback = callback;
     event_bind->user_param = user_param;
+    event_bind->previous = last_event_bind;
     event_bind->next = NULL;
 
     if (first_event_bind == NULL)
@@ -37,21 +40,15 @@ void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_call
     }
     else
     {
-        ei_event_bind_t *current = first_event_bind;
-
-        while (current->next != NULL)
-        {
-            current = current->next;
-        }
-
-        current->next = event_bind;
+        last_event_bind->next = event_bind;
     }
+
+    last_event_bind = event_bind;
 }
 
 void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_callback_t callback, void *user_param)
 {
     ei_event_bind_t *current = first_event_bind;
-    ei_event_bind_t *previous = NULL;
 
     while (current != NULL)
     {
@@ -61,26 +58,85 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
             current->callback == callback &&
             current->user_param == user_param)
         {
-            // If the event to unbind is the first element of the linked list, set the next element as the first element
-            if (previous == NULL)
+            if (events_to_unbind == NULL)
             {
-                first_event_bind = current->next;
+                events_to_unbind = malloc(sizeof(ei_event_to_unbind_t));
+
+                // If malloc failed, return
+                if (events_to_unbind == NULL)
+                {
+                    printf("\033[0;31mError: Couldn't allocate memory to unbind event.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+                    return;
+                }
+
+                events_to_unbind->event = current;
+                events_to_unbind->next = NULL;
             }
-            // Otherwise, link the previous element to the next one
             else
             {
-                previous->next = current->next;
+                ei_event_to_unbind_t *current_event_to_unbind = events_to_unbind;
+
+                while (current_event_to_unbind->next != NULL)
+                {
+                    current_event_to_unbind = current_event_to_unbind->next;
+                }
+
+                ei_event_to_unbind_t *event_to_unbind = malloc(sizeof(ei_event_to_unbind_t));
+
+                // If malloc failed, return
+                if (event_to_unbind == NULL)
+                {
+                    printf("\033[0;31mError: Couldn't allocate memory to unbind event.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+                    return;
+                }
+
+                event_to_unbind->event = current;
+                event_to_unbind->next = NULL;
+
+                current_event_to_unbind->next = event_to_unbind;
             }
-
-            free(current);
-            current = NULL;
-
-            break;
         }
 
-        previous = current;
         current = current->next;
     }
+}
+
+void ei_unbind_events_registered_for_unbind()
+{
+    ei_event_to_unbind_t *current = events_to_unbind;
+    ei_event_to_unbind_t *next_event_to_unbind = NULL;
+
+    while (current != NULL)
+    {
+        next_event_to_unbind = current->next;
+
+        ei_event_bind_t *event_to_unbind = current->event;
+
+        if (event_to_unbind->previous != NULL)
+        {
+            event_to_unbind->previous->next = event_to_unbind->next;
+        }
+        else
+        {
+            first_event_bind = event_to_unbind->next;
+        }
+
+        if (event_to_unbind == last_event_bind)
+        {
+            last_event_bind = event_to_unbind->previous;
+        }
+        else
+        {
+            event_to_unbind->next->previous = event_to_unbind->previous;
+        }
+
+        free(event_to_unbind);
+        free(current);
+
+        current = next_event_to_unbind;
+    }
+
+    events_to_unbind = NULL;
 }
 
 void ei_unbind_all_events()
