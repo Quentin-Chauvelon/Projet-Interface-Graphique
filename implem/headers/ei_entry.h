@@ -67,6 +67,7 @@ typedef struct ei_entry_t
     ei_app_event_params_t *blinking_params;          // Parameters of the blinking event. Need to keep a reference to them in case the event is cancelled to free them
     void *multiple_click_app_id;                     // Id of the double or triple click application-generated event. Allows to cancel the event if the user clicked twice or three times fast enough to trigger a double or triple click
     ei_app_event_params_t *multiple_click_params;    // Parameters of the double or triple click event. Need to keep a reference to them in case the event is cancelled to free them
+    bool triple_clicked;                             // Boolean indicating if the user has clicked three times on the entry
 } ei_entry_t;
 
 /**

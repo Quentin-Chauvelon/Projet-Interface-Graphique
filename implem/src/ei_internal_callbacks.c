@@ -85,13 +85,21 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_button_t *button = (ei_button_t *)widget;
     button->frame_appearance.relief = ei_relief_raised;
 
-    ei_app_invalidate_rect(&button->widget.screen_location);
+    // If the button the mouse is over on mouse button up is the same as the one
+    // the mouse was over on mouse button down, call the callback function
+    if (widget == (ei_widget_t)user_param)
+    {
+        if (button->callback != NULL)
+        {
+            button->callback(widget, event, button->user_param);
+        }
+    }
 
     // Unbind the button release and move event
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, user_param);
     ei_unbind(ei_ev_mouse_move, (ei_widget_t)user_param, NULL, ei_cursor_left_button, NULL);
 
-    return false;
+    return true;
 }
 
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -306,8 +314,14 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
     // If a double or triple click event is scheduled, we don't
     // want to handle single clicks for now, except if the user clicked
     // on another character, in which case it's not a double or triple click
-    if (entry->multiple_click_app_id != NULL && entry->cursor == ei_get_character_at_position(entry, event->param.mouse.where))
+    // Furthermore, if the triple_clicked field is true, it means that the user
+    // has clicked three times, but since the triple_click binding is stored
+    // before the single click binding, multiple_click_app_id will be set to NULL
+    // (handled by triple click) and then this function will be called, so we need
+    // a way to know if the triple_clicked event has been handled
+    if (entry->triple_clicked || entry->multiple_click_app_id != NULL && entry->cursor == ei_get_character_at_position(entry, event->param.mouse.where))
     {
+        entry->triple_clicked = false;
         return false;
     }
 
@@ -316,7 +330,12 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
     // Remove the selection if the user clicks on the entry once
     ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
 
-    ei_entry_give_focus(widget);
+    ei_restart_blinking_timer(entry, true);
+
+    if (!entry->focused)
+    {
+        ei_entry_give_focus(widget);
+    }
 
     ei_app_event_params_t *click_params = malloc(sizeof(ei_app_event_params_t));
 
@@ -433,7 +452,7 @@ bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
-    // Cancel the scheduled event since the user clicked twice fast enough
+    // Cancel the scheduled event since the user clicked three times fast enough
     if (entry->multiple_click_app_id != NULL)
     {
         hw_event_cancel_app(entry->multiple_click_app_id);
@@ -451,6 +470,8 @@ bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
     {
         // Select the whole text
         ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+
+        entry->triple_clicked = true;
     }
 
     // Unbind the triple click event
@@ -1025,35 +1046,43 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // Erase the character after the cursor
     else if (event->param.key_code == SDLK_DELETE)
     {
-        // If the user also pressed ctrl, delete the whole word
-        if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
-            ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+        // If there is a selection active, erase it
+        if (entry->selection_direction != ei_selection_direction_none)
         {
-            // If the first next character is a space, erase it
-            if (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
-            {
-                ei_entry_erase_character(entry, entry->cursor->next);
-            }
-
-            while (entry->cursor->next)
-            {
-                if (entry->cursor->next == NULL)
-                {
-                    break;
-                }
-
-                if (entry->cursor->next->character == ' ')
-                {
-                    break;
-                }
-
-                ei_entry_erase_character(entry, entry->cursor->next);
-            }
+            ei_erase_selection(entry);
         }
-        // Otherwise, only erase the previous character
-        else if (entry->cursor->next)
+        else
         {
-            ei_entry_erase_character(entry, entry->cursor->next);
+            // If the user also pressed ctrl, delete the whole word
+            if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
+                ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
+            {
+                // If the first next character is a space, erase it
+                if (entry->cursor->next != NULL && entry->cursor->next->character == ' ')
+                {
+                    ei_entry_erase_character(entry, entry->cursor->next);
+                }
+
+                while (entry->cursor->next)
+                {
+                    if (entry->cursor->next == NULL)
+                    {
+                        break;
+                    }
+
+                    if (entry->cursor->next->character == ' ')
+                    {
+                        break;
+                    }
+
+                    ei_entry_erase_character(entry, entry->cursor->next);
+                }
+            }
+            // Otherwise, only erase the previous character
+            else if (entry->cursor->next)
+            {
+                ei_entry_erase_character(entry, entry->cursor->next);
+            }
         }
 
         handled = true;

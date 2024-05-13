@@ -12,6 +12,7 @@
 #include "../api/ei_types.h"
 #include "../api/ei_widget.h"
 #include "../api/ei_geometrymanager.h"
+#include "../implem/headers/ei_types_ext.h"
 
 /**
  * \brief	Fields common to all types of widget. Every widget classes specializes this base
@@ -38,6 +39,8 @@ typedef struct ei_impl_widget_t
 	ei_rect_t *content_rect;	 ///< See ei_widget_get_content_rect. By defaults, points to the screen_location.
 
 	bool instantiated; ///< True if there a call to the configure function of the widget has been made. Allows to know if the values should be set if the pointers are NULL.
+
+	ei_widget_tags_t *tags; ///< Pointer to the tags applied to this widget
 
 } ei_impl_widget_t;
 

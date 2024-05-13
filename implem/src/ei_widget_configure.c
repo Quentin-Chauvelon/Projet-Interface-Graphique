@@ -226,13 +226,21 @@ void ei_frame_configure(ei_widget_t widget,
         }
     }
 
+    if (requested_size != NULL)
+    {
+        widget->requested_size = *requested_size;
+    }
+    else
+    {
+        if (!frame->widget.instantiated)
+        {
+            widget->requested_size = ei_frame_get_natural_size(frame);
+        }
+    }
+
     // Save the widget as instantiated so that any values set by the user won't overriden
     // later on if another call is made with NULL values
     frame->widget.instantiated = true;
-
-    widget->requested_size = requested_size != NULL
-                                 ? *requested_size
-                                 : ei_frame_get_natural_size(frame);
 
     widget->screen_location.size = widget->requested_size;
 
@@ -475,13 +483,21 @@ void ei_button_configure(ei_widget_t widget,
         }
     }
 
+    if (requested_size != NULL)
+    {
+        widget->requested_size = *requested_size;
+    }
+    else
+    {
+        if (!button->widget.instantiated)
+        {
+            widget->requested_size = ei_button_get_natural_size(button);
+        }
+    }
+
     // Save the widget as instantiated so that any values set by the user won't overriden
     // later on if another call is made with NULL values
     button->widget.instantiated = true;
-
-    widget->requested_size = requested_size != NULL
-                                 ? *requested_size
-                                 : ei_button_get_natural_size(button);
 
     widget->screen_location.size = widget->requested_size;
 
@@ -621,29 +637,32 @@ void ei_toplevel_configure(ei_widget_t widget,
         toplevel->min_size->height = height;
     }
 
+    if (requested_size != NULL || !toplevel->widget.instantiated)
+    {
+        // Increase the requested size to take into account the decorations (title bar and border)
+        ei_size_t toplevel_size = requested_size != NULL
+                                      ? *requested_size
+                                      : ei_size(320, 240);
+
+        ei_size_t decorations_size = ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width);
+        toplevel_size = ei_size_add(toplevel_size, decorations_size);
+        widget->requested_size = toplevel_size;
+
+        // Resize the requested size to be at least the min size
+        if (widget->requested_size.width < toplevel->min_size->width)
+        {
+            widget->requested_size.width = toplevel->min_size->width;
+        }
+
+        if (widget->requested_size.height < toplevel->min_size->height)
+        {
+            widget->requested_size.height = toplevel->min_size->height;
+        }
+    }
+
     // Save the widget as instantiated so that any values set by the user won't overriden
     // later on if another call is made with NULL values
     toplevel->widget.instantiated = true;
-
-    // Increase the requested size to take into account the decorations (title bar and border)
-    ei_size_t toplevel_size = requested_size != NULL
-                                  ? *requested_size
-                                  : ei_size(320, 240);
-
-    ei_size_t decorations_size = ei_size(2 * toplevel->widget_appearance.border_width, ei_toplevel_get_title_bar_rect(toplevel).size.height + toplevel->widget_appearance.border_width);
-    toplevel_size = ei_size_add(toplevel_size, decorations_size);
-    widget->requested_size = toplevel_size;
-
-    // Resize the requested size to be at least the min size
-    if (widget->requested_size.width < toplevel->min_size->width)
-    {
-        widget->requested_size.width = toplevel->min_size->width;
-    }
-
-    if (widget->requested_size.height < toplevel->min_size->height)
-    {
-        widget->requested_size.height = toplevel->min_size->height;
-    }
 
     widget->screen_location.size = widget->requested_size;
 

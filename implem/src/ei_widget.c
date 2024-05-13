@@ -2,6 +2,7 @@
 #include "../api/ei_widgetclass.h"
 #include "../api/ei_utils.h"
 #include "../api/ei_types.h"
+#include "../api/ei_event.h"
 #include "../api/hw_interface.h"
 #include "../api/ei_application.h"
 #include "../implem/headers/ei_implementation.h"
@@ -10,6 +11,7 @@
 #include "../implem/headers/ei_widget_ext.h"
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_toplevel.h"
+#include "../implem/headers/ei_types_ext.h"
 
 int pick_id = 0;
 
@@ -107,6 +109,14 @@ ei_widget_t ei_widget_create_internal(ei_const_string_t class_name, ei_widget_t 
 
     widget->content_rect->top_left = widget->screen_location.top_left;
     widget->content_rect->size = widget->screen_location.size;
+
+    // Add the name of the widget to its tag list by default
+    ei_tag_t tag = malloc(strlen(wclass->name) + 1);
+    strcpy(tag, wclass->name);
+
+    ei_add_tag_to_widget(widget, tag);
+
+    free(tag);
 
     wclass->setdefaultsfunc(widget);
 
@@ -340,5 +350,71 @@ void ei_calculate_frame_appearance_natural_size(ei_frame_appearance_t frame_appe
 
         size->width += image_size.width;
         size->height += image_size.height;
+    }
+}
+
+void ei_add_tag_to_widget(ei_widget_t widget, ei_tag_t tag)
+{
+    ei_widget_tags_t *widget_tag = malloc(sizeof(ei_widget_tags_t));
+
+    // If malloc failed, exit since the program can't run without the tag
+    if (widget_tag == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for tag.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
+    }
+
+        widget_tag->tag = malloc(strlen(tag) + 1);
+    strcpy(widget_tag->tag, tag);
+
+    widget_tag->next = NULL;
+
+    if (widget->tags == NULL)
+    {
+        widget->tags = widget_tag;
+    }
+    else
+    {
+        // Add the tag at the end of the linked list of the tags applied to the widget
+        for (ei_widget_tags_t *current = widget->tags; current != NULL; current = current->next)
+        {
+            if (current->next == NULL)
+            {
+                current->next = widget_tag;
+                return;
+            }
+        }
+    }
+}
+
+void ei_remove_tag_from_widget(ei_widget_t widget, ei_tag_t tag)
+{
+    ei_widget_tags_t *current = widget->tags;
+
+    if (strcmp(current->tag, tag) == 0)
+    {
+        widget->tags = current->next;
+
+        free(current->tag);
+        free(current);
+
+        return;
+    }
+
+    ei_widget_tags_t *previous = NULL;
+
+    while (current != NULL)
+    {
+        if (strcmp(current->tag, tag) == 0)
+        {
+            previous->next = current->next;
+
+            free(current->next);
+
+            return;
+        }
+
+        previous = current;
+        current = current->next;
     }
 }

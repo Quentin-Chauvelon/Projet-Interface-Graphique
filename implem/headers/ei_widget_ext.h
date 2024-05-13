@@ -15,6 +15,7 @@
 
 #include "../api/ei_widget.h"
 #include "../api/ei_types.h"
+#include "../implem/headers/ei_types_ext.h"
 
 /**
  * \brief	Text properties.
@@ -127,5 +128,21 @@ ei_rect_t ei_get_children_clipper(ei_rect_t content_rect, const ei_rect_t *clipp
  * @param   size                The size pointer to write the result to
  */
 void ei_calculate_frame_appearance_natural_size(ei_frame_appearance_t frame_appearance, int border_width, ei_size_t *size);
+
+/**
+ * @brief   Adds the given tag to the given widget.
+ *
+ * @param   widget  The widget to add the tag to
+ * @param   tag     The tag to add to the widget
+ */
+void ei_add_tag_to_widget(ei_widget_t widget, ei_tag_t tag);
+
+/**
+ * @brief   Removes the given tag from the given widget.
+ *
+ * @param   widget  The widget to remove the tag from
+ * @param   tag     The tag to remove from the widget
+ */
+void ei_remove_tag_from_widget(ei_widget_t widget, ei_tag_t tag);
 
 #endif
