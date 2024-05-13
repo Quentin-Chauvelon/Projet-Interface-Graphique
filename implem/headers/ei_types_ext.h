@@ -13,6 +13,8 @@
 #ifndef EI_TYPES_EXT_H
 #define EI_TYPES_EXT_H
 
+#include "../api/ei_event.h"
+
 /**
  * @brief	Part of rounded frame to draw.
  */
@@ -42,5 +44,14 @@ typedef struct ei_app_event_params_t
     int id;     ///< Id representing the type of the event.
     void *data; ///< Data concerning the event.
 } ei_app_event_params_t;
+
+/**
+ * @brief   Type repsenting a linked list of tags applied to a widget.
+ */
+typedef struct ei_widget_tags_t
+{
+    ei_tag_t tag;                  ///< Pointer to the tag applied to the widget
+    struct ei_widget_tags_t *next; ///< Pointer to the next tag applied to the widget
+} ei_widget_tags_t;
 
 #endif

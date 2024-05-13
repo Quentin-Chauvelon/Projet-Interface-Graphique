@@ -7,7 +7,6 @@
 #include "../implem/headers/ei_internal_callbacks.h"
 
 ei_event_bind_t *first_event_bind = NULL;
-ei_event_bind_t *last_event_bind = NULL;
 ei_event_to_unbind_t *events_to_unbind = NULL;
 
 /**
@@ -17,6 +16,19 @@ ei_widget_t picking_widget = NULL;
 
 void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_callback_t callback, void *user_param)
 {
+    // If there is already an event binded with the same parameters, return
+    for (ei_event_bind_t *current = first_event_bind; current != NULL; current = current->next)
+    {
+        if (current->eventtype == eventtype &&
+            current->widget == widget &&
+            current->tag == tag &&
+            current->callback == callback &&
+            current->user_param == user_param)
+        {
+            return;
+        }
+    }
+
     ei_event_bind_t *event_bind = malloc(sizeof(ei_event_bind_t));
 
     // If malloc failed, return
@@ -31,19 +43,16 @@ void ei_bind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_call
     event_bind->tag = tag;
     event_bind->callback = callback;
     event_bind->user_param = user_param;
-    event_bind->previous = last_event_bind;
-    event_bind->next = NULL;
 
-    if (first_event_bind == NULL)
+    if (first_event_bind != NULL)
     {
-        first_event_bind = event_bind;
-    }
-    else
-    {
-        last_event_bind->next = event_bind;
+        first_event_bind->previous = event_bind;
     }
 
-    last_event_bind = event_bind;
+    event_bind->previous = NULL;
+    event_bind->next = first_event_bind != NULL ? first_event_bind : NULL;
+
+    first_event_bind = event_bind;
 }
 
 void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_callback_t callback, void *user_param)
@@ -58,6 +67,7 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
             current->callback == callback &&
             current->user_param == user_param)
         {
+            // If there are no events to unbind, add the first one to the list
             if (events_to_unbind == NULL)
             {
                 events_to_unbind = malloc(sizeof(ei_event_to_unbind_t));
@@ -72,6 +82,7 @@ void ei_unbind(ei_eventtype_t eventtype, ei_widget_t widget, ei_tag_t tag, ei_ca
                 events_to_unbind->event = current;
                 events_to_unbind->next = NULL;
             }
+            // Otherwise, add the event to the end of the list
             else
             {
                 ei_event_to_unbind_t *current_event_to_unbind = events_to_unbind;
@@ -121,11 +132,7 @@ void ei_unbind_events_registered_for_unbind()
             first_event_bind = event_to_unbind->next;
         }
 
-        if (event_to_unbind == last_event_bind)
-        {
-            last_event_bind = event_to_unbind->previous;
-        }
-        else
+        if (event_to_unbind->next != NULL)
         {
             event_to_unbind->next->previous = event_to_unbind->previous;
         }
@@ -173,7 +180,7 @@ static bool ei_call_callback_function(ei_callback_t callback, ei_widget_t widget
     // The callback must be called before computing the geometry since it might change the widget's geometry
     bool handled = callback(widget, &event, user_param);
 
-    if (handled && widget_copy->wclass != NULL && ei_widget_is_displayed(widget_copy))
+    if (handled && widget_copy->wclass != NULL && widget_copy->parent != NULL && ei_widget_is_displayed(widget_copy))
     {
         widget_copy->geom_params->manager->runfunc(widget_copy);
     }
@@ -227,8 +234,19 @@ static bool ei_handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_eve
     // If the widget is not the same as the filter widget, if there is one, continue to the next widget
     if (filter_widget == NULL || *widget == filter_widget)
     {
-        // If the tag is "all" or the tag is the same as the widget class name (button, frame, ...), call the callback function
-        if (strcmp(binded_event->tag, "all") == 0 || strcmp(binded_event->tag, (*widget)->wclass->name) == 0)
+        bool has_tag = false;
+
+        for (ei_widget_tags_t *tags = (*widget)->tags; tags != NULL; tags = tags->next)
+        {
+            if (strcmp(tags->tag, binded_event->tag) == 0)
+            {
+                has_tag = true;
+                break;
+            }
+        }
+
+        // If the widget has the tag or the tag is "all", call the callback function
+        if (has_tag || strcmp(binded_event->tag, "all") == 0)
         {
             bool handled = ei_call_callback_function(binded_event->callback, *widget, event, binded_event->user_param);
             if (handled)
@@ -251,33 +269,8 @@ static bool ei_handle_tag_event(ei_widget_t *widget, ei_event_bind_t *binded_eve
     return false;
 }
 
-/**
- * @brief Handle an event raised when the user presses a mouse button
- *        Calls the callback function of the button beneath the mouse cursor if there is one
- *
- * @param event The event information
- *
- * @return true if the event returned true (was handled), false otherwise
- */
-static bool ei_handle_mouse_button_down_event(ei_event_t event)
-{
-    if (picking_widget != NULL && strcmp(picking_widget->wclass->name, "button") == 0)
-    {
-        ei_button_t *button = (ei_button_t *)picking_widget;
-
-        if (button->callback != NULL)
-        {
-            return ei_call_callback_function(button->callback, picking_widget, event, button->user_param);
-        }
-    }
-
-    return false;
-}
-
 void ei_handle_event(ei_event_t event)
 {
-    ei_event_bind_t *current_event = first_event_bind;
-
     // Handle application-generated events
     if (event.type == ei_ev_app)
     {
@@ -350,6 +343,8 @@ void ei_handle_event(ei_event_t event)
                             : picking_widget;
     }
 
+    ei_event_bind_t *current_event = first_event_bind;
+
     while (current_event != NULL)
     {
         if (current_event->eventtype == event.type)
@@ -360,7 +355,7 @@ void ei_handle_event(ei_event_t event)
                 if (ei_handle_widget_event(current_event, event, filter_widget))
                 {
                     current_event = current_event->next;
-                    return;
+                    continue;
                 }
             }
 
@@ -372,30 +367,12 @@ void ei_handle_event(ei_event_t event)
                 if (ei_handle_tag_event(&root, current_event, event, filter_widget))
                 {
                     current_event = current_event->next;
-                    return;
+                    continue;
                 }
             }
         }
 
-        if (current_event == NULL)
-        {
-            break;
-        }
-
         current_event = current_event->next;
-    }
-
-    // If the user released the mouse button, call the external
-    // callback function associated with the button if the mouse
-    // is over a button
-    if (event.type == ei_ev_mouse_buttonup)
-    {
-        // Redraw the whole screen since we don't know what the callback
-        // might have done
-        if (ei_handle_mouse_button_down_event(event))
-        {
-            ei_app_invalidate_rect(&ei_app_root_widget()->screen_location);
-        }
     }
 }
 
