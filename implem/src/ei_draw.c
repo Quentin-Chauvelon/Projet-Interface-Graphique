@@ -3,6 +3,7 @@
 
 #include "../api/ei_types.h"
 #include "../api/ei_utils.h"
+#include "../api/ei_application.h"
 #include "../api/hw_interface.h"
 #include "../implem/headers/ei_draw_ext.h"
 #include "../implem/headers/ei_implementation.h"
@@ -344,7 +345,7 @@ void ei_fill(ei_surface_t surface, const ei_color_t *color, const ei_rect_t *cli
 
     ei_draw_polygon(surface, p, 4, *color, clipper);
 
-    // free(p);
+    free(p);
 }
 
 int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surface_t source, const ei_rect_t *src_rect, bool alpha)
@@ -360,13 +361,8 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
     // If the surfaces after clipping don't have the same size, resize them
     if (!ei_equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
-        src_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width
-                                            ? src_size_after_clipping.width
-                                            : dst_size_after_clipping.width;
-
-        dst_size_after_clipping.width = src_size_after_clipping.width < dst_size_after_clipping.width
-                                            ? src_size_after_clipping.width
-                                            : dst_size_after_clipping.width;
+        printf("\033[0;33mWarning: Couldn't copy surface, source and destination surfaces have different sizes.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return 1;
     }
 
     // Calculate the rectangles represensenting the areas to copy/paste after clipping
@@ -454,8 +450,14 @@ void ei_draw_text(ei_surface_t surface, const ei_point_t *where, ei_const_string
         text_surface_rect = ei_get_intersection_rectangle(ei_rect(*where, hw_surface_get_size(text_surface)), *clipper);
     }
 
+    ei_rect_t src_surface_rect = ei_rect(
+        ei_point(
+            text_surface_rect.top_left.x - where->x,
+            text_surface_rect.top_left.y - where->y),
+        text_surface_rect.size);
+
     hw_surface_lock(text_surface);
-    ei_copy_surface(surface, &text_surface_rect, text_surface, NULL, true);
+    ei_copy_surface(surface, &text_surface_rect, text_surface, &src_surface_rect, true);
     hw_surface_unlock(text_surface);
 
     hw_surface_free(text_surface);

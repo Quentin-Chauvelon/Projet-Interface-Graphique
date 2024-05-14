@@ -52,7 +52,8 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     // clipper to cut the rectangle and only be left with the top rounded corners and
     // straight bottom corners.
     ei_rect_t title_bar_with_bottom_corners = ei_rect_add(title_bar, 0, 0, 0, k_default_toplevel_title_corner_radius * 2);
-    ei_draw_rounded_frame(surface, title_bar_with_bottom_corners, 0, k_default_toplevel_title_corner_radius, k_default_toplevel_title_bar_background_color, ei_relief_none, &title_bar);
+    ei_rect_t title_bar_clipper = ei_get_intersection_rectangle(title_bar, *clipper);
+    ei_draw_rounded_frame(surface, title_bar_with_bottom_corners, 0, k_default_toplevel_title_corner_radius, k_default_toplevel_title_bar_background_color, ei_relief_none, &title_bar_clipper);
 
     // Resize the title bar to add a left padding for the close button and the text
     title_bar = ei_rect_move(title_bar, k_default_toplevel_title_left_padding, 0, &title_bar);
