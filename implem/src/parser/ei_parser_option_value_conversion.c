@@ -61,6 +61,11 @@ ei_color_t ei_option_value_to_color()
 {
     ei_verify_numbers_list_length(4);
 
+    if (error == 0)
+    {
+        return (ei_color_t){0, 0, 0, 255};
+    }
+
     ei_color_t color = {ei_list_number->value, ei_list_number->next->value, ei_list_number->next->next->value, ei_list_number->next->next->next->value};
 
     ei_empty_list_number();
@@ -72,6 +77,11 @@ ei_size_t ei_option_value_to_size()
 {
     ei_verify_numbers_list_length(2);
 
+    if (error == 0)
+    {
+        return (ei_size_t){0, 0};
+    }
+
     ei_size_t size = {ei_list_number->value, ei_list_number->next->value};
 
     ei_empty_list_number();
@@ -82,6 +92,11 @@ ei_size_t ei_option_value_to_size()
 ei_rect_t ei_option_value_to_rect()
 {
     ei_verify_numbers_list_length(4);
+
+    if (error == 0)
+    {
+        return (ei_rect_t){0, 0, 0, 0};
+    }
 
     ei_rect_t rect = {ei_list_number->value, ei_list_number->next->value, ei_list_number->next->next->value, ei_list_number->next->next->next->value};
 

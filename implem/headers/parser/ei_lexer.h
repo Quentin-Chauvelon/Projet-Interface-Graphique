@@ -14,7 +14,7 @@
 extern char *characters;
 static int current_char;
 
-enum token
+typedef enum
 {
     OB,
     CB,
@@ -22,8 +22,14 @@ enum token
     DOT,
     END_LINE,
     IGNORE_END_LINE,
-    END_OF_FILE
-};
+    END_OF_FILE,
+    PLACE,
+    COMMENT,
+    NAME,
+    INTEGER,
+    REAL,
+    WS
+} token;
 
 static const char *prefix[] = {
     "{",
@@ -32,36 +38,28 @@ static const char *prefix[] = {
     ".",
     "\n",
     "\\n",
-    "\0"};
+    "\0",
+    "place",
+    "#",
+    "a-z or A-Z or '_'",
+    "0-9",
+    "0-9 or '.'",
+    "' ' or '\\t'"};
 
 void init_current();
 
-char get_current();
-
 void update_current();
 
-void skip_spaces();
+char get_current();
 
-bool is_digit_token();
+int parse_token_integer();
 
-bool is_name_token();
+double parse_token_real();
 
-bool is_place_token();
+char *parse_token_name();
 
-int parse_digit();
+bool is_current_token(token token);
 
-int parse_integer();
-
-double parse_number();
-
-char *parse_name();
-
-char *parse_widget_type();
-
-char *parse_widget_name();
-
-char *parse_parent_name();
-
-void parse_token(enum token token);
+void *parse_token(token token);
 
 #endif

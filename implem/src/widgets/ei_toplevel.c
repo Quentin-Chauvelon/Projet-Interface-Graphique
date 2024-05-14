@@ -28,6 +28,11 @@ void ei_toplevel_releasefunc(ei_widget_t widget)
         free(toplevel->min_size);
     }
 
+    if (toplevel->title != NULL)
+    {
+        free(toplevel->title);
+    }
+
     free(toplevel);
     toplevel = NULL;
 }
@@ -129,7 +134,9 @@ void ei_toplevel_setdefaultsfunc(ei_widget_t widget)
     toplevel->widget_appearance.color = ei_default_background_color;
     toplevel->widget_appearance.border_width = 4;
 
-    toplevel->title = (ei_string_t){"Toplevel"};
+    toplevel->title = malloc(sizeof(char) * 9);
+    strcpy(toplevel->title, "Toplevel");
+
     toplevel->closable = true;
     toplevel->resizable = ei_axis_both;
 
