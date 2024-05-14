@@ -570,7 +570,14 @@ void ei_toplevel_configure(ei_widget_t widget,
 
     if (title != NULL)
     {
-        toplevel->title = *title;
+        if (toplevel->title != NULL)
+        {
+            free(toplevel->title);
+        }
+
+        toplevel->title = malloc(strlen(*title) + 1);
+
+        toplevel->title = strcpy(toplevel->title, *title);
     }
     else
     {

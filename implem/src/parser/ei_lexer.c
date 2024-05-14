@@ -29,37 +29,8 @@ void skip_spaces()
     }
 }
 
-bool is_digit_token()
-{
-    skip_spaces();
-
-    return get_current() >= '0' && get_current() <= '9' || get_current() == '.';
-}
-
-bool is_name_token()
-{
-    skip_spaces();
-
-    return (get_current() >= 'a' && get_current() <= 'z') ||
-           (get_current() >= 'A' && get_current() <= 'Z') ||
-           get_current() == '_';
-}
-
-bool is_place_token()
-{
-    skip_spaces();
-
-    return get_current() == 'p' &&
-           characters[current_char + 1] != '\0' && characters[current_char + 1] == 'l' &&
-           characters[current_char + 2] != '\0' && characters[current_char + 2] == 'a' &&
-           characters[current_char + 3] != '\0' && characters[current_char + 3] == 'c' &&
-           characters[current_char + 4] != '\0' && characters[current_char + 4] == 'e';
-}
-
 int parse_digit()
 {
-    skip_spaces();
-
     if (get_current() >= '0' && get_current() <= '9')
     {
         // Convert the character to an integer
@@ -71,7 +42,7 @@ int parse_digit()
     }
 }
 
-int parse_integer()
+int parse_token_integer()
 {
     skip_spaces();
 
@@ -82,43 +53,43 @@ int parse_integer()
         result = result * 10 + parse_digit();
     }
 
+    skip_spaces();
+
     return result;
 }
 
-double parse_number()
+double parse_token_real()
 {
     skip_spaces();
 
-    int integer = get_current() != '.'
-                      ? parse_integer()
-                      : 0;
+    int integer = 0;
 
-    if (get_current() == '.')
+    if (is_current_token(INTEGER))
     {
-        parse_token(DOT);
-
-        int decimal = parse_integer();
-
-        int nb_digits = 0;
-        int tmp = decimal;
-
-        // Count the number of digits in decimal (dividing a int by 10 floors the result instead of rounding,
-        // which we can use to know once tmp is under 10 (9 / 10 = 0))
-        while (tmp != 0)
-        {
-            tmp /= 10;
-            nb_digits++;
-        }
-
-        return integer + decimal / pow(10, nb_digits);
+        integer = parse_token_integer();
     }
-    else
+
+    parse_token(DOT);
+
+    int decimal = parse_token_integer();
+
+    int nb_digits = 0;
+    int tmp = decimal;
+
+    // Count the number of digits in decimal (dividing a int by 10 floors the result instead of rounding,
+    // which we can use to know once tmp is under 10 (9 / 10 = 0))
+    while (tmp != 0)
     {
-        return integer;
+        tmp /= 10;
+        nb_digits++;
     }
+
+    skip_spaces();
+
+    return integer + (double)decimal / pow(10, nb_digits);
 }
 
-char *parse_name()
+char *parse_token_name()
 {
     skip_spaces();
 
@@ -149,6 +120,8 @@ char *parse_name()
 
         name[length] = '\0';
 
+        skip_spaces();
+
         return name;
     }
     else
@@ -159,36 +132,94 @@ char *parse_name()
     }
 }
 
-char *parse_widget_type()
+bool is_current_token(token token)
 {
-    return parse_name();
+    skip_spaces();
+
+    if (error == 0)
+    {
+        return false;
+    }
+
+    if (token == WS)
+    {
+        return get_current() == ' ' || get_current() == '\t';
+    }
+    else if (token == NAME)
+    {
+        return (get_current() >= 'a' && get_current() <= 'z') ||
+               (get_current() >= 'A' && get_current() <= 'Z') ||
+               get_current() == '_';
+    }
+    else if (token == PLACE)
+    {
+        return get_current() == 'p';
+    }
+    else if (token == INTEGER)
+    {
+        return get_current() >= '0' && get_current() <= '9';
+    }
+    else if (token == REAL)
+    {
+        return get_current() >= '0' && get_current() <= '9' || get_current() == '.';
+    }
+    else if (token == COMMENT)
+    {
+        return get_current() == '#';
+    }
+    else
+    {
+        return get_current() == prefix[token][0];
+    }
 }
 
-char *parse_widget_name()
-{
-    return parse_name();
-}
-
-char *parse_parent_name()
-{
-    return parse_name();
-}
-
-void parse_token(enum token token)
+void *parse_token(token token)
 {
     if (error == 0)
     {
-        return;
+        return NULL;
+    }
+
+    void *value = NULL;
+
+    if (!is_current_token(token))
+    {
+        printf("\033[0;31mError: Expected %s, got %c\033[0m\n", prefix[token], get_current());
+        error = 0;
     }
 
     skip_spaces();
 
-    if (get_current() != prefix[token][0])
+    if (token == NAME)
     {
-        printf("\033[0;31mError: expected %s, got %c\033[0m\n", prefix[token], get_current());
-        error = 0;
-        return;
+        char *name = parse_token_name();
+        value = &name;
+    }
+    else if (token == PLACE)
+    {
+        char *name = parse_token_name();
+        value = &name;
+    }
+    else if (token == INTEGER)
+    {
+        int integer = parse_token_integer();
+        value = &integer;
+    }
+    else if (token == REAL)
+    {
+        double real = parse_token_real();
+        value = &real;
+    }
+    else if (token == END_OF_FILE)
+    {
+        return NULL;
+    }
+    else
+    {
+        update_current();
     }
 
-    update_current();
+    skip_spaces();
+
+    return value;
 }

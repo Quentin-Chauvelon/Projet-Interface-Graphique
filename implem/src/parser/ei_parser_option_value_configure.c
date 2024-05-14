@@ -12,7 +12,7 @@
 
 void ei_set_option_value(enum options_action action, ei_widget_t widget, char *option_name, void *option_value, int *cast_tye)
 {
-    if (action == CONFIGURE)
+    if (action == OPTION_CONFIGURE)
     {
         if (strcmp(widget->wclass->name, "frame") == 0)
         {
@@ -191,7 +191,14 @@ void ei_set_option_value(enum options_action action, ei_widget_t widget, char *o
             }
             else if (strcmp(option_name, "closable") == 0)
             {
-                ei_toplevel_configure(widget, NULL, NULL, NULL, NULL, &(bool){strcmp((char *)option_value, "true") == 0}, NULL, NULL);
+                if (*cast_tye == 1)
+                {
+                    ei_toplevel_configure(widget, NULL, NULL, NULL, NULL, &(bool){strcmp((char *)option_value, "true") == 0}, NULL, NULL);
+                }
+                else if (*cast_tye == 2)
+                {
+                    ei_toplevel_configure(widget, NULL, NULL, NULL, NULL, &(bool){(int){*(double *)option_value}}, NULL, NULL);
+                }
             }
             else if (strcmp(option_name, "resizable") == 0)
             {
@@ -242,13 +249,13 @@ void ei_set_option_value(enum options_action action, ei_widget_t widget, char *o
             }
             else
             {
-                printf("\033[0;31mError: Option %s is not configurable for toplevel\033[0m\n", option_name);
+                printf("\033[0;31mError: Option %s is not configurable for entry\033[0m\n", option_name);
                 error = 0;
                 return;
             }
         }
     }
-    else if (action == PLACE)
+    else if (action == OPTION_PLACE)
     {
         if (strcmp(option_name, "anchor") == 0)
         {

@@ -7,6 +7,23 @@
 #include "../implem/headers/parser/ei_parser_types.h"
 #include "../implem/headers/parser/ei_parser_option_value_configure.h"
 
+double parse_number()
+{
+    double integer = 0;
+
+    if (is_current_token(INTEGER))
+    {
+        integer = parse_token_integer();
+    }
+
+    if (is_current_token(DOT))
+    {
+        return integer + parse_token_real();
+    }
+
+    return integer;
+}
+
 void parse_list_number()
 {
     while (true)
@@ -16,14 +33,12 @@ void parse_list_number()
             return;
         }
 
-        skip_spaces();
-
-        if (is_digit_token())
+        if (is_current_token(INTEGER) || is_current_token(REAL))
         {
             double value = parse_number();
             ei_add_to_list_number(value);
         }
-        else if (get_current() == prefix[CB][0])
+        else if (is_current_token(CB))
         {
             break;
         }
@@ -45,14 +60,12 @@ void parse_list_name()
             return;
         }
 
-        skip_spaces();
-
-        if (is_name_token())
+        if (is_current_token(NAME))
         {
-            char *name = parse_name();
+            char *name = parse_token_name();
             ei_add_to_list_name(name);
         }
-        else if (get_current() == prefix[CB][0])
+        else if (is_current_token(CB))
         {
             break;
         }
@@ -67,12 +80,12 @@ void parse_list_name()
 
 void parse_option_value_X(enum options_action action, ei_widget_t widget, char *option_name)
 {
-    if (is_digit_token())
+    if (is_current_token(INTEGER) || is_current_token(REAL))
     {
         parse_list_number();
         ei_set_option_value(action, widget, option_name, NULL, NULL);
     }
-    else if (is_name_token())
+    else if (is_current_token(NAME))
     {
         parse_list_name();
         ei_set_option_value(action, widget, option_name, NULL, &(int){1});
@@ -87,20 +100,18 @@ void parse_option_value_X(enum options_action action, ei_widget_t widget, char *
 
 void parse_option_value(enum options_action action, ei_widget_t widget, char *option_name)
 {
-    skip_spaces();
-
-    if (is_digit_token())
+    if (is_current_token(INTEGER) || is_current_token(REAL))
     {
         double value = parse_number();
-        ei_set_option_value(action, widget, option_name, &value, NULL);
+        ei_set_option_value(action, widget, option_name, &value, &(int){2});
     }
-    else if (is_name_token())
+    else if (is_current_token(NAME))
     {
-        char *value = parse_name();
+        char *value = parse_token_name();
         ei_set_option_value(action, widget, option_name, value, &(int){0});
         free(value);
     }
-    else if (get_current() == prefix[OB][0])
+    else if (is_current_token(OB))
     {
         parse_token(OB);
 
@@ -118,7 +129,7 @@ void parse_option_value(enum options_action action, ei_widget_t widget, char *op
 
 void parse_option(enum options_action action, ei_widget_t widget)
 {
-    char *name = parse_name();
+    char *name = parse_token_name();
 
     parse_token(EQUAL);
 
@@ -129,8 +140,6 @@ void parse_option(enum options_action action, ei_widget_t widget)
 
 void parse_list_options(enum options_action action, ei_widget_t widget)
 {
-    skip_spaces();
-
     while (true)
     {
         if (error == 0)
@@ -138,11 +147,11 @@ void parse_list_options(enum options_action action, ei_widget_t widget)
             return;
         }
 
-        if (is_name_token())
+        if (is_current_token(NAME))
         {
             parse_option(action, widget);
         }
-        else if (get_current() == prefix[END_LINE][0])
+        else if (is_current_token(END_LINE))
         {
             break;
         }
@@ -153,6 +162,21 @@ void parse_list_options(enum options_action action, ei_widget_t widget)
             return;
         }
     }
+}
+
+char *parse_widget_type()
+{
+    return parse_token_name();
+}
+
+char *parse_widget_name()
+{
+    return parse_token_name();
+}
+
+char *parse_parent_name()
+{
+    return parse_token_name();
 }
 
 void parse_widget_command()
@@ -184,16 +208,18 @@ void parse_widget_command()
     free(type);
     free(parent);
 
-    parse_list_options(CONFIGURE, widget);
+    parse_list_options(OPTION_CONFIGURE, widget);
 }
 
 void parse_place_command()
 {
     // We already know the command start with place, so we can skip it
-    free(parse_name());
+    free(parse_token_name());
 
-    char *name = parse_name();
+    char *name = parse_token_name();
+
     ei_widget_t widget = ei_parse_widget_from_name(name);
+
     free(name);
 
     if (widget == NULL)
@@ -203,68 +229,57 @@ void parse_place_command()
         return;
     }
 
-    parse_list_options(PLACE, widget);
+    parse_list_options(OPTION_PLACE, widget);
 }
 
 void parse_command()
 {
-    skip_spaces();
-
-    if (get_current() == prefix[END_LINE][0])
+    if (is_current_token(END_LINE))
     {
         parse_token(END_LINE);
-        return;
     }
-    else if (is_name_token())
+    else if (is_current_token(PLACE))
     {
-        if (is_place_token())
-        {
-            parse_place_command();
-        }
-        else
-        {
-            parse_widget_command();
-        }
-
-        skip_spaces();
-
-        parse_token(END_LINE);
+        parse_place_command();
     }
-
-    return;
+    else if (is_current_token(NAME))
+    {
+        parse_widget_command();
+    }
+    else
+    {
+        printf("\033[0;31mError: Expected a name token or new line, got %c\033[0m\n", get_current());
+        error = 0;
+    }
 }
 
 void parse_lists_commands()
 {
-    skip_spaces();
-
     while (true)
     {
+        // If there has been an error, stop
         if (error == 0)
         {
             return;
         }
 
-        if (is_name_token() || get_current() == prefix[END_LINE][0])
+        if (is_current_token(NAME) || is_current_token(END_LINE))
         {
             parse_command();
         }
-        else if (get_current() == prefix[END_OF_FILE][0])
-        {
-            break;
-        }
         else
         {
-            printf("\033[0;31mError: Expected a name token, new line or end of line, got %c\033[0m\n", get_current());
-            error = 0;
-            return;
+            break;
         }
     }
 }
 
 void parse_ig()
 {
-    parse_lists_commands();
+    if (is_current_token(NAME) || is_current_token(END_LINE))
+    {
+        parse_lists_commands();
+    }
 
     parse_token(END_OF_FILE);
 }
@@ -327,7 +342,13 @@ int ei_parse_file(char *file_path)
     // Add the root widget to the list
     ei_add_widget_to_list(root_name, ei_app_root_widget());
 
-    parse_lists_commands();
+    // Remove the first spaces/tabs
+    if (is_current_token(WS))
+    {
+        parse_token(WS);
+    }
+
+    parse_ig();
 
     free(characters);
     characters = NULL;

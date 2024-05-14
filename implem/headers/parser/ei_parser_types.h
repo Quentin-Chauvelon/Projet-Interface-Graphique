@@ -16,7 +16,7 @@
 extern struct ei_widgets_list_t *ei_widget_list;
 extern struct ei_list_number_t *ei_list_number;
 extern struct ei_list_name_t *ei_list_name;
-static int error = 1;
+extern int error;
 
 typedef struct ei_list_number_t
 {
@@ -39,8 +39,8 @@ typedef struct ei_widgets_list_t
 
 enum options_action
 {
-    CONFIGURE,
-    PLACE
+    OPTION_CONFIGURE,
+    OPTION_PLACE
 };
 
 void ei_add_widget_to_list(char *name, ei_widget_t widget);

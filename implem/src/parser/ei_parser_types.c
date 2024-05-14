@@ -7,6 +7,7 @@
 ei_widgets_list_t *ei_widget_list;
 ei_list_number_t *ei_list_number;
 ei_list_name_t *ei_list_name;
+int error = 1;
 
 void ei_add_widget_to_list(char *name, ei_widget_t widget)
 {
