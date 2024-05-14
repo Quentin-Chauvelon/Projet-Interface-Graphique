@@ -112,15 +112,15 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
         mouse_position.y <= title_bar.top_left.y + title_bar.size.height)
     {
         // Move the toplevel to the foreground
-        if (widget != ei_app_root_widget()->children_tail)
+        if (widget != widget->parent->children_tail)
         {
-            if (widget == ei_app_root_widget()->children_head)
+            if (widget == widget->parent->children_head)
             {
-                ei_app_root_widget()->children_head = widget->next_sibling;
+                widget->parent->children_head = widget->next_sibling;
             }
             else
             {
-                ei_widget_t previous = ei_app_root_widget()->children_head;
+                ei_widget_t previous = widget->parent->children_head;
 
                 while (previous->next_sibling != widget)
                 {
@@ -130,8 +130,8 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
                 previous->next_sibling = widget->next_sibling;
             }
 
-            ei_app_root_widget()->children_tail->next_sibling = widget;
-            ei_app_root_widget()->children_tail = widget;
+            widget->parent->children_tail->next_sibling = widget;
+            widget->parent->children_tail = widget;
             widget->next_sibling = NULL;
         }
 
@@ -200,15 +200,38 @@ static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_para
             ei_placer_t *geom_params = (ei_placer_t *)toplevel->widget.geom_params;
 
             // If the toplevel is going to clip out of the top or left side, don't move it
-            if (event->param.mouse.where.x - params.offset.x >= 0)
+            int position_x = event->param.mouse.where.x - params.offset.x - widget->parent->content_rect->top_left.x;
+            int position_y = event->param.mouse.where.y - params.offset.y - widget->parent->content_rect->top_left.y;
+
+            // Toplevel can't be moved out of the screen on the left side
+            if (position_x < 0)
             {
-                geom_params->x = event->param.mouse.where.x - params.offset.x;
+                position_x = 0;
             }
 
-            if (event->param.mouse.where.y - params.offset.y >= 0)
+            // If the widget a child of the root widget, it can be moved outside the screen on the right
+            // side. Otherwise, it can only be moved within its parent but not stick out of it
+            if (widget->parent != ei_app_root_widget() &&
+                position_x > widget->parent->content_rect->size.width - widget->screen_location.size.width)
             {
-                geom_params->y = event->param.mouse.where.y - params.offset.y;
+                position_x = widget->parent->content_rect->size.width - widget->screen_location.size.width;
             }
+
+            // Toplevel can't be moved out of the screen on the top side
+            if (position_y < 0)
+            {
+                position_y = 0;
+            }
+
+            // If the widget a child of the root widget, it can be moved outside the screen on the bottom
+            // side. Otherwise, it can only be moved within its parent but not stick out of it
+            if (widget->parent != ei_app_root_widget() &&
+                position_y > widget->parent->content_rect->size.height - widget->screen_location.size.height)
+            {
+                position_y = widget->parent->content_rect->size.height - widget->screen_location.size.height;
+            }
+
+            ei_place(widget, &(ei_anchor_t){ei_anc_northwest}, &position_x, &position_y, NULL, NULL, &(float){0.0}, &(float){0.0}, NULL, NULL);
 
             return true;
         }
@@ -239,20 +262,30 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
     {
         if (strcmp(toplevel->widget.geom_params->manager->name, "placer") == 0)
         {
-            ei_placer_t *geom_params = (ei_placer_t *)toplevel->widget.geom_params;
-
-            geom_params->width = event->param.mouse.where.x - toplevel->widget.screen_location.top_left.x;
-            geom_params->height = event->param.mouse.where.y - toplevel->widget.screen_location.top_left.y;
-
-            // Resize the top level to the minimum size if it is smaller than the minimum size
-            if (geom_params->width < (*toplevel->min_size).width)
+            if (toplevel->resizable == ei_axis_x || toplevel->resizable == ei_axis_both)
             {
-                geom_params->width = (*toplevel->min_size).width;
+                int size_x = event->param.mouse.where.x - toplevel->widget.screen_location.top_left.x;
+
+                // Resize the top level to the minimum size if it is smaller than the minimum size
+                if (size_x < (*toplevel->min_size).width)
+                {
+                    size_x = (*toplevel->min_size).width;
+                }
+
+                ei_place(&toplevel->widget, NULL, NULL, NULL, &size_x, NULL, NULL, NULL, NULL, NULL);
             }
 
-            if (geom_params->height < (*toplevel->min_size).height)
+            if (toplevel->resizable == ei_axis_y || toplevel->resizable == ei_axis_both)
             {
-                geom_params->height = (*toplevel->min_size).height;
+                int size_y = event->param.mouse.where.y - toplevel->widget.screen_location.top_left.y;
+
+                // Resize the top level to the minimum size if it is smaller than the minimum size
+                if (size_y < (*toplevel->min_size).height)
+                {
+                    size_y = (*toplevel->min_size).height;
+                }
+
+                ei_place(&toplevel->widget, NULL, NULL, NULL, NULL, &size_y, NULL, NULL, NULL, NULL);
             }
 
             return true;
