@@ -50,15 +50,65 @@ void ei_place(ei_widget_t widget,
     }
 
     // Set the geom params to the given parameter if not NULL or the default value otherwise
-    placer_geom_param->anchor = anchor != NULL && *anchor != ei_anc_none ? *anchor : ei_anc_northwest;
-    placer_geom_param->x = x != NULL ? *x : 0;
-    placer_geom_param->y = y != NULL ? *y : 0;
-    placer_geom_param->width = width != NULL ? *width : 0;
-    placer_geom_param->height = height != NULL ? *height : 0;
-    placer_geom_param->rel_x = rel_x != NULL ? *rel_x : 0.0;
-    placer_geom_param->rel_y = rel_y != NULL ? *rel_y : 0.0;
-    placer_geom_param->rel_width = rel_width != NULL ? *rel_width : 0.0;
-    placer_geom_param->rel_height = rel_height != NULL ? *rel_height : 0.0;
+    if (!ei_widget_is_displayed(widget))
+    {
+        placer_geom_param->anchor = anchor != NULL && *anchor != ei_anc_none ? *anchor : ei_anc_northwest;
+        placer_geom_param->x = x != NULL ? *x : 0;
+        placer_geom_param->y = y != NULL ? *y : 0;
+        placer_geom_param->width = width != NULL ? *width : 0;
+        placer_geom_param->height = height != NULL ? *height : 0;
+        placer_geom_param->rel_x = rel_x != NULL ? *rel_x : 0.0;
+        placer_geom_param->rel_y = rel_y != NULL ? *rel_y : 0.0;
+        placer_geom_param->rel_width = rel_width != NULL ? *rel_width : 0.0;
+        placer_geom_param->rel_height = rel_height != NULL ? *rel_height : 0.0;
+    }
+    else
+    {
+        if (anchor != NULL && *anchor != ei_anc_none)
+        {
+            placer_geom_param->anchor = *anchor;
+        }
+
+        if (x != NULL)
+        {
+            placer_geom_param->x = *x;
+        }
+
+        if (y != NULL)
+        {
+            placer_geom_param->y = *y;
+        }
+
+        if (width != NULL)
+        {
+            placer_geom_param->width = *width;
+        }
+
+        if (height != NULL)
+        {
+            placer_geom_param->height = *height;
+        }
+
+        if (rel_x != NULL)
+        {
+            placer_geom_param->rel_x = *rel_x;
+        }
+
+        if (rel_y != NULL)
+        {
+            placer_geom_param->rel_y = *rel_y;
+        }
+
+        if (rel_width != NULL)
+        {
+            placer_geom_param->rel_width = *rel_width;
+        }
+
+        if (rel_height != NULL)
+        {
+            placer_geom_param->rel_height = *rel_height;
+        }
+    }
 
     ei_widget_set_geom_params(widget, (ei_geom_param_t)placer_geom_param);
 

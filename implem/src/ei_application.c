@@ -4,6 +4,7 @@
 #include "../api/ei_application.h"
 #include "../api/ei_widgetclass.h"
 #include "../api/ei_geometrymanager.h"
+#include "../api/ei_parser.h"
 #include "../api/ei_event.h"
 #include "../api/ei_types.h"
 #include "../api/ei_utils.h"
@@ -112,6 +113,8 @@ void ei_app_run(void)
 
 void ei_app_free(void)
 {
+    free_name_to_widget_list();
+
     ei_widget_destroy(ei_app_root_widget());
 
     ei_unbind_events_registered_for_unbind();

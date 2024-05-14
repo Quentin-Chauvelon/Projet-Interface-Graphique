@@ -74,6 +74,11 @@ set(LIB_EI_SOURCES
 	${SRC}/src/widgets/ei_button.c
 	${SRC}/src/widgets/ei_toplevel.c
 	${SRC}/src/widgets/ei_entry.c
+	${SRC}/src/parser/ei_lexer.c
+	${SRC}/src/parser/ei_parser.c
+	${SRC}/src/parser/ei_parser_types.c
+	${SRC}/src/parser/ei_parser_option_value_configure.c
+	${SRC}/src/parser/ei_parser_option_value_conversion.c
 	${SRC}/src/ei_application.c
 	${SRC}/src/ei_widget.c
 	${SRC}/src/ei_widget_configure.c
@@ -144,6 +149,21 @@ target_link_libraries(ext_testgm	testgm ei ${PLATFORM_LIB_FLAGS})
 
 add_executable(parsing			${TEST_DIR}/parsing.c)
 target_link_libraries(parsing		ei ${PLATFORM_LIB_FLAGS})
+
+# target parsing_ko
+
+add_executable(parsing_ko			${TEST_DIR}/parsing_ko.c)
+target_link_libraries(parsing_ko		ei ${PLATFORM_LIB_FLAGS})
+
+# target custom_tags
+
+add_executable(tags			${TEST_DIR}/custom_tags.c)
+target_link_libraries(tags		ei ${PLATFORM_LIB_FLAGS})
+
+# target tags_parsing
+
+add_executable(tags_parsing			${TEST_DIR}/tags_parsing.c)
+target_link_libraries(tags_parsing		ei ${PLATFORM_LIB_FLAGS})
 
 # target to build the documentation
 
