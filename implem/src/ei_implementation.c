@@ -41,7 +41,7 @@ uint32_t ei_impl_map_rgba(ei_surface_t surface, ei_color_t color)
     int ir, ig , ib, ia ;
 
     // get the channel indices of the surface 
-    hw_surface_get_channel_indices(ei_surface_t surface, &ir, &ig, &ib, &ia);
+    hw_surface_get_channel_indices( surface, &ir, &ig, &ib, &ia);
 
     //position each byte R, G, B, A in the right place in the 32-bit integer
     converted_color |= ( (uint32_t)color.red ) << 32-(ir + 1)*8 ;
