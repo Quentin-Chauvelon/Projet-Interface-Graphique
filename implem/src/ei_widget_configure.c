@@ -583,7 +583,8 @@ void ei_toplevel_configure(ei_widget_t widget,
     {
         if (!toplevel->widget.instantiated)
         {
-            toplevel->title = "Toplevel";
+            toplevel->title = malloc(sizeof(char) * 9);
+            strcpy(toplevel->title, "Toplevel");
         }
     }
 
