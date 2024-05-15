@@ -4,6 +4,32 @@
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_toplevel.h"
 
+ei_frame_t* common_frame_button_configure(ei_widget_t widget,
+                                   ei_size_t *requested_size,
+                                   const ei_color_t *color,
+                                   ei_string_t *text,
+                                   ei_font_t *text_font,
+                                   ei_color_t *text_color,
+                                   ei_anchor_t *text_anchor,
+                                   ei_surface_t *img,
+                                   ei_rect_ptr_t *img_rect,
+                                   ei_anchor_t *img_anchor)
+{
+    ei_frame_t *frame = (ei_frame_t *)widget;
+
+    widget->requested_size = requested_size != NULL ? *requested_size : *ei_frame_get_natural_size(frame);
+    widget->screen_location.size = widget->requested_size;
+    color != NULL ? ei_frame_set_color(frame, *color) : ei_frame_set_color(frame, ei_default_background_color);
+    text != NULL ? ei_frame_set_text_label(frame, *text) : ei_frame_set_text_label(frame, NULL);
+    text_font != NULL ? ei_frame_set_text_font(frame, *text_font) : ei_frame_set_text_font(frame, ei_default_font);
+    text_color != NULL ? ei_frame_set_text_color(frame, *text_color) : ei_frame_set_text_color(frame, ei_font_default_color);
+    text_anchor != NULL ? ei_frame_set_text_anchor(frame, *text_anchor) : ei_frame_set_text_anchor(frame, ei_anc_center);
+    img != NULL ? ei_frame_set_image_data(frame, *img) : ei_frame_set_image_data(frame, NULL);
+    img_rect != NULL ? ei_frame_set_image_rect(frame, *img_rect) : ei_frame_set_image_rect(frame, NULL);
+    img_anchor != NULL ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
+
+    return frame;
+}
 /**
  * @brief	Configures the attributes of widgets of the class "frame".
  *
@@ -61,21 +87,20 @@ void ei_frame_configure(ei_widget_t widget,
         return;
     }
 
-    ei_frame_t *frame = (ei_frame_t *)widget;
+    ei_frame_t *frame = common_frame_button_configure(widget,
+                                                     requested_size,
+                                                     color,
+                                                     text,
+                                                     text_font,
+                                                     text_color,
+                                                     text_anchor,
+                                                     img,
+                                                     img_rect,
+                                                     img_anchor);
 
-    color != NULL ? ei_frame_set_color(frame, *color) : ei_frame_set_color(frame, ei_default_background_color);
     border_width != NULL ? ei_frame_set_border_width(frame, *border_width) : ei_frame_set_border_width(frame, 0);
     relief != NULL ? ei_frame_set_relief(frame, *relief) : ei_frame_set_relief(frame, ei_relief_none);
-    text != NULL ? ei_frame_set_text_label(frame, *text) : ei_frame_set_text_label(frame, NULL);
-    text_font != NULL ? ei_frame_set_text_font(frame, *text_font) : ei_frame_set_text_font(frame, ei_default_font);
-    text_color != NULL ? ei_frame_set_text_color(frame, *text_color) : ei_frame_set_text_color(frame, ei_font_default_color);
-    text_anchor != NULL ? ei_frame_set_text_anchor(frame, *text_anchor) : ei_frame_set_text_anchor(frame, ei_anc_center);
-    img != NULL ? ei_frame_set_image_data(frame, *img) : ei_frame_set_image_data(frame, NULL);
-    img_rect != NULL ? ei_frame_set_image_rect(frame, *img_rect) : ei_frame_set_image_rect(frame, NULL);
-    img_anchor != NULL ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
 
-    widget->requested_size = requested_size != NULL ? *requested_size : *ei_frame_get_natural_size(frame);
-    widget->screen_location.size = widget->requested_size;
 }
 
 /**
@@ -110,82 +135,35 @@ void ei_button_configure(ei_widget_t widget,
                          ei_callback_t *callback,
                          ei_user_param_t *user_param)
 {
-    ei_button_t *button = (ei_button_t *)widget;
-
-    if (color != NULL)
+    if (text != NULL && img != NULL)
     {
-        button->widget_appearance.color = *color;
+        printf("\033[0;33mWarning: Button couldn't be configured. One of the parameter 'text' and 'img' should be NULL.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+    
+    ei_frame_t *frame = common_frame_button_configure(widget,
+                                                     requested_size,
+                                                     color,
+                                                     text,
+                                                     text_font,
+                                                     text_color,
+                                                     text_anchor,
+                                                     img,
+                                                     img_rect,
+                                                     img_anchor);
+
+    ei_button_t *button = (ei_button_t *)frame;
+
+    button->widget_appearance.border_width = border_width != NULL ? *border_width : k_default_button_border_width;
+    button->corner_radius = corner_radius != NULL ? *corner_radius : k_default_button_corner_radius;
+
+    if (button->widget_appearance.border_width != 0) {
+        button->frame_appearance.relief = relief != NULL ? *relief : ei_relief_raised;
     }
 
-    if (border_width != NULL)
-    {
-        button->widget_appearance.border_width = *border_width;
-    }
-
-    if (corner_radius != NULL)
-    {
-        button->corner_radius = *corner_radius;
-    }
-
-    if (button->widget_appearance.border_width != 0)
-    {
-        if (relief != NULL)
-        {
-            button->frame_appearance.relief = *relief;
-        }
-    }
-
-    if (text != NULL)
-    {
-        button->frame_appearance.text.label = *text;
-
-        if (text_font != NULL)
-        {
-            button->frame_appearance.text.font = *text_font;
-        }
-
-        if (text_color != NULL)
-        {
-            button->frame_appearance.text.color = *text_color;
-        }
-        if (text_anchor != NULL)
-        {
-            button->frame_appearance.text.anchor = *text_anchor;
-        }
-    }
-
-    if (img != NULL)
-    {
-        button->frame_appearance.image.data = *img;
-
-        if (img_rect != NULL)
-        {
-            button->frame_appearance.image.rect = *img_rect;
-        }
-
-        if (img_anchor != NULL)
-        {
-            button->frame_appearance.image.anchor = *img_anchor;
-        }
-    }
-
-    if (callback != NULL)
-    {
-        button->callback = *callback;
-    }
-
-    if (user_param != NULL)
-    {
-        button->user_param = *user_param;
-    }
-
-    if (requested_size != NULL)
-    {
-        widget->requested_size = *requested_size;
-        widget->screen_location.size = *requested_size;
-    }
+    button->callback = callback != NULL ? *callback : NULL;
+    button->user_param = user_param != NULL ? *user_param : NULL;
 }
-
 /**
  * @brief	Configures the attributes of widgets of the class "toplevel".
  *
@@ -220,39 +198,19 @@ void ei_toplevel_configure(ei_widget_t widget,
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
-    if (color != NULL)
-    {
-        toplevel->widget_appearance.color = *color;
-    }
+    widget->requested_size = requested_size != NULL ? *requested_size : (ei_size_t){320, 240};
+    widget->screen_location.size = widget->requested_size;
 
-    if (border_width != NULL)
-    {
-        toplevel->widget_appearance.border_width = *border_width;
-    }
+    toplevel->widget_appearance.color = color != NULL ? *color : ei_default_background_color;
 
-    if (title != NULL)
-    {
-        toplevel->title = *title;
-    }
+    toplevel->widget_appearance.border_width = border_width != NULL ? *border_width : 4 ;
 
-    if (closable != NULL)
-    {
-        toplevel->closable = *closable;
-    }
+    toplevel->title = title != NULL ? *title : "Toplevel" ;
 
-    if (resizable != NULL)
-    {
-        toplevel->resizable = *resizable;
-    }
+    toplevel->closable = closable != NULL ? *closable : true;
+    
+    toplevel->resizable = resizable != NULL ? *resizable : ei_axis_both;
+    
+    toplevel->min_size = min_size != NULL ? *min_size : (ei_size_ptr_t)(160, 120);
 
-    if (min_size != NULL)
-    {
-        toplevel->min_size = *min_size;
-    }
-
-    if (requested_size != NULL)
-    {
-        widget->requested_size = *requested_size;
-        widget->screen_location.size = *requested_size;
-    }
 }
