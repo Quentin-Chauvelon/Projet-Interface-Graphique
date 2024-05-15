@@ -247,6 +247,10 @@ void ei_frame_configure(ei_widget_t widget,
     {
         widget->geom_params->manager->runfunc(widget);
     }
+    else
+    {
+        widget->screen_location.size = widget->requested_size;
+    }
 
     widget->wclass->geomnotifyfunc(widget);
 }
@@ -502,6 +506,10 @@ void ei_button_configure(ei_widget_t widget,
     {
         widget->geom_params->manager->runfunc(widget);
     }
+    else
+    {
+        widget->screen_location.size = widget->requested_size;
+    }
 
     widget->wclass->geomnotifyfunc(widget);
 }
@@ -672,6 +680,10 @@ void ei_toplevel_configure(ei_widget_t widget,
     if (ei_widget_is_displayed(widget))
     {
         widget->geom_params->manager->runfunc(widget);
+    }
+    else
+    {
+        widget->screen_location.size = widget->requested_size;
     }
 
     widget->wclass->geomnotifyfunc(widget);

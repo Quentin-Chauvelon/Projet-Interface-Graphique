@@ -238,36 +238,34 @@ static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_para
         {
             ei_placer_t *geom_params = (ei_placer_t *)toplevel->widget.geom_params;
 
-            // If the toplevel is going to clip out of the top or left side, don't move it
             int position_x = event->param.mouse.where.x - params.offset.x - widget->parent->content_rect->top_left.x;
             int position_y = event->param.mouse.where.y - params.offset.y - widget->parent->content_rect->top_left.y;
 
-            // Toplevel can't be moved out of the screen on the left side
-            if (position_x < 0)
+            // If the widget a child of the root widget, it can be moved outside the screen.
+            // Otherwise, it can only be moved within its parent but not stick out of it
+            if (widget->parent != ei_app_root_widget())
             {
-                position_x = 0;
-            }
+                if (position_x < 0)
+                {
+                    position_x = 0;
+                }
 
-            // If the widget a child of the root widget, it can be moved outside the screen on the right
-            // side. Otherwise, it can only be moved within its parent but not stick out of it
-            if (widget->parent != ei_app_root_widget() &&
-                position_x > widget->parent->content_rect->size.width - widget->screen_location.size.width)
-            {
-                position_x = widget->parent->content_rect->size.width - widget->screen_location.size.width;
-            }
+                if (widget->parent != ei_app_root_widget() &&
+                    position_x > widget->parent->content_rect->size.width - widget->screen_location.size.width)
+                {
+                    position_x = widget->parent->content_rect->size.width - widget->screen_location.size.width;
+                }
 
-            // Toplevel can't be moved out of the screen on the top side
-            if (position_y < 0)
-            {
-                position_y = 0;
-            }
+                if (position_y < 0)
+                {
+                    position_y = 0;
+                }
 
-            // If the widget a child of the root widget, it can be moved outside the screen on the bottom
-            // side. Otherwise, it can only be moved within its parent but not stick out of it
-            if (widget->parent != ei_app_root_widget() &&
-                position_y > widget->parent->content_rect->size.height - widget->screen_location.size.height)
-            {
-                position_y = widget->parent->content_rect->size.height - widget->screen_location.size.height;
+                if (widget->parent != ei_app_root_widget() &&
+                    position_y > widget->parent->content_rect->size.height - widget->screen_location.size.height)
+                {
+                    position_y = widget->parent->content_rect->size.height - widget->screen_location.size.height;
+                }
             }
 
             ei_place(widget, &(ei_anchor_t){ei_anc_northwest}, &position_x, &position_y, NULL, NULL, &(float){0.0}, &(float){0.0}, NULL, NULL);
@@ -1021,14 +1019,33 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // Move to the first character
     else if (event->param.key_code == SDLK_HOME)
     {
-        // If the user pressed shift, select all characters from the cursor to the start
+        // If the user pressed shift, select all characters from the cursor to the start if there
+        // is no selection, otherwise select from the start to the beggining of the previous selection
         if ((ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
              ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right)) &&
             entry->cursor != entry->first_character)
         {
-            ei_set_selection_characters(entry, entry->first_character, entry->cursor, ei_selection_direction_left);
+            // If there is no active selection, select all characters from the start to the cursor
+            if (entry->selection_direction == ei_selection_direction_none)
+            {
+                ei_set_selection_characters(entry, entry->first_character, entry->cursor, ei_selection_direction_left);
+            }
+            // Otherwise if there is an active selection, we want to revert it
+            else
+            {
+                // If the selection starts at the first character, erase the selection
+                if (entry->selection_start_character == entry->first_character->next)
+                {
+                    ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+                }
+                // Otherwise select all characters from the start of the text to the start of the selection
+                else
+                {
+                    ei_set_selection_characters(entry, entry->first_character, entry->selection_start_character->previous, ei_selection_direction_left);
+                }
+            }
         }
-        // Otherwise, remove the selection
+        // If the user didn't press shift, remove the selection
         else
         {
             ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
@@ -1041,14 +1058,31 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     // move to the last character
     else if (event->param.key_code == SDLK_END)
     {
-        // If the user pressed shift, select all characters from the cursor to the end
         if ((ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_left) ||
              ei_mask_has_modifier(event->modifier_mask, ei_mod_shift_right)) &&
             entry->cursor->next != NULL)
         {
-            ei_set_selection_characters(entry, entry->cursor->next, entry->last_character, ei_selection_direction_right);
+            // If there is no active selection, select all characters from the cursor to the end
+            if (entry->selection_direction == ei_selection_direction_none)
+            {
+                ei_set_selection_characters(entry, entry->cursor->next, entry->last_character, ei_selection_direction_right);
+            }
+            // Otherwise if there is an active selection, we want to revert it
+            else
+            {
+                // If the selection ends at the last character, erase the selection
+                if (entry->selection_end_character == entry->last_character)
+                {
+                    ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
+                }
+                // Otherwise select all characters from the end of the selection to the end of the text
+                else
+                {
+                    ei_set_selection_characters(entry, entry->selection_end_character->next, entry->last_character, ei_selection_direction_right);
+                }
+            }
         }
-        // Otherwise, remove the selection
+        // If the user didn't press shift, remove the selection
         else
         {
             ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);
@@ -1299,5 +1333,10 @@ void ei_bind_all_internal_callbacks()
     displayed = malloc(sizeof(bool));
     *displayed = false;
 
-    ei_bind_internal(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &displayed, 100);
+    ei_bind_internal(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, displayed, 100);
+}
+
+void ei_free_all_internal_callbacks()
+{
+    free(displayed);
 }
