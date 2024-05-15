@@ -307,13 +307,29 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
     // Draw the image
     if (image.data != NULL)
     {
+        ei_size_t original_image_size = hw_surface_get_size(image.data);
+
         ei_size_t image_size = image.rect == NULL
-                                   ? hw_surface_get_size(image.data)
+                                   ? original_image_size
                                    : image.rect->size;
 
-        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image_size, image.anchor);
+        ei_rect_t image_rect = image.rect != NULL
+                                   ? *image.rect
+                                   : ei_rect(ei_point_zero(), image_size);
 
-        ei_draw_image(surface, image.data, image.rect, &where, clipper);
+        // Crop the image to only get the subpart defined by image rect
+        image_rect = ei_get_intersection_rectangle(image_rect, ei_rect(ei_point_zero(), original_image_size));
+
+        // If the image is not contained in the cropped image (outside of image rec),
+        // reset the image to its original size and remove the cropping
+        if (image_rect.top_left.x == 0 && image_rect.top_left.y == 0 && image_rect.size.width == 0 && image_rect.size.height == 0)
+        {
+            image_rect = ei_rect(ei_point_zero(), original_image_size);
+        }
+
+        ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image_rect.size, image.anchor);
+
+        ei_draw_image(surface, image.data, &image_rect, &where, clipper);
     }
 }
 
@@ -364,7 +380,7 @@ void ei_add_tag_to_widget(ei_widget_t widget, ei_tag_t tag)
         exit(1);
     }
 
-        widget_tag->tag = malloc(strlen(tag) + 1);
+    widget_tag->tag = malloc(strlen(tag) + 1);
     strcpy(widget_tag->tag, tag);
 
     widget_tag->next = NULL;

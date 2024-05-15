@@ -466,40 +466,36 @@ void ei_draw_text(ei_surface_t surface, const ei_point_t *where, ei_const_string
 void ei_draw_image(ei_surface_t surface, ei_surface_t image, ei_rect_t *image_subpart, const ei_point_t *where, const ei_rect_t *clipper)
 {
     // If the subpart is not NULL, limit the surface to the size of the subpart, otherwise use the whole image
-    ei_rect_t *image_subpart_clipped = malloc(sizeof(ei_rect_t));
+    ei_rect_t image_subpart_clipped = ei_rect(
+        image_subpart != NULL
+            ? image_subpart->top_left
+            : *where,
+        image_subpart != NULL
+            ? image_subpart->size
+            : hw_surface_get_size(image)
 
-    // If malloc failed, return
-    if (image_subpart_clipped == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory to draw image.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        return;
-    }
+    );
 
-    image_subpart_clipped->top_left = image_subpart != NULL
-                                          ? image_subpart->top_left
-                                          : ei_point_zero();
+    ei_rect_t image_rect = ei_rect(*where, image_subpart_clipped.size);
 
-    image_subpart_clipped->size = image_subpart != NULL
-                                      ? image_subpart->size
-                                      : hw_surface_get_size(image);
-
-    ei_rect_t image_rect = ei_rect(*where, image_subpart_clipped->size);
-
-    // If the clipper is not NULL, limit the surface to the intersection of the size of the text and the clipper
+    // If the clipper is not NULL, limit the surface to the intersection of the size of the image and the clipper
     if (clipper != NULL)
     {
         image_rect = ei_get_intersection_rectangle(image_rect, *clipper);
     }
 
-    // Limit the size of the subpart to the size of the image,
-    // so that the subpart also takes into account the clipper
-    image_subpart_clipped->size = image_rect.size;
+    ei_rect_t src_surface_rect = ei_rect(
+        ei_point(
+            image_subpart_clipped.top_left.x,
+            image_subpart_clipped.top_left.y),
+        image_rect.size);
+
+    // Move the surface rect to match the position of the clipper while still drawing the correct subpart of the image
+    src_surface_rect = ei_rect_move(src_surface_rect, image_rect.top_left.x - where->x, image_rect.top_left.y - where->y, NULL);
 
     hw_surface_lock(image);
-    ei_copy_surface(surface, &image_rect, image, image_subpart_clipped, true);
+    ei_copy_surface(surface, &image_rect, image, &src_surface_rect, true);
     hw_surface_unlock(image);
-
-    free(image_subpart_clipped);
 }
 
 void ei_get_border_colors(ei_color_t background_color, ei_relief_t relief, ei_color_t *lighter_color, ei_color_t *darker_color)
