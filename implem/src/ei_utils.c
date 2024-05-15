@@ -247,7 +247,7 @@ ei_hsl_color_t ei_convert_rgb_to_hsl(ei_color_t color)
         s = c / (1 - fabs(2 * l - 1));
     }
 
-    return (ei_hsl_color_t){h, s, l};
+    return (ei_hsl_color_t){h, s, l, color.alpha};
 }
 
 /**
@@ -313,5 +313,5 @@ ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl)
         b = convert_hue_to_rgb(p, q, hsl.hue - 1.0 / 3.0);
     }
 
-    return (ei_color_t){r * 255, g * 255, b * 255, 255};
+    return (ei_color_t){r * 255, g * 255, b * 255, hsl.alpha};
 }

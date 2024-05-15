@@ -158,8 +158,9 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
  * @brief   Draw the text of the given entry
  *
  * @param   entry   The entry for which to draw the text
+ * @param   clipper If not NULL, the drawing is restricted within this rectangle
  */
-void ei_draw_entry_text(ei_entry_t *entry);
+void ei_draw_entry_text(ei_entry_t *entry, ei_rect_t *clipper);
 
 /**
  * @brief   Return the character that is closest to the given position (where the user clicked)

@@ -8,6 +8,7 @@
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 #include "../implem/headers/ei_entry_ext.h"
+#include "../implem/headers/ei_event_ext.h"
 
 void ei_entry_configure(ei_widget_t widget, int *requested_char_size, const ei_color_t *color, int *border_width, ei_font_t *text_font, ei_color_t *text_color)
 {
@@ -229,7 +230,7 @@ void ei_entry_give_focus(ei_widget_t widget)
     ei_entry_t *entry = (ei_entry_t *)widget;
 
     // Bind the event for this entry
-    ei_bind(ei_ev_keydown, widget, NULL, ei_entry_keyboard_key_down, NULL);
+    ei_bind_internal(ei_ev_keydown, widget, NULL, ei_entry_keyboard_key_down, NULL, 20);
 
     entry->focused = true;
     entry->cursor_visible = true;

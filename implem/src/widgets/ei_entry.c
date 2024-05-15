@@ -94,7 +94,7 @@ void ei_entry_releasefunc(ei_widget_t widget)
 
 void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
-    DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
+    DEBUG ? printf("Drawing entry %d\n", widget->pick_id) : 0;
 
     ei_entry_t *entry = (ei_entry_t *)widget;
 
@@ -132,7 +132,7 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     }
 
     // Draw the text
-    ei_draw_entry_text(entry);
+    ei_draw_entry_text(entry, clipper);
 
     // Draw the entry on the offscreen picking surface
     ei_draw_straight_frame(pick_surface, widget->screen_location, 0, *widget->pick_color, ei_relief_none, clipper);
@@ -203,12 +203,14 @@ void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)
     // can be drawn to the left or the right the text, hence, we need to
     // increase the size of the clipper to the left and the right of the cursor
     // by 2 times its size to allow to make sure that the cursor is always visible
-    const ei_rect_t cursor_clipper = ei_rect_add(*entry->widget.content_rect, -ei_entry_default_cursor_width * 2, 0, ei_entry_default_cursor_width * 2 * 2, 0);
+    ei_rect_t cursor_clipper = ei_rect_add(*entry->widget.content_rect, -ei_entry_default_cursor_width * 2, 0, ei_entry_default_cursor_width * 2 * 2, 0);
+
+    cursor_clipper = ei_get_intersection_rectangle(cursor_clipper, *clipper);
 
     ei_draw_rectangle(ei_app_root_surface(), cursor_rect, cursor_color, &cursor_clipper);
 }
 
-void ei_draw_entry_text(ei_entry_t *entry)
+void ei_draw_entry_text(ei_entry_t *entry, ei_rect_t *clipper)
 {
     if (entry->first_character == NULL)
     {
@@ -228,7 +230,7 @@ void ei_draw_entry_text(ei_entry_t *entry)
             continue;
         }
 
-        ei_draw_text(ei_app_root_surface(), &where, text, entry->text.font, entry->text.color, entry->widget.content_rect);
+        ei_draw_text(ei_app_root_surface(), &where, text, entry->text.font, entry->text.color, clipper);
     }
 }
 
@@ -341,6 +343,9 @@ void ei_entry_release_focus(ei_widget_t widget)
             entry->blinking_params = NULL;
         }
     }
+
+    // Redraw the unfocused entry
+    ei_app_invalidate_rect(&widget->screen_location);
 
     // Reset the selection
     ei_set_selection_characters(entry, NULL, NULL, ei_selection_direction_none);

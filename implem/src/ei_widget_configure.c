@@ -239,8 +239,6 @@ void ei_frame_configure(ei_widget_t widget,
     // later on if another call is made with NULL values
     frame->widget.instantiated = true;
 
-    widget->screen_location.size = widget->requested_size;
-
     // Update the geometry of the widget in case the size has changed
     if (ei_widget_is_displayed(widget))
     {
@@ -496,8 +494,6 @@ void ei_button_configure(ei_widget_t widget,
     // later on if another call is made with NULL values
     button->widget.instantiated = true;
 
-    widget->screen_location.size = widget->requested_size;
-
     // Update the geometry of the widget in case the size has changed
     if (ei_widget_is_displayed(widget))
     {
@@ -668,8 +664,6 @@ void ei_toplevel_configure(ei_widget_t widget,
     // Save the widget as instantiated so that any values set by the user won't overriden
     // later on if another call is made with NULL values
     toplevel->widget.instantiated = true;
-
-    widget->screen_location.size = widget->requested_size;
 
     // Update the geometry of the widget in case the size has changed
     if (ei_widget_is_displayed(widget))

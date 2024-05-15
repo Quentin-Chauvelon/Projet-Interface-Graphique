@@ -48,9 +48,9 @@ void test_parsing_ko(char *text)
 
     if (ei_parse_file(filename) == 0)
         printf("Error while attempting to parse \"parsing_ko.txt\", aborting.\n\n");
-    else
-        /* Run the application's main loop. */
-        ei_app_run();
+    // else
+    //     /* Run the application's main loop. */
+    //     ei_app_run();
 
     remove(filename);
 
