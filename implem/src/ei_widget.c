@@ -194,6 +194,11 @@ void ei_widget_destroy(ei_widget_t widget)
         widget->destructor(widget);
     }
 
+    while (widget->tags != NULL)
+    {
+        ei_remove_tag_from_widget(widget, widget->tags->tag);
+    }
+
     // Don't free the geom_params field since it has already be freed in the geometry manager's unmap function
 
     free(widget->pick_color);
@@ -380,7 +385,7 @@ void ei_add_tag_to_widget(ei_widget_t widget, ei_tag_t tag)
         exit(1);
     }
 
-    widget_tag->tag = malloc(strlen(tag) + 1);
+    widget_tag->tag = malloc(sizeof(char) * (strlen(tag) + 1));
     strcpy(widget_tag->tag, tag);
 
     widget_tag->next = NULL;

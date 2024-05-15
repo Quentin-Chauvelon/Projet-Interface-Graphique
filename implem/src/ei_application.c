@@ -112,6 +112,8 @@ void ei_app_run(void)
 
 void ei_app_free(void)
 {
+    ei_free_all_internal_callbacks();
+
     free_name_to_widget_list();
 
     ei_widget_destroy(ei_app_root_widget());
@@ -143,6 +145,22 @@ void ei_app_free(void)
 
 void ei_app_invalidate_rect(const ei_rect_t *rect)
 {
+    ei_rect_t *rect_copy = malloc(sizeof(ei_rect_t));
+    rect_copy->top_left = rect->top_left;
+    rect_copy->size = rect->size;
+
+    if (rect_copy->top_left.x < 0)
+    {
+        rect_copy->size.width -= rect_copy->top_left.x;
+        rect_copy->top_left.x = 0;
+    }
+
+    if (rect_copy->top_left.y < 0)
+    {
+        rect_copy->size.height -= rect_copy->top_left.y;
+        rect_copy->top_left.y = 0;
+    }
+
     // If the linked list is empty, add the first element
     if (invalid_rects == NULL)
     {
@@ -155,9 +173,9 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             return;
         }
 
-        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect_copy->top_left.x, rect_copy->top_left.y, rect_copy->size.width, rect_copy->size.height) : 0;
 
-        invalid_rects->rect = *rect;
+        invalid_rects->rect = *rect_copy;
         invalid_rects->next = NULL;
     }
     // Otherwise, insert the rectangle in the linked list
@@ -167,17 +185,17 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         while (true)
         {
             // If the rectangle is fully included in another rectangle, we don't need it
-            if (ei_rect_included_in_rect(*rect, current_invalid_rect->rect))
+            if (ei_rect_included_in_rect(*rect_copy, current_invalid_rect->rect))
             {
                 return;
             }
 
             // If two rectangles have a big enough common area, merge them, overwrite the current rectangle in
             // the linked list and return since we don't need the new rectangle anymore
-            if (ei_get_intersection_percentage(*rect, current_invalid_rect->rect) >= rectangles_merge_threshold)
+            if (ei_get_intersection_percentage(*rect_copy, current_invalid_rect->rect) >= rectangles_merge_threshold)
             {
-                DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
-                current_invalid_rect->rect = ei_merge_rectangles(*rect, current_invalid_rect->rect);
+                DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect_copy->top_left.x, rect_copy->top_left.y, rect_copy->size.width, rect_copy->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
+                current_invalid_rect->rect = ei_merge_rectangles(*rect_copy, current_invalid_rect->rect);
                 return;
             }
 
@@ -198,14 +216,16 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             return;
         }
 
-        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect->top_left.x, rect->top_left.y, rect->size.width, rect->size.height) : 0;
+        DEBUG ? printf("Invalidating rect %d %d %d %d\n", rect_copy->top_left.x, rect_copy->top_left.y, rect_copy->size.width, rect_copy->size.height) : 0;
 
-        invalid_rect->rect = *rect;
+        invalid_rect->rect = *rect_copy;
         invalid_rect->next = NULL;
 
         // Link the rectangle to the last element of the linked list
         current_invalid_rect->next = invalid_rect;
     }
+
+    free(rect_copy);
 }
 
 void ei_app_quit_request(void)

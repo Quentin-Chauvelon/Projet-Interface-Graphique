@@ -177,4 +177,9 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
  */
 void ei_bind_all_internal_callbacks();
 
+/**
+ * @brief   Frees all data related to internal callbacks
+ */
+void ei_free_all_internal_callbacks();
+
 #endif

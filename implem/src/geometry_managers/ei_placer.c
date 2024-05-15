@@ -35,6 +35,12 @@ void ei_place(ei_widget_t widget,
     else
     {
         placer_geom_param = (ei_placer_t *)ei_widget_get_geom_params(widget);
+
+        // If the widget was managed by another geometry manager, unmap the widget
+        if (strcmp(widget->geom_params->manager->name, "placer") != 0)
+        {
+            ei_geometrymanager_unmap(widget);
+        }
     }
 
     // Update the geometry manager handling the widget
@@ -221,4 +227,14 @@ void ei_placer_runfunc(ei_widget_t widget)
 
 void ei_placer_releasefunc(ei_widget_t widget)
 {
+    if (widget->children_head != NULL)
+    {
+        for (ei_widget_t current_child = widget->children_head; current_child != NULL; current_child = current_child->next_sibling)
+        {
+            if (ei_widget_is_displayed(current_child))
+            {
+                current_child->geom_params->manager->runfunc(current_child);
+            }
+        }
+    }
 }
