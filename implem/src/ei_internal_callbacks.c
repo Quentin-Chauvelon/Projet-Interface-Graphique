@@ -18,6 +18,8 @@
 #include "../implem/headers/ei_entry_ext.h"
 #include "../implem/headers/ei_radiobutton.h"
 
+static bool *displayed;
+
 typedef struct ei_move_top_level_params_t
 {
     ei_widget_t widget;
@@ -38,10 +40,12 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     // Bind the button release and move event
     // The button should be released if the user releases the mouse button
     // or if they move the cursor out of the button
-    ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, widget);
-    ei_bind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
+    ei_bind_internal(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, widget, 20);
+    ei_bind_internal(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL, 20);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 static bool ei_radiobutton_pressed( ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -85,21 +89,13 @@ static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_par
     ei_button_t *button = (ei_button_t *)widget;
     button->frame_appearance.relief = ei_relief_raised;
 
-    // If the button the mouse is over on mouse button up is the same as the one
-    // the mouse was over on mouse button down, call the callback function
-    if (widget == (ei_widget_t)user_param)
-    {
-        if (button->callback != NULL)
-        {
-            button->callback(widget, event, button->user_param);
-        }
-    }
-
     // Unbind the button release and move event
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_button_release, user_param);
     ei_unbind(ei_ev_mouse_move, (ei_widget_t)user_param, NULL, ei_cursor_left_button, NULL);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -117,7 +113,9 @@ static bool ei_cursor_left_button(ei_widget_t widget, ei_event_t *event, ei_user
         button->frame_appearance.relief = ei_relief_raised;
     }
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -134,9 +132,11 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
         // If the user clicked on the close button, close the toplevel
         if (ei_is_point_in_circle(mouse_position, close_button_center, close_button_rect.size.width / 2))
         {
+            ei_app_invalidate_rect(&widget->screen_location);
+
             ei_widget_destroy(widget);
 
-            return true;
+            return false;
         }
     }
 
@@ -170,6 +170,8 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
             widget->parent->children_tail->next_sibling = widget;
             widget->parent->children_tail = widget;
             widget->next_sibling = NULL;
+
+            ei_app_invalidate_rect(&widget->screen_location);
         }
 
         ei_move_top_level_params_t *params = malloc(sizeof(ei_move_top_level_params_t));
@@ -188,10 +190,10 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
         params->offset.x = mouse_position.x - toplevel->widget.screen_location.top_left.x;
         params->offset.y = mouse_position.y - toplevel->widget.screen_location.top_left.y;
 
-        ei_bind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, params);
-        ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, params);
+        ei_bind_internal(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, params, 20);
+        ei_bind_internal(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, params, 20);
 
-        return true;
+        return false;
     }
 
     // If the user clicked on the resize square
@@ -204,10 +206,10 @@ static bool ei_toplevel_pressed(ei_widget_t widget, ei_event_t *event, ei_user_p
             mouse_position.y >= resizable_square.top_left.y &&
             mouse_position.y <= resizable_square.top_left.y + resizable_square.size.height)
         {
-            ei_bind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, toplevel);
-            ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, toplevel);
+            ei_bind_internal(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, toplevel, 20);
+            ei_bind_internal(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, toplevel, 20);
 
-            return true;
+            return false;
         }
     }
 
@@ -270,7 +272,7 @@ static bool ei_toplevel_move(ei_widget_t widget, ei_event_t *event, ei_user_para
 
             ei_place(widget, &(ei_anchor_t){ei_anc_northwest}, &position_x, &position_y, NULL, NULL, &(float){0.0}, &(float){0.0}, NULL, NULL);
 
-            return true;
+            return false;
         }
     }
 
@@ -282,7 +284,9 @@ static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, user_param);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -325,7 +329,7 @@ static bool ei_toplevel_resize(ei_widget_t widget, ei_event_t *event, ei_user_pa
                 ei_place(&toplevel->widget, NULL, NULL, NULL, NULL, &size_y, NULL, NULL, NULL, NULL);
             }
 
-            return true;
+            return false;
         }
     }
 
@@ -337,7 +341,9 @@ static bool ei_toplevel_resize_released(ei_widget_t widget, ei_event_t *event, e
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_resize, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_resize_released, user_param);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -387,7 +393,7 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
     entry->multiple_click_params = click_params;
 
     // Bind the event to listen for a double click
-    ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, NULL);
+    ei_bind_internal(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, NULL, 25);
 
     ei_entry_drag_params_t *params = malloc(sizeof(ei_entry_drag_params_t));
 
@@ -402,10 +408,12 @@ static bool ei_entry_pressed(ei_widget_t widget, ei_event_t *event, ei_user_para
     params->previous_character = entry->cursor;
 
     // Listen for mouse movement and release to select text by dragging the mouse
-    ei_bind(ei_ev_mouse_move, NULL, "all", ei_entry_move, params);
-    ei_bind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, params);
+    ei_bind_internal(ei_ev_mouse_move, NULL, "all", ei_entry_move, params, 20);
+    ei_bind_internal(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, params, 20);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -472,13 +480,15 @@ bool ei_entry_double_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
         entry->multiple_click_params = params;
 
         // Bind the triple click event
-        ei_bind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
+        ei_bind_internal(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param, 30);
     }
 
     // Unbind the double click event
     ei_unbind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_double_click, user_param);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -510,7 +520,9 @@ bool ei_entry_triple_click(ei_widget_t widget, ei_event_t *event, ei_user_param_
     // Unbind the triple click event
     ei_unbind(ei_ev_mouse_buttondown, widget, NULL, ei_entry_triple_click, user_param);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 bool ei_entry_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -598,7 +610,9 @@ bool ei_entry_move(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_p
     // Update the previous character for the callback call
     ((ei_entry_drag_params_t *)user_param)->previous_character = entry->cursor;
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -606,7 +620,9 @@ bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_entry_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, user_param);
 
-    return true;
+    ei_app_invalidate_rect(&widget->screen_location);
+
+    return false;
 }
 
 bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -1126,25 +1142,34 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
         if (event->param.key_code >= 32 && event->param.key_code <= 126)
         {
 
-            // If the user pressed ctrl+A, select all the text
             if (ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_left) ||
                 ei_mask_has_modifier(event->modifier_mask, ei_mod_ctrl_right))
             {
+                // If the user pressed ctrl+A, select all the text
                 if (event->param.key_code == SDLK_a)
                 {
                     entry->cursor = entry->first_character;
                     ei_set_selection_characters(entry, entry->first_character, entry->last_character, ei_selection_direction_right);
+
+                    handled = true;
                 }
-                else if (event->param.key_code == SDLK_c)
-                {
-                    ei_copy_to_clipboard(entry);
-                }
+                // If the user pressed ctrl+X, copy to the selection the clipboard and erase it
                 else if (event->param.key_code == SDLK_x)
                 {
                     ei_copy_to_clipboard(entry);
 
                     ei_erase_selection(entry);
+
+                    handled = true;
                 }
+                // If the user pressed ctrl+C, copy the selection to the clipboard
+                else if (event->param.key_code == SDLK_c)
+                {
+                    ei_copy_to_clipboard(entry);
+
+                    handled = true;
+                }
+                // If the user pressed ctrl+V, paste from clipboard
                 else if (event->param.key_code == SDLK_v)
                 {
                     if (clipboard != NULL)
@@ -1160,6 +1185,8 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
                                             ? next_character->previous
                                             : entry->last_character;
                     }
+
+                    handled = true;
                 }
             }
             else
@@ -1173,9 +1200,9 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
                 }
 
                 ei_entry_add_character(entry, event->param.key_code);
-            }
 
-            handled = true;
+                handled = true;
+            }
         }
     }
 
@@ -1189,7 +1216,11 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     if (entry_to_give_focus_to != NULL)
     {
         ei_entry_give_focus(&entry_to_give_focus_to->widget);
+
+        ei_app_invalidate_rect(&entry_to_give_focus_to->widget.screen_location);
     }
+
+    ei_app_invalidate_rect(&widget->screen_location);
 
     return handled;
 }
@@ -1227,11 +1258,12 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
         // it can be redrawn when turning off the offscreen picking surface.
         // Checking if the surface is NULL also allows to know if we should
         // toggle on or off the offscreen picking surface.
-        ei_surface_t *root_surface_copy = (ei_surface_t *)user_param;
+        bool *displayed = (bool *)user_param;
+
         ei_surface_t root_surface = ei_app_root_surface();
 
         ei_widget_t root = ei_app_root_widget();
-        ei_update_pick_color_from_id(&root, *root_surface_copy != NULL ? 1 : 1000000);
+        ei_update_pick_color_from_id(&root, *displayed ? 1000000 : 1);
 
         root->wclass->drawfunc(root, root_surface, ei_app_offscreen_picking_surface(), &widget->screen_location);
 
@@ -1240,28 +1272,17 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
 
         // If the offscreen picking surface is not displayed, make a copy of the root surface
         // and display the offscreen picking surface
-        if (*root_surface_copy == NULL)
+        if (*displayed)
         {
-            printf("Displaying offscreen picking surface\n");
-            *root_surface_copy = hw_surface_create(root_surface, hw_surface_get_size(root_surface), true);
-            ei_copy_surface(*root_surface_copy, NULL, root_surface, NULL, false);
-
             ei_copy_surface(root_surface, NULL, ei_app_offscreen_picking_surface(), NULL, false);
-        }
-        // Otherwise, restore the root surface and delete the copy
-        else
-        {
-            printf("Hiding offscreen picking surface\n");
-            ei_copy_surface(root_surface, NULL, *root_surface_copy, NULL, false);
-
-            hw_surface_free(*root_surface_copy);
-            *root_surface_copy = NULL;
         }
 
         hw_surface_unlock(ei_app_root_surface());
         hw_surface_unlock(ei_app_offscreen_picking_surface());
 
         hw_surface_update_rects(ei_app_root_surface(), NULL);
+
+        *displayed = !*displayed;
 
         return true;
     }
@@ -1274,13 +1295,9 @@ void ei_bind_all_internal_callbacks()
     ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL);
-    ei_bind(ei_ev_mouse_buttondown, NULL, "radiobutton",ei_radiobutton_pressed ,NULL);
 
-    ei_surface_t root_surface_copy = NULL;
-    ei_bind(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &root_surface_copy);
-}
+    displayed = malloc(sizeof(bool));
+    *displayed = false;
 
-void test()
-{
-    toggle_offscreen_picking_surface_display(ei_app_root_widget(), NULL, NULL);
+    ei_bind_internal(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &displayed, 100);
 }

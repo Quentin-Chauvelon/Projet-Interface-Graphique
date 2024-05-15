@@ -19,11 +19,11 @@ bool button_press(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_pa
 
 bool delete(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    if (event->param.key_code == SDLK_p)
+    if (event->param.key_code == SDLK_x)
     {
         ei_widget_destroy(widget);
 
-        return true;
+        return false;
     }
 
     return false;
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     ei_frame_configure(frame, &(ei_size_t){300, 200},
                        &(ei_color_t){0x88, 0x88, 0x88, 0xff},
                        &(int){6},
-                       &(ei_relief_t){ei_relief_raised}, &(ei_string_t){"Red on hover + press X to delete"}, NULL, NULL, NULL, NULL, NULL, NULL);
+                       &(ei_relief_t){ei_relief_raised}, &(ei_string_t){"Red on hover"}, NULL, NULL, NULL, NULL, NULL, NULL);
     ei_place_xy(frame, 50, 50);
 
     ei_widget_t frame2;
@@ -124,11 +124,23 @@ int main(int argc, char **argv)
                         &(ei_relief_t){ei_relief_raised}, &(ei_string_t){"No sunken effect"}, NULL, NULL, NULL, NULL, NULL, NULL, &(ei_callback_t){button_press}, NULL);
     ei_place_xy(button2, 400, 300);
 
+    ei_widget_t frame3;
+    frame3 = ei_widget_create("frame", ei_app_root_widget(), NULL, NULL);
+    ei_frame_configure(frame3, NULL,
+                       &(ei_color_t){0x88, 0x88, 0x88, 0x00},
+                       &(int){6},
+                       &(ei_relief_t){ei_relief_raised}, &(ei_string_t){"Press X to delete all widgets"}, NULL, NULL, NULL, NULL, NULL, NULL);
+    ei_place(frame3, &(ei_anchor_t){ei_anc_center}, NULL, &(int){-15}, NULL, NULL, &(float){0.5}, &(float){1}, NULL, NULL);
+
     ei_remove_tag_from_widget(button2, "button");
 
     ei_add_tag_to_widget(frame, "red");
-    ei_add_tag_to_widget(frame, "delete");
     ei_add_tag_to_widget(button, "red");
+
+    ei_add_tag_to_widget(frame, "delete");
+    ei_add_tag_to_widget(frame2, "delete");
+    ei_add_tag_to_widget(button, "delete");
+    ei_add_tag_to_widget(button2, "delete");
 
     ei_bind(ei_ev_keydown, NULL, "all", default_handler, NULL);
     ei_bind(ei_ev_mouse_move, NULL, "red", red, NULL);
