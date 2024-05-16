@@ -43,4 +43,7 @@ typedef struct ei_app_event_params_t
     void *data; ///< Data concerning the event.
 } ei_app_event_params_t;
 
+struct ei_radiobutton_p;
+typedef struct ei_radiobutton_t* ei_radiobutton_p;
+
 #endif

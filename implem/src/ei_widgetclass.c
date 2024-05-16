@@ -7,6 +7,7 @@
 #include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/ei_radiobutton.h"
 
 // Keep a pointer to the first widget class registered
 // Other widget classes are linked using the next pointer
@@ -139,10 +140,29 @@ void ei_widgetclass_register_all()
     entry->geomnotifyfunc = &ei_entry_geomnotifyfunc;
     entry->next = NULL;
 
+    ei_widgetclass_t* radiobutton=malloc(sizeof(ei_widgetclass_t));
+
+    // If malloc failed, return
+    if (radiobutton==NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the entry widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    strcpy(radiobutton->name,"radiobutton");
+    radiobutton->allocfunc = & ei_radiobutton_allocfunc ;
+    radiobutton->releasefunc= & ei_radiobutton_releasefunc;
+    radiobutton->drawfunc= & ei_radiobutton_drawfunc_group;
+    radiobutton->setdefaultsfunc= & ei_radiobutton_setdefaultsfunc;
+    radiobutton->geomnotifyfunc= & ei_radiobutton_geomnotifyfunc;
+    radiobutton->next=NULL;
+
+
     ei_widgetclass_register(frame);
     ei_widgetclass_register(button);
     ei_widgetclass_register(toplevel);
     ei_widgetclass_register(entry);
+    ei_widgetclass_register(radiobutton);
 }
 
 void ei_widgetclass_free_all()
@@ -160,7 +180,8 @@ void ei_widgetclass_free_all()
         if (strcmp(current->name, "frame") == 0 ||
             strcmp(current->name, "button") == 0 ||
             strcmp(current->name, "toplevel") == 0 ||
-            strcmp(current->name, "entry") == 0)
+            strcmp(current->name, "entry") == 0||
+            strcmp(current->name, "radiobutton")==0 )
         {
             free(current);
         }

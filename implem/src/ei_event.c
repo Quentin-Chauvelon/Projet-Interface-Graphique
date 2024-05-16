@@ -5,6 +5,7 @@
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_types_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
+#include "../implem/headers/ei_radiobutton.h"
 
 ei_event_bind_t *first_event_bind = NULL;
 

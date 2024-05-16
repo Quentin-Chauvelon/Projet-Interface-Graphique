@@ -16,6 +16,7 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_entry_ext.h"
+#include "../implem/headers/ei_radiobutton.h"
 
 typedef struct ei_move_top_level_params_t
 {
@@ -40,6 +41,42 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     ei_bind(ei_ev_mouse_buttonup, widget, NULL, ei_button_release, NULL);
     ei_bind(ei_ev_mouse_move, widget, NULL, ei_cursor_left_button, NULL);
 
+    return false;
+}
+
+static bool ei_radiobutton_pressed( ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+{
+    ei_radiobutton_t * radiobutton= (ei_radiobutton_t *) widget;
+    
+    //Find a pointer on the first radiobutton on the group
+    while (radiobutton->previous_sibling!=NULL)
+    {
+        radiobutton=radiobutton->previous_sibling;
+    }
+
+    //Search where was the clic
+    ei_point_t mouse_position = event->param.mouse.where;
+    ei_rect_t position;
+
+    while (radiobutton!=NULL)
+    {
+        position= radiobutton->widget.children_head->screen_location;
+        if (mouse_position.x >= position.top_left.x &&
+            mouse_position.x <= position.top_left.x+ position.size.width &&
+            mouse_position.y >= position.top_left.y &&
+            mouse_position.y <= position.top_left.y + position.size.height)
+            {
+                    //Useless if the button is already activated
+                    if (radiobutton->actif){return false;}
+
+                    //Otherwise
+                    ei_check_change_radiobutton_state(radiobutton,true);
+                    return true;
+            }
+        
+        //Advance to the next radiobuttton
+        radiobutton=radiobutton->next_sibling;
+    }
     return false;
 }
 
@@ -1140,6 +1177,7 @@ void ei_bind_all_internal_callbacks()
     ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL);
+    ei_bind(ei_ev_mouse_buttondown, NULL, "radiobutton",ei_radiobutton_pressed ,NULL);
 
     ei_surface_t root_surface_copy = NULL;
     ei_bind(ei_ev_keydown, NULL, "all", toggle_offscreen_picking_surface_display, &root_surface_copy);
