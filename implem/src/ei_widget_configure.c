@@ -459,3 +459,85 @@ void ei_toplevel_configure(ei_widget_t widget,
         widget->screen_location.size = *requested_size;
     }
 }
+
+
+/**
+ * @brief                 Configures the attributes of widgets of the class "radiobutton".
+ * 
+ * @param widget          The widget to configure.
+ * 
+ * @param text_color      The color of the text. Defaults to \ref ei_font_default_color.
+ * 
+ * @param requested_size  The size requested for this widget, including the widget's borders.
+ * 
+ * @param text            The text to write in the radiobutton. Defaults nothing is written.
+ * 
+ * @param text_font       The font used to display the text. Defaults to \ref ei_default_font.
+ * 
+ * @param text_anchor     The anchor of the text, i.e. where it is placed within the widget.
+ *				Defines both the anchoring point on the parent and on the widget.
+ *				Defaults to \ref ei_anc_west.
+ * 
+ * @param callback        The callback function to call when the user clicks on the button.
+ *				         Defaults to NULL (no callback).
+ * 
+ * @param actif The state of the radiobutton
+ * 
+*/
+
+void ei_radiobutton_configure(
+                        ei_widget_t widget,
+                        const ei_color_t *text_color,
+                        ei_size_t *requested_size,
+                        ei_string_t *text,
+                        ei_font_t *text_font,
+                        ei_anchor_t *text_anchor,
+                        ei_callback_t *callback,
+                        bool actif
+                        )
+{
+    ei_radiobutton_t* radiobutton = (ei_radiobutton_t *) widget;
+
+    if (text_color!=NULL)
+    {
+        radiobutton->text.color=*text_color;
+    }
+
+    if (text!=NULL)
+    {
+        radiobutton->text.label=*text;
+    }
+
+    if (text_font!=NULL)
+    {
+        radiobutton->text.font=text_font;
+    }
+    
+
+    if (text_anchor!=NULL)
+    {
+        radiobutton->text.anchor=*text_anchor;
+    }
+
+    if (requested_size!=NULL)
+    {
+        widget->requested_size=*requested_size;
+    }
+
+    if (callback!=NULL)
+    {
+        radiobutton->callback=*callback;
+    }
+    else
+    {
+        if (!radiobutton->actif)
+        {
+            radiobutton->callback=NULL;
+        }
+    }
+
+    if (actif)
+    {
+        ei_check_change_radiobutton_state(radiobutton, actif);
+    }
+}
