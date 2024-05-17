@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     ei_entry_configure(last_name_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(last_name_entry, 0, 1);
     ei_cell_fill_column(last_name_entry);
+    ei_cell_fill(last_name_entry);
 
     ei_widget_t first_name_text_label;
     first_name_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -62,6 +63,7 @@ int main(int argc, char **argv)
     first_name_entry = ei_widget_create("entry", window, NULL, NULL);
     ei_entry_configure(first_name_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(first_name_entry, 0, 3);
+    ei_cell_fill(first_name_entry);
 
     ei_widget_t birth_date_text_label;
     birth_date_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -73,6 +75,7 @@ int main(int argc, char **argv)
     birth_date_entry = ei_widget_create("entry", window, NULL, NULL);
     ei_entry_configure(birth_date_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(birth_date_entry, 1, 1);
+    ei_cell_fill(birth_date_entry);
 
     ei_widget_t address_text_label;
     address_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -85,6 +88,7 @@ int main(int argc, char **argv)
     ei_entry_configure(address_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(address_entry, 2, 1);
     ei_set_cell_column_span(address_entry, 3);
+    ei_cell_fill(address_entry);
 
     ei_widget_t zip_code_text_label;
     zip_code_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -96,6 +100,7 @@ int main(int argc, char **argv)
     zip_code_entry = ei_widget_create("entry", window, NULL, NULL);
     ei_entry_configure(zip_code_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(zip_code_entry, 3, 1);
+    ei_cell_fill(zip_code_entry);
 
     ei_widget_t city_text_label;
     city_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -107,6 +112,7 @@ int main(int argc, char **argv)
     city_entry = ei_widget_create("entry", window, NULL, NULL);
     ei_entry_configure(city_entry, NULL, NULL, NULL, NULL, NULL);
     ei_set_cell_position(city_entry, 3, 3);
+    ei_cell_fill(city_entry);
 
     ei_widget_t tell_us_more_text_label;
     tell_us_more_text_label = ei_widget_create("frame", window, NULL, NULL);
@@ -121,6 +127,7 @@ int main(int argc, char **argv)
     ei_set_cell_row_span(tell_us_more_entry, 2);
     ei_set_cell_column_span(tell_us_more_entry, 3);
     ei_cell_fill_row(tell_us_more_entry);
+    ei_cell_fill(tell_us_more_entry);
 
     ei_widget_t ok_button;
     ok_button = ei_widget_create("button", window, NULL, NULL);
@@ -129,8 +136,6 @@ int main(int argc, char **argv)
     ei_cell_fill(ok_button);
 
     // ei_set_grid_spacing(window, &(int){20}, &(int){20});
-    ei_set_grid_margin(window, 20);
-    ei_set_grid_anchor(window, ei_anc_northwest);
     ei_set_grid_fill_column_at_index(window, 3, true);
 
     ei_bind(ei_ev_keydown, NULL, "all", default_handler, NULL);

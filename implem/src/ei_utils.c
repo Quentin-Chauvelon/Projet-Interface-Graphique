@@ -341,8 +341,9 @@ void ei_int_array_set_at_index(int_array_t *array, int index, int value)
     {
         while (index >= array->size)
         {
+            array->array = realloc(array->array, sizeof(int) * array->size * 2);
+            memset(array->array + array->size, 0, sizeof(int) * array->size);
             array->size *= 2;
-            array->array = realloc(array->array, sizeof(int) * array->size);
         }
 
         array->array[index] = value;
@@ -393,8 +394,9 @@ void ei_bool_array_set_at_index(bool_array_t *array, int index, bool value)
     {
         while (index >= array->size)
         {
+            array->array = realloc(array->array, sizeof(int) * array->size * 2);
+            memset(array->array + array->size, false, sizeof(int) * array->size);
             array->size *= 2;
-            array->array = realloc(array->array, sizeof(int) * array->size);
         }
 
         array->array[index] = value;

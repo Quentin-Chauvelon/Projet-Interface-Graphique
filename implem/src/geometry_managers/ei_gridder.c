@@ -1,4 +1,6 @@
 #include "../api/ei_utils.h"
+#include "../api/ei_application.h"
+#include "../api/ei_widget_attributes.h"
 #include "../api/ei_geometrymanager.h"
 #include "../implem/headers/ei_gridder.h"
 #include "../implem/headers/ei_implementation.h"
@@ -270,32 +272,6 @@ void ei_set_cell(ei_widget_t widget, int *row, int *column, int *row_span, int *
             }
         }
 
-        // If the arrays don't have enough allocated memory to hold the new rows, reallocate memory
-        if (gridder_data->rows_min_size->size < gridder_data->rows)
-        {
-            gridder_data->rows_min_size->array = realloc(gridder_data->rows_min_size->array, gridder_data->rows * sizeof(int));
-            gridder_data->rows_min_size->size = gridder_data->rows;
-
-            gridder_data->rows_current_size->array = realloc(gridder_data->rows_current_size->array, gridder_data->rows * sizeof(int));
-            gridder_data->rows_current_size->size = gridder_data->rows;
-
-            gridder_data->stretched_rows->array = realloc(gridder_data->stretched_rows->array, gridder_data->rows * sizeof(bool));
-            gridder_data->stretched_rows->size = gridder_data->rows;
-        }
-
-        // If the arrays don't have enough allocated memory to hold the new columns, reallocate memory
-        if (gridder_data->columns_min_size->size < gridder_data->columns)
-        {
-            gridder_data->columns_min_size->array = realloc(gridder_data->columns_min_size->array, gridder_data->columns * sizeof(int));
-            gridder_data->columns_min_size->size = gridder_data->columns;
-
-            gridder_data->columns_current_size->array = realloc(gridder_data->columns_current_size->array, gridder_data->columns * sizeof(int));
-            gridder_data->columns_current_size->size = gridder_data->columns;
-
-            gridder_data->stretched_columns->array = realloc(gridder_data->stretched_columns->array, gridder_data->columns * sizeof(bool));
-            gridder_data->stretched_columns->size = gridder_data->columns;
-        }
-
         gridder_geom_param->row_span = row_span != NULL ? *row_span : 1;
         gridder_geom_param->column_span = column_span != NULL ? *column_span : 1;
         gridder_geom_param->fill_cell = fill_cell != NULL ? *fill_cell : false;
@@ -319,11 +295,22 @@ void ei_set_cell(ei_widget_t widget, int *row, int *column, int *row_span, int *
         if (row != NULL)
         {
             gridder_geom_param->row = *row;
+
+            // Expand the grid if the widget is placed outside of the grid
+            if (*row >= gridder_data->rows)
+            {
+                gridder_data->rows = *row + 1;
+            }
         }
 
         if (column != NULL)
         {
             gridder_geom_param->column = *column;
+
+            if (*column >= gridder_data->columns)
+            {
+                gridder_data->columns = *column + 1;
+            }
         }
 
         if (row_span != NULL)
@@ -450,22 +437,45 @@ void ei_set_grid_margin(ei_widget_t parent, int margin)
     ei_recompute_geometry_of_grid(parent);
 }
 
+void ei_set_row_min_size(ei_widget_t parent, int row, int size)
+{
+    ei_gridder_data_t *gridder_data = ei_get_grid(parent);
+
+    if (gridder_data == NULL)
+    {
+        printf("\033[0;33mWarning: the parent widget has no child managed by the gridder.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    ei_int_array_set_at_index(gridder_data->rows_min_size, row, size);
+
+    // Recompute the geometry of all children of the parent since the row min size has changed
+    ei_recompute_geometry_of_grid(parent);
+}
+
+void ei_set_column_min_size(ei_widget_t parent, int column, int size)
+{
+    ei_gridder_data_t *gridder_data = ei_get_grid(parent);
+
+    if (gridder_data == NULL)
+    {
+        printf("\033[0;33mWarning: the parent widget has no child managed by the gridder.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    ei_int_array_set_at_index(gridder_data->columns_min_size, column, size);
+
+    // Recompute the geometry of all children of the parent since the column min size has changed
+    ei_recompute_geometry_of_grid(parent);
+}
+
 void ei_recompute_geometry_of_grid(ei_widget_t parent)
 {
-    // If the widget is displayed, run its geometry manager runfunc which will recompute the geometry of all its children
-    if (ei_widget_is_displayed(parent))
+    for (ei_widget_t children = parent->children_head; children != NULL; children = children->next_sibling)
     {
-        ei_widget_get_geom_params(parent)->manager->runfunc(parent);
-    }
-    // Otherwise, recompute the geometry of all children managed by the gridder individually
-    else
-    {
-        for (ei_widget_t children = parent->children_head; children != NULL; children = children->next_sibling)
+        if (ei_is_widget_managed_by_gridder(children))
         {
-            if (ei_is_widget_managed_by_gridder(children))
-            {
-                children->geom_params->manager->runfunc(children);
-            }
+            children->geom_params->manager->runfunc(children);
         }
     }
 }
@@ -484,25 +494,50 @@ void ei_gridder_runfunc(ei_widget_t widget)
         return;
     }
 
-    // If the widget is taller than any other widget in this row, update the min size of the row
-    if (widget->requested_size.height > gridder_data->rows_min_size->array[gridder_geom_param->row])
+    // If the row only spans one row, update the min size of the row
+    if (gridder_geom_param->row_span == 1)
     {
-        ei_int_array_set_at_index(gridder_data->rows_min_size, gridder_geom_param->row, widget->requested_size.height);
+        // If the widget is wider than any other widget in this row, update the min size of the row
+        if (widget->requested_size.height > gridder_data->rows_min_size->array[gridder_geom_param->row])
+        {
+            ei_int_array_set_at_index(gridder_data->rows_min_size, gridder_geom_param->row, widget->requested_size.height);
+        }
+    }
+    // Otherwise, if it spans multiple rows, update the min size of each row
+    else
+    {
+        int size_of_rows = 0;
+
+        // Calculate the total size of the rows the widget spans for
+        for (int i = gridder_geom_param->row; i < gridder_geom_param->row + gridder_geom_param->row_span; i++)
+        {
+            size_of_rows += gridder_data->rows_min_size->array[i];
+        }
+
+        size_of_rows += gridder_data->horizontal_spacing * (gridder_geom_param->row_span - 1);
+
+        // If that size is smaller than the widget's height, increase the min size of each row by a proportional amount
+        if (size_of_rows < widget->requested_size.height)
+        {
+            // Calculate the amount by which to increase the min size of each row
+            int missing_size_per_row = (widget->requested_size.height - size_of_rows) / gridder_geom_param->row_span;
+
+            // Increase the min size of each row
+            for (int i = gridder_geom_param->row; i < gridder_geom_param->row + gridder_geom_param->row_span; i++)
+            {
+                ei_int_array_set_at_index(gridder_data->rows_min_size, i, gridder_data->rows_min_size->array[i] + missing_size_per_row);
+            }
+        }
     }
 
     // Calculate the total height taken by the rows of the grid
-    int total_height = ei_int_array_sum(gridder_data->rows_min_size) + gridder_data->horizontal_spacing * (gridder_data->rows - 1);
+    int total_height = ei_int_array_sum(gridder_data->rows_min_size) + gridder_data->horizontal_spacing * (gridder_data->rows - 1) + gridder_data->margin * 2;
 
     // If the total height is greater than the parent's height (ie: the grid content can't fit in the parent),
-    // reduce each row proportionally by a portion of the overflow
-    if (total_height > parent->content_rect->size.height)
+    // expand the parent to fit the content. Can't expand the root widget
+    if (total_height > parent->content_rect->size.height && parent != ei_app_root_widget())
     {
-        int overflow = total_height - parent->content_rect->size.height;
-
-        for (int i = 0; i < gridder_data->rows; i++)
-        {
-            ei_int_array_set_at_index(gridder_data->rows_current_size, i, gridder_data->rows_min_size->array[i] - overflow / gridder_data->rows);
-        }
+        ei_widget_set_requested_size(parent, ei_size(parent->content_rect->size.width, total_height));
     }
     else
     {
@@ -511,7 +546,7 @@ void ei_gridder_runfunc(ei_widget_t widget)
         // Calculate the amount of space left to fill the parent based on the min size of all rows
         int height_left = (parent->content_rect->size.height - gridder_data->margin * 2 - total_height);
 
-        for (int i = 0; i < gridder_data->rows; i++)
+        for (int i = 0; i < gridder_data->stretched_rows->nb_elements; i++)
         {
             // If the row should stretch, add a proportional portion of the space left to its minimum size
             if (gridder_data->stretched_rows->array[i])
@@ -526,25 +561,50 @@ void ei_gridder_runfunc(ei_widget_t widget)
         }
     }
 
-    // If the widget is wider than any other widget in this column, update the min size of the column
-    if (widget->requested_size.width > gridder_data->columns_min_size->array[gridder_geom_param->column])
+    // If the column only spans one column, update the min size of the column
+    if (gridder_geom_param->column_span == 1)
     {
-        ei_int_array_set_at_index(gridder_data->columns_min_size, gridder_geom_param->column, widget->requested_size.width);
+        // If the widget is wider than any other widget in this column, update the min size of the column
+        if (widget->requested_size.width > gridder_data->columns_min_size->array[gridder_geom_param->column])
+        {
+            ei_int_array_set_at_index(gridder_data->columns_min_size, gridder_geom_param->column, widget->requested_size.width);
+        }
+    }
+    // Otherwise, if it spans multiple columns, update the min size of each column
+    else
+    {
+        int size_of_columns = 0;
+
+        // Calculate the total size of the columns the widget spans for
+        for (int i = gridder_geom_param->column; i < gridder_geom_param->column + gridder_geom_param->column_span; i++)
+        {
+            size_of_columns += gridder_data->columns_min_size->array[i];
+        }
+
+        size_of_columns += gridder_data->horizontal_spacing * (gridder_geom_param->column_span - 1);
+
+        // If that size is smaller than the widget's width, increase the min size of each column by a proportional amount
+        if (size_of_columns < widget->requested_size.width)
+        {
+            // Calculate the amount by which to increase the min size of each column
+            int missing_size_per_column = (widget->requested_size.width - size_of_columns) / gridder_geom_param->column_span;
+
+            // Increase the min size of each column
+            for (int i = gridder_geom_param->column; i < gridder_geom_param->column + gridder_geom_param->column_span; i++)
+            {
+                ei_int_array_set_at_index(gridder_data->columns_min_size, i, gridder_data->columns_min_size->array[i] + missing_size_per_column);
+            }
+        }
     }
 
     // Calculate the total width taken by the columns of the grid
-    int total_width = ei_int_array_sum(gridder_data->columns_min_size) + gridder_data->horizontal_spacing * (gridder_data->columns - 1);
+    int total_width = ei_int_array_sum(gridder_data->columns_min_size) + gridder_data->horizontal_spacing * (gridder_data->columns - 1) + gridder_data->margin * 2;
 
     // If the total width is greater than the parent's width (ie: the grid content can't fit in the parent),
-    // reduce each column proportionally by a portion of the overflow
-    if (total_width > parent->content_rect->size.width)
+    // expand the parent to fit the content. Can't expand the root widget
+    if (total_width > parent->content_rect->size.width && parent != ei_app_root_widget())
     {
-        int overflow = total_width - parent->content_rect->size.width;
-
-        for (int i = 0; i < gridder_data->columns; i++)
-        {
-            ei_int_array_set_at_index(gridder_data->columns_current_size, i, gridder_data->columns_min_size->array[i] - overflow / gridder_data->columns);
-        }
+        ei_widget_set_requested_size(parent, ei_size(total_width, parent->content_rect->size.height));
     }
     else
     {
@@ -553,7 +613,7 @@ void ei_gridder_runfunc(ei_widget_t widget)
         // Calculate the amount of space left to fill the parent based on the min size of all columns
         int width_left = (parent->content_rect->size.width - gridder_data->margin * 2 - total_width);
 
-        for (int i = 0; i < gridder_data->columns; i++)
+        for (int i = 0; i < gridder_data->stretched_columns->nb_elements; i++)
         {
             // If the column should stretch, add a portion of the space left to its minimum size
             if (gridder_data->stretched_columns->array[i])
@@ -641,21 +701,10 @@ void ei_gridder_runfunc(ei_widget_t widget)
             // Cell size is the size of the cell while widget size is the size of the widget
             // inside that cell. Widget size equals cell size if the cell if fill is set to true
             ei_size_t cell_size = ei_size(cell_size_x, cell_size_y);
-            ei_size_t widget_size = cell_size;
 
-            // Reduce the size of the widget to its requested size if fill is set to false
-            if (!cell_widget_geom_param->fill_cell)
-            {
-                if (!gridder_data->stretched_columns->array[cell_widget_geom_param->column])
-                {
-                    widget_size.width = cell_widget->requested_size.width;
-                }
-
-                if (!gridder_data->stretched_rows->array[cell_widget_geom_param->row])
-                {
-                    widget_size.height = cell_widget->requested_size.height;
-                }
-            }
+            ei_size_t widget_size = cell_widget_geom_param->fill_cell
+                                        ? cell_size
+                                        : cell_widget->requested_size;
 
             // By default, the widget has the same rect as the cell
             ei_rect_t widget_rect_in_cell = ei_rect(

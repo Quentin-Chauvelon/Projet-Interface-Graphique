@@ -58,8 +58,8 @@ typedef struct ei_gridder_data_t
  *          thus, the grid may not fill the parent widget.
  *          If at least one column has fill set to true, these columns will stretch to fill the parent widget. If more
  *          than one column has fill set to true, the space to fill will be shared equally between the columns.
- *          If the total minimum size of the columns is greater than the parent widget's width, the overflow is divided
- *          equally by the number of columns and each column will be shrunk by this value.
+ *          If the total minimum size of the columns is greater than the parent widget's width, the parent expand to
+ *          fit the columns, except if the parent widget is the root widget
  *          The same criterias apply for rows as well.
  *
  * @param	widget		The widget to place in the grid.
@@ -176,6 +176,24 @@ void ei_set_grid_anchor(ei_widget_t parent, ei_anchor_t anchor);
  *                  on each side
  */
 void ei_set_grid_margin(ei_widget_t parent, int margin);
+
+/**
+ * @brief	Set the minimum size of the row at the given index
+ *
+ * @param	parent	The widget in which at least one child is managed by the gridder.
+ * @param	row		The index of the row
+ * @param	size	The minimum size of the row
+ */
+void ei_set_row_min_size(ei_widget_t parent, int row, int size);
+
+/**
+ * @brief	Set the minimum size of the column at the given index
+ *
+ * @param	parent	The widget in which at least one child is managed by the gridder.
+ * @param	column	The index of the column
+ * @param	size	The minimum size of the column
+ */
+void ei_set_column_min_size(ei_widget_t parent, int column, int size);
 
 /**
  * @brief	Recompute the geometry of all children of the parent widget
