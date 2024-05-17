@@ -75,6 +75,7 @@ set(LIB_EI_SOURCES
 	${SRC}/src/widgets/ei_button.c
 	${SRC}/src/widgets/ei_toplevel.c
 	${SRC}/src/widgets/ei_entry.c
+	${SRC}/src/widgets/ei_radiobutton.c
 	${SRC}/src/parser/ei_lexer.c
 	${SRC}/src/parser/ei_parser.c
 	${SRC}/src/parser/ei_parser_types.c
@@ -175,6 +176,12 @@ target_link_libraries(resize_toplevel		ei ${PLATFORM_LIB_FLAGS})
 
 add_executable(image_drawing			${TEST_DIR}/image_drawing.c)
 target_link_libraries(image_drawing		ei ${PLATFORM_LIB_FLAGS})
+
+# target radiobutton
+
+add_executable(radiobutton			${TEST_DIR}/radiobutton.c)
+target_link_libraries(radiobutton		ei ${PLATFORM_LIB_FLAGS})
+
 
 # target to build the documentation
 
