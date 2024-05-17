@@ -315,3 +315,110 @@ ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl)
 
     return (ei_color_t){r * 255, g * 255, b * 255, hsl.alpha};
 }
+
+int_array_t *ei_int_array_initialize()
+{
+    int_array_t *array = malloc(sizeof(int_array_t) * 4);
+
+    array->size = 4;
+
+    array->array = malloc(sizeof(int) * array->size);
+    memset(array->array, 0, sizeof(int) * array->size);
+
+    array->nb_elements = 0;
+
+    return array;
+}
+
+void ei_int_array_set_at_index(int_array_t *array, int index, int value)
+{
+    if (index < array->nb_elements)
+    {
+        array->array[index] = value;
+        array->nb_elements = array->nb_elements >= index + 1 ? array->nb_elements : index + 1;
+    }
+    else
+    {
+        while (index >= array->size)
+        {
+            array->size *= 2;
+            array->array = realloc(array->array, sizeof(int) * array->size);
+        }
+
+        array->array[index] = value;
+        array->nb_elements = index + 1;
+    }
+}
+
+int ei_int_array_sum(int_array_t *array)
+{
+    int sum = 0;
+
+    for (int i = 0; i < array->nb_elements; i++)
+    {
+        sum += array->array[i];
+    }
+
+    return sum;
+}
+
+void ei_int_array_free(int_array_t *array)
+{
+    free(array->array);
+    free(array);
+}
+
+bool_array_t *ei_bool_array_initialize()
+{
+    bool_array_t *array = malloc(sizeof(bool_array_t) * 4);
+
+    array->size = 4;
+
+    array->array = malloc(sizeof(bool) * array->size);
+    memset(array->array, false, sizeof(bool) * array->size);
+
+    array->nb_elements = 0;
+
+    return array;
+}
+
+void ei_bool_array_set_at_index(bool_array_t *array, int index, bool value)
+{
+    if (index < array->nb_elements)
+    {
+        array->array[index] = value;
+        array->nb_elements = array->nb_elements >= index + 1 ? array->nb_elements : index + 1;
+    }
+    else
+    {
+        while (index >= array->size)
+        {
+            array->size *= 2;
+            array->array = realloc(array->array, sizeof(int) * array->size);
+        }
+
+        array->array[index] = value;
+        array->nb_elements = index + 1;
+    }
+}
+
+int ei_bool_array_get_occurences(bool_array_t *array, bool value)
+{
+    int occurences = 0;
+
+    for (int i = 0; i < array->nb_elements; i++)
+    {
+        if (array->array[i] == value)
+        {
+            occurences++;
+        }
+    }
+
+    return occurences;
+}
+
+void ei_bool_array_free(bool_array_t *array)
+{
+    free(array->array);
+    free(array);
+}

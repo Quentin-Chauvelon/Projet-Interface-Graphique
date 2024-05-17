@@ -71,6 +71,7 @@ link_directories(${PLATFORM_DIR})
 
 set(LIB_EI_SOURCES
 	${SRC}/src/geometry_managers/ei_placer.c
+	${SRC}/src/geometry_managers/ei_gridder.c
 	${SRC}/src/widgets/ei_frame.c
 	${SRC}/src/widgets/ei_button.c
 	${SRC}/src/widgets/ei_toplevel.c
@@ -175,6 +176,11 @@ target_link_libraries(resize_toplevel		ei ${PLATFORM_LIB_FLAGS})
 
 add_executable(image_drawing			${TEST_DIR}/image_drawing.c)
 target_link_libraries(image_drawing		ei ${PLATFORM_LIB_FLAGS})
+
+# target personal_information_grid
+
+add_executable(pi_grid			${TEST_DIR}/personal_information_grid.c)
+target_link_libraries(pi_grid		ei ${PLATFORM_LIB_FLAGS})
 
 # target to build the documentation
 
