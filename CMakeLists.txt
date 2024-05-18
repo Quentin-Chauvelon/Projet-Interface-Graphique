@@ -71,6 +71,7 @@ link_directories(${PLATFORM_DIR})
 
 set(LIB_EI_SOURCES
 	${SRC}/src/geometry_managers/ei_placer.c
+	${SRC}/src/geometry_managers/ei_gridder.c
 	${SRC}/src/widgets/ei_frame.c
 	${SRC}/src/widgets/ei_button.c
 	${SRC}/src/widgets/ei_toplevel.c
@@ -167,21 +168,46 @@ target_link_libraries(tags		ei ${PLATFORM_LIB_FLAGS})
 add_executable(tags_parsing			${TEST_DIR}/tags_parsing.c)
 target_link_libraries(tags_parsing		ei ${PLATFORM_LIB_FLAGS})
 
+# target text
+
+add_executable(text			${TEST_DIR}/text.c)
+target_link_libraries(text		ei ${PLATFORM_LIB_FLAGS})
+
 # target resize_toplevel
 
 add_executable(resize_toplevel			${TEST_DIR}/resize_toplevel.c)
 target_link_libraries(resize_toplevel		ei ${PLATFORM_LIB_FLAGS})
 
-# target resize_toplevel
+# target image
 
-add_executable(image_drawing			${TEST_DIR}/image_drawing.c)
-target_link_libraries(image_drawing		ei ${PLATFORM_LIB_FLAGS})
+add_executable(image			${TEST_DIR}/image.c)
+target_link_libraries(image		ei ${PLATFORM_LIB_FLAGS})
+
+# target placer
+
+add_executable(placer			${TEST_DIR}/placer.c)
+target_link_libraries(placer		ei ${PLATFORM_LIB_FLAGS})
+
+# target content_rect_visualization
+
+add_executable(content_rect_visualization			${TEST_DIR}/content_rect_visualization.c)
+target_link_libraries(content_rect_visualization		ei ${PLATFORM_LIB_FLAGS})
 
 # target radiobutton
 
 add_executable(radiobutton			${TEST_DIR}/radiobutton.c)
 target_link_libraries(radiobutton		ei ${PLATFORM_LIB_FLAGS})
 
+
+# target personal_information_grid
+
+add_executable(pi_grid			${TEST_DIR}/personal_information_grid.c)
+target_link_libraries(pi_grid		ei ${PLATFORM_LIB_FLAGS})
+
+# target grid_playground
+
+add_executable(grid_playground			${TEST_DIR}/grid_playground.c)
+target_link_libraries(grid_playground		ei ${PLATFORM_LIB_FLAGS})
 
 # target to build the documentation
 
