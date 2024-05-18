@@ -13,30 +13,67 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_radiobutton.h"
 
-ei_widget_t ei_radiobutton_allocfunc()
+ei_widget_t ei_radiobutton_allocfunc_group()
 {
-    return ei_widget_allocfunc(sizeof(ei_radiobutton_t));
+    return ei_widget_allocfunc(sizeof(ei_radiobutton_group_t));
 }
 
-void ei_radiobutton_releasefunc(ei_widget_t widget)
+ei_radiobutton_t* ei_radiobutton_allocfun()
 {
-    ei_radiobutton_t *radiobutton =(ei_radiobutton_t*) widget;
+    ei_radiobutton_t* radiobutton = (ei_radiobutton_t* ) malloc(sizeof(ei_radiobutton_t));
 
-    if (radiobutton->text.label!=NULL){
-        free(radiobutton->text.label!=NULL);
+    // If malloc failed, exit since the program will crash if the user tries to use the widget
+    if (radiobutton == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the radiobutton.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        exit(1);
     }
 
-    //free(radiobutton->widget);
-    free(radiobutton);
-    radiobutton=NULL; //not usefull but also did in the others release functions
+    memset(radiobutton, 0, sizeof(ei_radiobutton_t));
+
+    return radiobutton;
 }
 
-void ei_radiobutton_setdefaultsfunc(ei_widget_t widget)
-{
-    ei_radiobutton_t *radiobutton =(ei_radiobutton_t*) widget;
 
-    radiobutton->widget= *widget;
-    radiobutton->widget.content_rect= &(widget->screen_location);
+void ei_radiobutton_releasefunc_group(ei_widget_t widget)
+{
+    ei_radiobutton_group_t * group =(ei_radiobutton_group_t*) widget;
+    ei_radiobutton_t* radiobutton = group->radiobutton;
+
+    while (radiobutton!=NULL)
+    {
+        if (radiobutton->text.label!=NULL){
+            free(radiobutton->text.label);}
+        if (radiobutton->button!=NULL){
+            free(radiobutton->button);
+        }
+        radiobutton=radiobutton->next_sibling;
+    }
+    
+    free(group);
+}
+
+
+void ei_radiobutton_setdefaultsfunc_group(ei_widget_t widget)
+{
+    ei_radiobutton_group_t *group =(ei_radiobutton_group_t*) widget;
+
+    group->radiobutton=NULL;
+
+    group->relief=ei_relief_none;
+
+    group->window.border_width=5;
+    group->window.color=(ei_color_t){0x88, 0x88, 0x88, 0xff};
+
+    group->widget=*widget;
+
+    group->widget.content_rect= &(widget->screen_location);
+}
+
+ei_radiobutton_t* ei_radiobutton_setdefaultsfunc( ei_radiobutton_t* radiobutton)
+{
+    radiobutton= ei_radiobutton_allocfun();
+    radiobutton->button=NULL;
 
     radiobutton->text.anchor=ei_anc_west;
     radiobutton->text.color=ei_font_default_color;
@@ -50,15 +87,32 @@ void ei_radiobutton_setdefaultsfunc(ei_widget_t widget)
     radiobutton->previous_sibling=NULL;
 
     radiobutton->callback=NULL;
+
+    return radiobutton;
 }
 
-void ei_add_radiobutton( ei_radiobutton_t *Group,ei_radiobutton_t* radiobuttons)
+
+void ei_add_radiobutton( ei_widget_t widget,ei_radiobutton_t* to_add_radiobutton)
 {
-    ei_radiobutton_t* run= Group;
-    while (run->next_sibling!=NULL){run=run->next_sibling;}
-    run->next_sibling=radiobuttons;
-    radiobuttons->previous_sibling=run;
-    radiobuttons->widget.screen_location=Group->widget.screen_location;
+    ei_radiobutton_group_t* Group=(ei_radiobutton_group_t*) widget;
+    ei_radiobutton_t *rb;
+    //If radiobutton is NULL it means it is the first radiobutton to add  
+    if (Group->radiobutton==NULL){
+        //to_add_radiobutton= ei_radiobutton_setdefaultsfunc(rb);
+        Group->radiobutton=to_add_radiobutton;
+        return;
+    }
+
+    ei_radiobutton_t* radiobutton=(ei_radiobutton_t*) Group->radiobutton;
+
+    while (radiobutton->next_sibling!=NULL){
+        radiobutton=(ei_radiobutton_t*) radiobutton->next_sibling;
+        //printf("Ici de add\n");
+        }
+
+    radiobutton->next_sibling=to_add_radiobutton;
+    to_add_radiobutton->previous_sibling=radiobutton;
+    to_add_radiobutton->next_sibling=NULL;
 }
 
 
@@ -68,45 +122,44 @@ void ei_radiobutton_drawfunc_group(
                 ei_surface_t pick_surface,
                 ei_rect_t *clipper)
 {
-    true ? printf("Drawing widget %d\n", widget->pick_id) : 0;
+    DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
-    ei_radiobutton_t *radiobutton =(ei_radiobutton_t*) widget;
-
-    //Searching of the first radiobutton of the group
-    while(radiobutton->previous_sibling!=NULL){radiobutton=radiobutton->previous_sibling;}
+    ei_radiobutton_group_t *group =(ei_radiobutton_group_t*) widget;
+    ei_radiobutton_t* radiobutton = group->radiobutton; //First radiobutton of the group
 
     // Draw the visible frame
-    int  border_width=5;
-    ei_draw_straight_frame(surface,widget->screen_location, border_width,(ei_color_t){0x44, 0x88, 0x88, 0xff}, ei_relief_none, clipper);
+    ei_draw_straight_frame(surface, group->widget.screen_location, group->window.border_width,group->window.color,group->relief, clipper);
 
     //Draw the radiobuttons
     ei_image_properties_t image ;
     image.data=NULL; //to avoid to draw a image
 
-    int number=ei_nb_radiobutton_group(radiobutton)+1;
+    int number=ei_nb_radiobutton_group(group)+1;
 
     ei_size_t rec_size=clipper->size;
     ei_point_t top = clipper->top_left;
     ei_point_t end =(ei_point_t) {clipper->top_left.x ,clipper->top_left.y +rec_size.height/ number};
 
     //We have to add the border_width
-    top.x+=border_width;
-    top.y+=border_width;
-    end.x+=border_width;
-    end.y+=border_width;
+    top.x+=group->window.border_width;
+    top.y+=group->window.border_width;
+    end.x+=group->window.border_width;
+    end.y+=group->window.border_width;
 
     //Draw a title
     //to do
 
     while (radiobutton!=NULL)
     {
+       //printf("ici de draw");
         //Draw of a button before the radiobutton to know if he is selected ot not
-        ei_color_t color= radiobutton->actif ==false ? (ei_color_t){0,0xff,0,0xff} : (ei_color_t){0xff,0x0,0x0,0xff};
+        ei_color_t color= radiobutton->actif ==false ? (ei_color_t){0x55,0x55,0x55,0xff} : (ei_color_t){0xff,0x0,0x0,0xff};
         int length_rect=( end.y-top.y)/2;
         ei_point_t center= (ei_point_t) {top.x+length_rect/4, top.y+length_rect/2 };
-        ei_rect_t *cir_rect= &(ei_rect_t) { center, {length_rect,length_rect}};//We multiply to put the button on the center
+        ei_rect_t *cir_rect= &(ei_rect_t) { center, {length_rect,length_rect}};//
 
-        ei_button_t* button=(ei_button_t*) radiobutton->widget.children_head;
+        radiobutton->button=(ei_button_t*) ei_widget_create	("button", group, NULL, NULL);;
+        ei_button_t* button=(ei_button_t*) radiobutton->button;
         ei_button_setdefaultsfunc(button);
 
         ei_button_configure((ei_widget_t) button, NULL,
@@ -138,24 +191,17 @@ void ei_radiobutton_drawfunc_group(
 
 }
 
-int ei_nb_radiobutton_group(ei_radiobutton_t* radiobutton)
+int ei_nb_radiobutton_group(ei_radiobutton_group_t * group)
 {
     int compt= (int) 0 ;
-
-    ei_radiobutton_t* bis = (ei_radiobutton_t*) radiobutton;
-    while ( bis !=NULL)
+    //printf("ici de nb\n");
+    ei_radiobutton_t* run = (ei_radiobutton_t*) group->radiobutton;
+    while ( run !=NULL)
     {
+        //printf("ici de nb\n");
         compt++;
-        bis=bis->previous_sibling;
+        run=run->next_sibling;
     }
-
-    bis = (ei_radiobutton_t*) radiobutton->next_sibling;
-    while (bis!=NULL)
-    {
-        compt++;
-        bis=bis->next_sibling;
-    }
-
     return compt;
 }
 
@@ -186,40 +232,12 @@ bool ei_check_change_radiobutton_state( ei_radiobutton_t* radiobutton, bool acti
         }
 
         //Second part of the chain
-        while ( part2!=NULL)
+        while (!end && part2!=NULL)
         {
             if (part2->actif)
             {
                 part2->actif=false;
                 break;
-            }
-            part2=part2->next_sibling;
-        }
-    }
-
-    else{
-        //Only for checking if everything is okay
-
-        ei_radiobutton_t* part1 = radiobutton->previous_sibling;
-        ei_radiobutton_t* part2 = radiobutton->next_sibling;
-        int num=0; //number of activated radiobutton
-
-        //First part of the chain
-        while (part1!=NULL)
-        {
-            if (part1->actif){
-                if(num!=1){return false;} 
-                num++;
-            }
-            part1=part1->previous_sibling;
-        }
-
-        // Second part of the chain 
-        while (part2!=NULL)
-        {
-            if (part2->actif){
-                if(num!=1){return false;}
-                num++;
             }
             part2=part2->next_sibling;
         }

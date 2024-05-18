@@ -37,66 +37,63 @@ bool default_handler(ei_widget_t widget, ei_event_t* event, ei_user_param_t user
 
 int main(int argc, char** argv)
 {
-	ei_widget_t	radiobutton ,radiobutton1, radiobutton2 , radiobutton3;
+	ei_widget_t	group;
+
+	ei_radiobutton_t * radiobutton1;
+	ei_radiobutton_t * radiobutton2;
+	ei_radiobutton_t * radiobutton3;
+	ei_radiobutton_t * radiobutton4;
 
 	/* Create the application and change the color of the background. */
 	ei_app_create((ei_size_t){600, 600}, false);
 	ei_frame_set_bg_color(ei_app_root_widget(), (ei_color_t){0x52, 0x7f, 0xb4, 0xff});
 
-	radiobutton = ei_widget_create	("radiobutton", ei_app_root_widget(), NULL, NULL);
-	radiobutton1= ei_widget_create	("radiobutton", ei_app_root_widget(), NULL, NULL);
-	radiobutton2 = ei_widget_create	("radiobutton", ei_app_root_widget(), NULL, NULL);
-	radiobutton3 = ei_widget_create	("radiobutton", ei_app_root_widget(), NULL, NULL);
+	group = ei_widget_create	("radiobutton", ei_app_root_widget(), NULL, NULL);
 	
-	ei_widget_t *button=ei_widget_create	("button", radiobutton, NULL, NULL);
-	ei_widget_t *button1=ei_widget_create	("button", radiobutton1, NULL, NULL);
-	ei_widget_t *button2=ei_widget_create	("button", radiobutton2, NULL, NULL);
-	ei_widget_t *button3=ei_widget_create	("button", radiobutton3, NULL, NULL);
+	//Initialisation of the radiobuttons to default value
+	radiobutton1=ei_radiobutton_setdefaultsfunc( radiobutton1);
+	radiobutton2=ei_radiobutton_setdefaultsfunc( radiobutton2);
+	radiobutton3=ei_radiobutton_setdefaultsfunc( radiobutton3);
+	radiobutton4=ei_radiobutton_setdefaultsfunc( radiobutton4);
 
-	ei_add_radiobutton(radiobutton, radiobutton1);
-	ei_add_radiobutton(radiobutton,radiobutton2);
-	ei_add_radiobutton(radiobutton,radiobutton3);
+	//Building of the group 	
+	ei_add_radiobutton(group,radiobutton1);
+	ei_add_radiobutton(group,radiobutton2);
+	ei_add_radiobutton(group,radiobutton3);
+	ei_add_radiobutton(group,radiobutton4);
 
-
-	
-	ei_radiobutton_configure	(radiobutton,
-			   			&(ei_color_t){0x00, 0x00, 0x00, 0xff},
-						&(ei_size_t){300,200},
+	//Configuration
+	ei_radiobutton_configure	(radiobutton1,
+			   			&(ei_color_t){0x30, 0x80, 0x30, 0xff},
                         &(ei_string_t) {" Trés Bien "}, NULL,
 					 	NULL,
-						&(ei_callback_t){button_press} ,
+						&(ei_callback_t){button_press } ,
 						true);
 	
-	ei_radiobutton_configure	(radiobutton1,
-			   			&(ei_color_t){0x00, 0x00, 0x00, 0xff},
-						&(ei_size_t){300,200},
+	ei_radiobutton_configure	(radiobutton2,
+			   			&(ei_color_t){0x30, 0x30, 0x80, 0xff},
                         &(ei_string_t) {" Bien "}, NULL,
 					 	NULL,
 						&(ei_callback_t){button_press} ,
-						false);
+						true);
 	
-	ei_radiobutton_configure	(radiobutton2,
-			   			&(ei_color_t){0x00, 0x00, 0x00, 0xff},
-						&(ei_size_t){300,200},
+	ei_radiobutton_configure	(radiobutton3,
+			   			NULL,
                         &(ei_string_t) {" Assez Bien "}, NULL,
 					 	NULL,
 						&(ei_callback_t){button_press} ,
-						true);
+						false);
 
-	ei_radiobutton_configure	(radiobutton3,
-			   			&(ei_color_t){0x00, 0x00, 0x00, 0xff},
-						&(ei_size_t){300,200},
+	ei_radiobutton_configure	(radiobutton4,
+			   			&(ei_color_t){0x80, 0x30, 0x30, 0xff},
                         &(ei_string_t) {" Passable "}, NULL,
 					 	NULL,
 						&(ei_callback_t){button_press} ,
 						false);
 	
+	ei_radiobutton_group_configure(group,&(ei_size_t){300,200},NULL,&(ei_color_t){0xff,0xff,0xff,0xff},NULL,NULL);
 
-
-	ei_place_xy			(radiobutton, 150, 200);
-	ei_place_xy			(radiobutton1, 150, 200);
-	ei_place_xy			(radiobutton2, 150, 200);
-	ei_place_xy			(radiobutton3, 150, 200);
+	ei_place_xy		(group, 150, 200);
 
 	/* Register the default callback to events of interest. */
 	ei_bind(ei_ev_keydown,		NULL, "all", default_handler, NULL);

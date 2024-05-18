@@ -11,7 +11,7 @@
 #include "../implem/headers/ei_radiobutton.h"
 #include "../implem/src/widgets/ei_radiobutton.c"
 #include "../implem/headers/ei_event_ext.h"
-
+/*
 ei_frame_t* common_frame_button_configure(ei_widget_t widget,
                                    ei_size_t *requested_size,
                                    const ei_color_t *color,
@@ -25,7 +25,7 @@ ei_frame_t* common_frame_button_configure(ei_widget_t widget,
 {
     ei_frame_t *frame = (ei_frame_t *)widget;
 
-    widget->requested_size = requested_size != NULL ? *requested_size : *ei_frame_get_natural_size(frame);
+    widget->requested_size = requested_size != NULL ? *requested_size : ei_frame_get_natural_size(frame);
     widget->screen_location.size = widget->requested_size;
     color != NULL ? ei_frame_set_color(frame, *color) : ei_frame_set_color(frame, ei_default_background_color);
     text != NULL ? ei_frame_set_text_label(frame, *text) : ei_frame_set_text_label(frame, NULL);
@@ -37,7 +37,7 @@ ei_frame_t* common_frame_button_configure(ei_widget_t widget,
     img_anchor != NULL ? ei_frame_set_image_anchor(frame, *img_anchor) : ei_frame_set_image_anchor(frame, ei_anc_center);
 
     return frame;
-}
+}*/
 /**
  * @brief	Configures the attributes of widgets of the class "frame".
  *
@@ -468,8 +468,6 @@ void ei_toplevel_configure(ei_widget_t widget,
  * 
  * @param text_color      The color of the text. Defaults to \ref ei_font_default_color.
  * 
- * @param requested_size  The size requested for this widget, including the widget's borders.
- * 
  * @param text            The text to write in the radiobutton. Defaults nothing is written.
  * 
  * @param text_font       The font used to display the text. Defaults to \ref ei_default_font.
@@ -488,7 +486,6 @@ void ei_toplevel_configure(ei_widget_t widget,
 void ei_radiobutton_configure(
                         ei_widget_t widget,
                         const ei_color_t *text_color,
-                        ei_size_t *requested_size,
                         ei_string_t *text,
                         ei_font_t *text_font,
                         ei_anchor_t *text_anchor,
@@ -502,6 +499,10 @@ void ei_radiobutton_configure(
     {
         radiobutton->text.color=*text_color;
     }
+    else
+    {
+        radiobutton->text.color= ei_font_default_color;
+    }
 
     if (text!=NULL)
     {
@@ -512,16 +513,18 @@ void ei_radiobutton_configure(
     {
         radiobutton->text.font=text_font;
     }
-    
+    else
+    {
+        radiobutton->text.font=ei_default_font;
+    }
 
     if (text_anchor!=NULL)
     {
         radiobutton->text.anchor=*text_anchor;
     }
-
-    if (requested_size!=NULL)
+    else
     {
-        widget->requested_size=*requested_size;
+        radiobutton->text.anchor=ei_anc_west;
     }
 
     if (callback!=NULL)
@@ -539,5 +542,80 @@ void ei_radiobutton_configure(
     if (actif)
     {
         ei_check_change_radiobutton_state(radiobutton, actif);
+    }
+    else
+    {
+        radiobutton->actif=false;
+    }
+}
+
+
+/**
+ * \brief  Configures the attributes of a group of radiobuttons.
+ * 
+ * @param widget The widget to configure.
+ * 
+ * @param size A pointer to the size of the frame
+ * 
+ * @param back_ground_color A pointer to the color of the frame
+ * 
+ * @param texts_color A pointer to the color we want for all radiobuttons
+ * 
+ * @param border_width  A pointer to the border_width of the frame
+ * 
+ * @param relief A pointer to the relief of the frame
+*/
+void ei_radiobutton_group_configure(ei_widget_t widget,
+                                ei_size_t* size,
+                                ei_color_t * back_ground_color,
+                                ei_color_t * texts_color,
+                                int * border_width,
+                                ei_relief_t* relief)
+{
+    ei_radiobutton_group_t * group=(ei_radiobutton_group_t *) widget;
+
+    if (size!=NULL)
+    {
+        group->widget.requested_size=*size;
+    }
+    else
+    {
+        group->widget.requested_size= (ei_size_t){ 300,200};
+    }
+
+    if (back_ground_color !=NULL)
+    {
+        group->window.color=*back_ground_color;
+    }
+    else
+    {
+        group->window.color=ei_default_background_color;
+    }
+
+    if (border_width!=NULL)
+    {
+        group->window.border_width=*border_width;
+    }
+    else
+    {
+        group->window.border_width=5;
+    }
+
+    if( relief!=NULL)
+    {
+        group->relief=*relief;
+    }
+    else {
+        group->relief=ei_relief_none;
+    }
+
+    if (texts_color!=NULL)
+    {
+        ei_radiobutton_t* radiobutton=group->radiobutton;
+        while(radiobutton!=NULL)
+        {
+            radiobutton->text.color=*texts_color;
+            radiobutton=radiobutton->next_sibling;
+        }
     }
 }

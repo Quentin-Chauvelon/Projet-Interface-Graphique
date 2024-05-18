@@ -50,21 +50,19 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
 
 static bool ei_radiobutton_pressed( ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    ei_radiobutton_t * radiobutton= (ei_radiobutton_t *) widget;
-    
-    //Find a pointer on the first radiobutton on the group
-    while (radiobutton->previous_sibling!=NULL)
-    {
-        radiobutton=radiobutton->previous_sibling;
-    }
+    ei_radiobutton_group_t * group= (ei_radiobutton_t *) widget;
+    ei_radiobutton_t * radiobutton = group->radiobutton; //A pointer to the first radiobutton on the group
 
-    //Search where was the clic
+    //Search where was the click
     ei_point_t mouse_position = event->param.mouse.where;
     ei_rect_t position;
 
+    printf("Click\n");
+
     while (radiobutton!=NULL)
     {
-        position= radiobutton->widget.children_head->screen_location;
+        position= radiobutton->button->widget.screen_location;
+    
         if (mouse_position.x >= position.top_left.x &&
             mouse_position.x <= position.top_left.x+ position.size.width &&
             mouse_position.y >= position.top_left.y &&
@@ -1329,7 +1327,8 @@ void ei_bind_all_internal_callbacks()
     ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
     ei_bind(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL);
-
+    ei_bind(ei_ev_mouse_buttondown, NULL, "radiobutton", ei_radiobutton_pressed, NULL);
+    
     displayed = malloc(sizeof(bool));
     *displayed = false;
 

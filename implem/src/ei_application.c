@@ -80,7 +80,7 @@ void ei_app_run(void)
         {
             for (ei_linked_rect_t *invalid_rect = invalid_rects; invalid_rect != NULL; invalid_rect = invalid_rect->next)
             {
-                true ? printf("Drawing invalid rect %d %d %d %d\n", invalid_rect->rect.top_left.x, invalid_rect->rect.top_left.y, invalid_rect->rect.size.width, invalid_rect->rect.size.height) : 0;
+                DEBUG ? printf("Drawing invalid rect %d %d %d %d\n", invalid_rect->rect.top_left.x, invalid_rect->rect.top_left.y, invalid_rect->rect.size.width, invalid_rect->rect.size.height) : 0;
 
                 // Redraw the root widget
                 ei_app_root_widget()->wclass->drawfunc(ei_app_root_widget(), window_surface, offscreen_picking, &invalid_rect->rect);

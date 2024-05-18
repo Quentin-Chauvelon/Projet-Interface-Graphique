@@ -150,10 +150,10 @@ void ei_widgetclass_register_all()
     }
 
     strcpy(radiobutton->name,"radiobutton");
-    radiobutton->allocfunc = & ei_radiobutton_allocfunc ;
-    radiobutton->releasefunc= & ei_radiobutton_releasefunc;
+    radiobutton->allocfunc = & ei_radiobutton_allocfunc_group ;
+    radiobutton->releasefunc= & ei_radiobutton_releasefunc_group;
     radiobutton->drawfunc= & ei_radiobutton_drawfunc_group;
-    radiobutton->setdefaultsfunc= & ei_radiobutton_setdefaultsfunc;
+    radiobutton->setdefaultsfunc= & ei_radiobutton_setdefaultsfunc_group;
     radiobutton->geomnotifyfunc= & ei_radiobutton_geomnotifyfunc;
     radiobutton->next=NULL;
 
