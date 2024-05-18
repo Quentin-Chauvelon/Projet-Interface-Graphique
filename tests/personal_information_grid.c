@@ -7,7 +7,7 @@
 #include "hw_interface.h"
 #include "ei_widget_configure.h"
 #include "ei_placer.h"
-#include "../implem/headers/ei_gridder.h"
+#include "../implem/headers/api/ei_gridder.h"
 /*
  * default_handler --
  *

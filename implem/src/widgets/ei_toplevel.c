@@ -169,7 +169,7 @@ void ei_toplevel_geomnotifyfunc(ei_widget_t widget)
 
     // Compute the content rect of the toplevel (size of the toplevel without its border and the title bar)
     *widget->content_rect = ei_rect_move(toplevel->widget.screen_location, 0, ei_toplevel_get_title_bar_rect(toplevel).size.height, &toplevel->widget.screen_location);
-    *widget->content_rect = ei_rect_add(*widget->content_rect, toplevel->widget_appearance.border_width, 0, -toplevel->widget_appearance.border_width * 2, -toplevel->widget_appearance.border_width);
+    *widget->content_rect = ei_rect_add(*widget->content_rect, toplevel->widget_appearance.border_width, toplevel->widget_appearance.border_width, -toplevel->widget_appearance.border_width * 2, -toplevel->widget_appearance.border_width * 2);
 }
 
 ei_size_t ei_toplevel_get_natural_size(ei_toplevel_t *toplevel)
