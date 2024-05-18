@@ -424,3 +424,44 @@ void ei_bool_array_free(bool_array_t *array)
     free(array->array);
     free(array);
 }
+
+int ei_map_numpad_keycode_to_ascii(int keycode)
+{
+    switch (keycode)
+    {
+    case SDLK_KP_DIVIDE:
+        return SDLK_SLASH;
+    case SDLK_KP_MULTIPLY:
+        return SDLK_ASTERISK;
+    case SDLK_KP_MINUS:
+        return SDLK_MINUS;
+    case SDLK_KP_PLUS:
+        return SDLK_PLUS;
+    case SDLK_KP_ENTER:
+        return SDLK_RETURN;
+    case SDLK_KP_1:
+        return SDLK_1;
+    case SDLK_KP_2:
+        return SDLK_2;
+    case SDLK_KP_3:
+        return SDLK_3;
+    case SDLK_KP_4:
+        return SDLK_4;
+    case SDLK_KP_5:
+        return SDLK_5;
+    case SDLK_KP_6:
+        return SDLK_6;
+    case SDLK_KP_7:
+        return SDLK_7;
+    case SDLK_KP_8:
+        return SDLK_8;
+    case SDLK_KP_9:
+        return SDLK_9;
+    case SDLK_KP_0:
+        return SDLK_0;
+    case SDLK_KP_PERIOD:
+        return SDLK_PERIOD;
+    default:
+        return keycode;
+    }
+}

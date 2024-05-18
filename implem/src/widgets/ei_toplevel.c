@@ -23,6 +23,8 @@ void ei_toplevel_releasefunc(ei_widget_t widget)
 {
     ei_toplevel_t *toplevel = (ei_toplevel_t *)widget;
 
+    ei_widget_destroy(&toplevel->close_button->widget);
+
     if (toplevel->min_size != NULL)
     {
         free(toplevel->min_size);

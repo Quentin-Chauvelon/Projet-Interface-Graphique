@@ -196,7 +196,7 @@ void ei_geometrymanager_free_all()
         // Only free the geometry managers that were created by the library,
         // it is up to the programmer to free any geometry manager they
         // would have added
-        if (strcmp(current->name, "placer") == 0)
+        if (strcmp(current->name, "placer") == 0 || strcmp(current->name, "gridder") == 0)
         {
             free(current);
         }

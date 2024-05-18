@@ -245,6 +245,8 @@ static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, user_param);
 
+    free(user_param);
+
     ei_app_invalidate_rect(&widget->screen_location);
 
     return false;
@@ -581,6 +583,8 @@ bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_entry_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, user_param);
 
+    free(user_param);
+
     ei_app_invalidate_rect(&widget->screen_location);
 
     return false;
@@ -604,7 +608,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     ei_entry_t *entry_to_give_focus_to = NULL;
 
     // Unfocus the entry if the user presses the escape key
-    if (event->param.key_code == SDLK_RETURN)
+    if (event->param.key_code == SDLK_RETURN || event->param.key_code == SDLK_KP_ENTER)
     {
         ei_entry_release_focus(widget);
 
@@ -1135,6 +1139,12 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     }
     else
     {
+        // If the user pressed a numpad key, convert it to the corresponding ascii character
+        if (event->param.key_code >= SDLK_KP_DIVIDE && event->param.key_code <= SDLK_KP_PERIOD)
+        {
+            event->param.key_code = ei_map_numpad_keycode_to_ascii(event->param.key_code);
+        }
+
         // If the key pressed in a displayable character, add it to the entry
         if (event->param.key_code >= 32 && event->param.key_code <= 126)
         {

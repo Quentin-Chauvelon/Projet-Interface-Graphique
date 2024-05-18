@@ -172,7 +172,7 @@ target_link_libraries(tags_parsing		ei ${PLATFORM_LIB_FLAGS})
 add_executable(resize_toplevel			${TEST_DIR}/resize_toplevel.c)
 target_link_libraries(resize_toplevel		ei ${PLATFORM_LIB_FLAGS})
 
-# target resize_toplevel
+# target image_drawing
 
 add_executable(image_drawing			${TEST_DIR}/image_drawing.c)
 target_link_libraries(image_drawing		ei ${PLATFORM_LIB_FLAGS})
@@ -181,6 +181,11 @@ target_link_libraries(image_drawing		ei ${PLATFORM_LIB_FLAGS})
 
 add_executable(pi_grid			${TEST_DIR}/personal_information_grid.c)
 target_link_libraries(pi_grid		ei ${PLATFORM_LIB_FLAGS})
+
+# target grid_playground
+
+add_executable(grid_playground			${TEST_DIR}/grid_playground.c)
+target_link_libraries(grid_playground		ei ${PLATFORM_LIB_FLAGS})
 
 # target to build the documentation
 

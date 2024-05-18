@@ -171,11 +171,6 @@ void ei_unbind_events_registered_for_unbind()
             event_to_unbind->next->previous = event_to_unbind->previous;
         }
 
-        // if (event_to_unbind->user_param != NULL && event_to_unbind->priority != 0)
-        // {
-        //     free(event_to_unbind->user_param);
-        // }
-
         free(event_to_unbind);
         free(current);
 

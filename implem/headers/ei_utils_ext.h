@@ -270,4 +270,6 @@ int ei_bool_array_get_occurences(bool_array_t *array, bool value);
  */
 void ei_bool_array_free(bool_array_t *array);
 
+int ei_map_numpad_keycode_to_ascii(int keycode);
+
 #endif

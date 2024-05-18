@@ -170,6 +170,7 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         if (invalid_rects == NULL)
         {
             printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            free(rect_copy);
             return;
         }
 
@@ -187,6 +188,7 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             // If the rectangle is fully included in another rectangle, we don't need it
             if (ei_rect_included_in_rect(*rect_copy, current_invalid_rect->rect))
             {
+                free(rect_copy);
                 return;
             }
 
@@ -196,6 +198,8 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
             {
                 DEBUG ? printf("Merged %d %d %d %d with %d %d %d %d\n", rect_copy->top_left.x, rect_copy->top_left.y, rect_copy->size.width, rect_copy->size.height, current_invalid_rect->rect.top_left.x, current_invalid_rect->rect.top_left.y, current_invalid_rect->rect.size.width, current_invalid_rect->rect.size.height) : 0;
                 current_invalid_rect->rect = ei_merge_rectangles(*rect_copy, current_invalid_rect->rect);
+
+                free(rect_copy);
                 return;
             }
 
@@ -213,6 +217,7 @@ void ei_app_invalidate_rect(const ei_rect_t *rect)
         if (invalid_rect == NULL)
         {
             printf("\033[0;31mError: Couldn't allocate memory to invalidate rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            free(rect_copy);
             return;
         }
 

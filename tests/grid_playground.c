@@ -1,3 +1,17 @@
+/**
+ * How to use:
+ * The screen is divided into 3 parts:
+ * - The top left part is the grid playground where you can perform almost every action on the grid
+ * to see how it behaves. If you click on a row/column title, it will stretch the row/column. If you
+ * click on a cell ("Select"), it will select it (red background) and you will have control over that
+ * cell. In the bottom right corner, you have buttons to add rows and columns.
+ * - The top right part is the grid control where you can change where the grid is anchored and update
+ * the margin, horizontal and vertical spacing (by inputting a number and clicking on the button).
+ * - The bottom left part is the cell control that controls the cell you previously selected (the one
+ * in red). If you click toggle fill, it will expand the widget to fill its cell or shrink to its default
+ * size. If you click on a cell anchor, it will change where the widget is anchored in its cell.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,7 +21,7 @@
 #include "hw_interface.h"
 #include "ei_widget_configure.h"
 #include "ei_placer.h"
-#include "../implem/headers/ei_gridder.h"
+#include "../implem/headers/api/ei_gridder.h"
 
 typedef struct
 {
