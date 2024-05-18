@@ -137,34 +137,40 @@ void ei_widget_destroy(ei_widget_t widget)
     // If it is not the root widget
     if (widget->parent != NULL)
     {
-        // Remove the widget from the widget tree
-        // If it is the first children, point to the next sibling
-        if (widget->parent->children_head == widget)
+        // If the widget is not the close button of a toplevel, update the hierarchy
+        if (strcmp(widget->parent->wclass->name, "toplevel") != 0 ||
+            ((ei_toplevel_t *)widget->parent)->close_button == NULL ||
+            (ei_widget_t *)((ei_toplevel_t *)widget->parent)->close_button != (ei_widget_t *)widget)
         {
-            widget->parent->children_head = widget->next_sibling;
-        }
-        // If it is not the first children, find the previous widget and point to the next sibling
-        else
-        {
-            ei_widget_t current = widget->parent->children_head;
-            while (current->next_sibling != widget)
+            // Remove the widget from the widget tree
+            // If it is the first children, point to the next sibling
+            if (widget->parent->children_head == widget)
             {
-                current = current->next_sibling;
+                widget->parent->children_head = widget->next_sibling;
+            }
+            // If it is not the first children, find the previous widget and point to the next sibling
+            else
+            {
+                ei_widget_t current = widget->parent->children_head;
+                while (current->next_sibling != widget)
+                {
+                    current = current->next_sibling;
+                }
+
+                current->next_sibling = widget->next_sibling;
+
+                // If it is the last child, point the tail to the previous widget
+                if (widget->parent->children_tail == widget)
+                {
+                    widget->parent->children_tail = current;
+                }
             }
 
-            current->next_sibling = widget->next_sibling;
-
-            // If it is the last child, point the tail to the previous widget
+            // If it is the last child, remove the pointer to the tail
             if (widget->parent->children_tail == widget)
             {
-                widget->parent->children_tail = current;
+                widget->parent->children_tail = NULL;
             }
-        }
-
-        // If it is the last child, remove the pointer to the tail
-        if (widget->parent->children_tail == widget)
-        {
-            widget->parent->children_tail = NULL;
         }
     }
 

@@ -315,3 +315,153 @@ ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl)
 
     return (ei_color_t){r * 255, g * 255, b * 255, hsl.alpha};
 }
+
+int_array_t *ei_int_array_initialize()
+{
+    int_array_t *array = malloc(sizeof(int_array_t) * 4);
+
+    array->size = 4;
+
+    array->array = malloc(sizeof(int) * array->size);
+    memset(array->array, 0, sizeof(int) * array->size);
+
+    array->nb_elements = 0;
+
+    return array;
+}
+
+void ei_int_array_set_at_index(int_array_t *array, int index, int value)
+{
+    if (index < array->nb_elements)
+    {
+        array->array[index] = value;
+        array->nb_elements = array->nb_elements >= index + 1 ? array->nb_elements : index + 1;
+    }
+    else
+    {
+        while (index >= array->size)
+        {
+            array->array = realloc(array->array, sizeof(int) * array->size * 2);
+            memset(array->array + array->size, 0, sizeof(int) * array->size);
+            array->size *= 2;
+        }
+
+        array->array[index] = value;
+        array->nb_elements = index + 1;
+    }
+}
+
+int ei_int_array_sum(int_array_t *array)
+{
+    int sum = 0;
+
+    for (int i = 0; i < array->nb_elements; i++)
+    {
+        sum += array->array[i];
+    }
+
+    return sum;
+}
+
+void ei_int_array_free(int_array_t *array)
+{
+    free(array->array);
+    free(array);
+}
+
+bool_array_t *ei_bool_array_initialize()
+{
+    bool_array_t *array = malloc(sizeof(bool_array_t) * 4);
+
+    array->size = 4;
+
+    array->array = malloc(sizeof(bool) * array->size);
+    memset(array->array, false, sizeof(bool) * array->size);
+
+    array->nb_elements = 0;
+
+    return array;
+}
+
+void ei_bool_array_set_at_index(bool_array_t *array, int index, bool value)
+{
+    if (index < array->nb_elements)
+    {
+        array->array[index] = value;
+        array->nb_elements = array->nb_elements >= index + 1 ? array->nb_elements : index + 1;
+    }
+    else
+    {
+        while (index >= array->size)
+        {
+            array->array = realloc(array->array, sizeof(int) * array->size * 2);
+            memset(array->array + array->size, false, sizeof(int) * array->size);
+            array->size *= 2;
+        }
+
+        array->array[index] = value;
+        array->nb_elements = index + 1;
+    }
+}
+
+int ei_bool_array_get_occurences(bool_array_t *array, bool value)
+{
+    int occurences = 0;
+
+    for (int i = 0; i < array->nb_elements; i++)
+    {
+        if (array->array[i] == value)
+        {
+            occurences++;
+        }
+    }
+
+    return occurences;
+}
+
+void ei_bool_array_free(bool_array_t *array)
+{
+    free(array->array);
+    free(array);
+}
+
+int ei_map_numpad_keycode_to_ascii(int keycode)
+{
+    switch (keycode)
+    {
+    case SDLK_KP_DIVIDE:
+        return SDLK_SLASH;
+    case SDLK_KP_MULTIPLY:
+        return SDLK_ASTERISK;
+    case SDLK_KP_MINUS:
+        return SDLK_MINUS;
+    case SDLK_KP_PLUS:
+        return SDLK_PLUS;
+    case SDLK_KP_ENTER:
+        return SDLK_RETURN;
+    case SDLK_KP_1:
+        return SDLK_1;
+    case SDLK_KP_2:
+        return SDLK_2;
+    case SDLK_KP_3:
+        return SDLK_3;
+    case SDLK_KP_4:
+        return SDLK_4;
+    case SDLK_KP_5:
+        return SDLK_5;
+    case SDLK_KP_6:
+        return SDLK_6;
+    case SDLK_KP_7:
+        return SDLK_7;
+    case SDLK_KP_8:
+        return SDLK_8;
+    case SDLK_KP_9:
+        return SDLK_9;
+    case SDLK_KP_0:
+        return SDLK_0;
+    case SDLK_KP_PERIOD:
+        return SDLK_PERIOD;
+    default:
+        return keycode;
+    }
+}

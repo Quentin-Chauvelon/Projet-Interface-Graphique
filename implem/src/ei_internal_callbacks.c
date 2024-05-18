@@ -48,36 +48,39 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     return false;
 }
 
-static bool ei_radiobutton_pressed( ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+static bool ei_radiobutton_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    ei_radiobutton_group_t * group= (ei_radiobutton_t *) widget;
-    ei_radiobutton_t * radiobutton = group->radiobutton; //A pointer to the first radiobutton on the group
+    ei_radiobutton_group_t *group = (ei_radiobutton_t *)widget;
+    ei_radiobutton_t *radiobutton = group->radiobutton; // A pointer to the first radiobutton on the group
 
-    //Search where was the click
+    // Search where was the click
     ei_point_t mouse_position = event->param.mouse.where;
     ei_rect_t position;
 
     printf("Click\n");
 
-    while (radiobutton!=NULL)
+    while (radiobutton != NULL)
     {
-        position= radiobutton->button->widget.screen_location;
-    
+        position = radiobutton->button->widget.screen_location;
+
         if (mouse_position.x >= position.top_left.x &&
-            mouse_position.x <= position.top_left.x+ position.size.width &&
+            mouse_position.x <= position.top_left.x + position.size.width &&
             mouse_position.y >= position.top_left.y &&
             mouse_position.y <= position.top_left.y + position.size.height)
+        {
+            // Useless if the button is already activated
+            if (radiobutton->selected)
             {
-                    //Useless if the button is already activated
-                    if (radiobutton->actif){return false;}
-
-                    //Otherwise
-                    ei_check_change_radiobutton_state(radiobutton,true);
-                    return true;
+                return false;
             }
-        
-        //Advance to the next radiobuttton
-        radiobutton=radiobutton->next_sibling;
+
+            // Otherwise
+            ei_check_change_radiobutton_state(radiobutton, true);
+            return true;
+        }
+
+        // Advance to the next radiobuttton
+        radiobutton = radiobutton->next_sibling;
     }
     return false;
 }
@@ -279,6 +282,8 @@ static bool ei_toplevel_move_released(ei_widget_t widget, ei_event_t *event, ei_
 {
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_toplevel_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_toplevel_move_released, user_param);
+
+    free(user_param);
 
     ei_app_invalidate_rect(&widget->screen_location);
 
@@ -616,6 +621,8 @@ bool ei_entry_move_released(ei_widget_t widget, ei_event_t *event, ei_user_param
     ei_unbind(ei_ev_mouse_move, NULL, "all", ei_entry_move, user_param);
     ei_unbind(ei_ev_mouse_buttonup, NULL, "all", ei_entry_move_released, user_param);
 
+    free(user_param);
+
     ei_app_invalidate_rect(&widget->screen_location);
 
     return false;
@@ -639,7 +646,7 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     ei_entry_t *entry_to_give_focus_to = NULL;
 
     // Unfocus the entry if the user presses the escape key
-    if (event->param.key_code == SDLK_RETURN)
+    if (event->param.key_code == SDLK_RETURN || event->param.key_code == SDLK_KP_ENTER)
     {
         ei_entry_release_focus(widget);
 
@@ -1170,6 +1177,12 @@ bool ei_entry_keyboard_key_down(ei_widget_t widget, ei_event_t *event, ei_user_p
     }
     else
     {
+        // If the user pressed a numpad key, convert it to the corresponding ascii character
+        if (event->param.key_code >= SDLK_KP_DIVIDE && event->param.key_code <= SDLK_KP_PERIOD)
+        {
+            event->param.key_code = ei_map_numpad_keycode_to_ascii(event->param.key_code);
+        }
+
         // If the key pressed in a displayable character, add it to the entry
         if (event->param.key_code >= 32 && event->param.key_code <= 126)
         {
@@ -1324,11 +1337,11 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
 
 void ei_bind_all_internal_callbacks()
 {
-    ei_bind(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL);
-    ei_bind(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL);
-    ei_bind(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL);
-    ei_bind(ei_ev_mouse_buttondown, NULL, "radiobutton", ei_radiobutton_pressed, NULL);
-    
+    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL, 20);
+    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL, 20);
+    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL, 20);
+    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "radiobutton", ei_radiobutton_pressed, NULL, 20);
+
     displayed = malloc(sizeof(bool));
     *displayed = false;
 

@@ -8,6 +8,7 @@
 #include "../implem/headers/ei_application_ext.h"
 #include "../implem/headers/ei_geometrymanager_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
+#include "../implem/headers/ei_gridder.h"
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_toplevel.h"
 
@@ -165,7 +166,22 @@ void ei_geometrymanager_register_all()
     placer->releasefunc = &ei_placer_releasefunc;
     placer->next = NULL;
 
+    ei_geometrymanager_t *gridder = malloc(sizeof(ei_geometrymanager_t));
+
+    // If malloc failed, return
+    if (gridder == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory to register geometry manager.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    strcpy(gridder->name, "gridder");
+    gridder->runfunc = &ei_gridder_runfunc;
+    gridder->releasefunc = &ei_gridder_releasefunc;
+    gridder->next = NULL;
+
     ei_geometrymanager_register(placer);
+    ei_geometrymanager_register(gridder);
 }
 
 void ei_geometrymanager_free_all()
@@ -180,7 +196,7 @@ void ei_geometrymanager_free_all()
         // Only free the geometry managers that were created by the library,
         // it is up to the programmer to free any geometry manager they
         // would have added
-        if (strcmp(current->name, "placer") == 0)
+        if (strcmp(current->name, "placer") == 0 || strcmp(current->name, "gridder") == 0)
         {
             free(current);
         }

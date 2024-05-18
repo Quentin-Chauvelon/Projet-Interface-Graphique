@@ -21,7 +21,6 @@ void ei_impl_widget_draw_children(ei_widget_t widget, ei_surface_t surface, ei_s
     }
 }
 
-
 /**
  * \brief	Converts the red, green, blue and alpha components of a color into a 32 bits integer
  * 		than can be written directly in the memory returned by \ref hw_surface_get_buffer.
@@ -37,21 +36,22 @@ void ei_impl_widget_draw_children(ei_widget_t widget, ei_surface_t surface, ei_s
 
 uint32_t ei_impl_map_rgba(ei_surface_t surface, ei_color_t color)
 {
-    uint32_t converted_color = 0 ;
-    int ir, ig , ib, ia ;
+    uint32_t converted_color = 0;
+    int ir, ig, ib, ia;
 
-    // get the channel indices of the surface 
-    hw_surface_get_channel_indices( surface, &ir, &ig, &ib, &ia);
+    // get the channel indices of the surface
+    hw_surface_get_channel_indices(surface, &ir, &ig, &ib, &ia);
 
-    //position each byte R, G, B, A in the right place in the 32-bit integer
-    converted_color |= ( (uint32_t)color.red ) << 32-(ir + 1)*8 ;
-    converted_color |= ( (uint32_t)color.green ) << 32-(ig + 1)*8;
-    converted_color |= ( (uint32_t)color.blue ) << 32-(ib + 1)*8;
+    // position each byte R, G, B, A in the right place in the 32-bit integer
+    converted_color += color.red << 32 - (ir + 1) * 8;
+    converted_color += color.green << 32 - (ig + 1) * 8;
+    converted_color += color.blue << 32 - (ib + 1) * 8;
+
     // case where the surface has an alpha chanel
-    if (ia =! -1)
+    if (ia = !-1)
     {
-        converted_color |= ( (uint32_t)color.alpha ) << 32-(ia + 1)*8 ;
+        converted_color += color.alpha << 32 - (ia + 1) * 8;
     }
-    
+
     return converted_color;
 }

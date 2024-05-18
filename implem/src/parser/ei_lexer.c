@@ -105,7 +105,9 @@ char *parse_token_name()
         while ((get_current() >= 'a' && get_current() <= 'z') ||
                (get_current() >= 'A' && get_current() <= 'Z') ||
                (get_current() >= '0' && get_current() <= '9') ||
-               get_current() == '_')
+               get_current() == '_' ||
+               get_current() == '/' || // The '/' and '.' characters are not part of the grammar but were added to handle image paths
+               get_current() == '.')
         {
             length++;
             update_current();

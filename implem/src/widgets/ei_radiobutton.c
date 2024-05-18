@@ -80,7 +80,7 @@ ei_radiobutton_t* ei_radiobutton_setdefaultsfunc( ei_radiobutton_t* radiobutton)
     radiobutton->text.font=ei_default_font;
     radiobutton->text.label= NULL;
 
-    radiobutton->actif=true;
+    radiobutton->selected = true;
 
     radiobutton->next_sibling=NULL;
 
@@ -153,37 +153,36 @@ void ei_radiobutton_drawfunc_group(
     {
        //printf("ici de draw");
         //Draw of a button before the radiobutton to know if he is selected ot not
-        ei_color_t color= radiobutton->actif ==false ? (ei_color_t){0x55,0x55,0x55,0xff} : (ei_color_t){0xff,0x0,0x0,0xff};
-        int length_rect=( end.y-top.y)/2;
-        ei_point_t center= (ei_point_t) {top.x+length_rect/4, top.y+length_rect/2 };
-        ei_rect_t *cir_rect= &(ei_rect_t) { center, {length_rect,length_rect}};//
+       ei_color_t color = radiobutton->selected == false ? (ei_color_t){0x55, 0x55, 0x55, 0xff} : (ei_color_t){0xff, 0x0, 0x0, 0xff};
+       int length_rect = (end.y - top.y) / 2;
+       ei_point_t center = (ei_point_t){top.x + length_rect / 4, top.y + length_rect / 2};
+       ei_rect_t *cir_rect = &(ei_rect_t){center, {length_rect, length_rect}}; //
 
-        radiobutton->button=(ei_button_t*) ei_widget_create	("button", group, NULL, NULL);;
-        ei_button_t* button=(ei_button_t*) radiobutton->button;
-        ei_button_setdefaultsfunc(button);
+       radiobutton->button = (ei_button_t *)ei_widget_create("button", group, NULL, NULL);
+       ;
+       ei_button_t *button = (ei_button_t *)radiobutton->button;
+       ei_button_setdefaultsfunc(button);
 
-        ei_button_configure((ei_widget_t) button, NULL,
-					    	&color,
-						&(int){2}, NULL,
-						&(ei_relief_t){ei_relief_raised},
-						NULL, NULL,NULL, NULL, NULL, NULL, NULL,
-						& radiobutton->callback, NULL);
-        button->widget.screen_location=*cir_rect;
+       ei_button_configure((ei_widget_t)button, NULL,
+                           &color,
+                           &(int){2}, NULL,
+                           &(ei_relief_t){ei_relief_raised},
+                           NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                           &radiobutton->callback, NULL);
+       button->widget.screen_location = *cir_rect;
 
-        ei_button_drawfunc((ei_widget_t) button, surface, pick_surface, cir_rect);
-    
-    
-        //Draw the frame appearance (text)
-        ei_size_t size=(ei_size_t) {rec_size.width - length_rect ,rec_size.height/number};
-        ei_rect_t* rb_clipper= &(ei_rect_t){ {top.x+length_rect, top.y}, size};
-        widget->content_rect= rb_clipper;
-        ei_draw_frame_appearance(surface, widget, radiobutton->text,(ei_image_properties_t) image, rb_clipper);
-    
-    
-        //Advance to the next radiobuttton
-        radiobutton=radiobutton->next_sibling;
-        top.y+=rec_size.height / number;
-        end.y+=rec_size.height /number;
+       ei_button_drawfunc((ei_widget_t)button, surface, pick_surface, cir_rect);
+
+       // Draw the frame appearance (text)
+       ei_size_t size = (ei_size_t){rec_size.width - length_rect, rec_size.height / number};
+       ei_rect_t *rb_clipper = &(ei_rect_t){{top.x + length_rect, top.y}, size};
+       widget->content_rect = rb_clipper;
+       ei_draw_frame_appearance(surface, widget, radiobutton->text, (ei_image_properties_t)image, rb_clipper);
+
+       // Advance to the next radiobuttton
+       radiobutton = radiobutton->next_sibling;
+       top.y += rec_size.height / number;
+       end.y += rec_size.height / number;
     }
 
     // Draw the frame on the offscreen picking surface
@@ -205,26 +204,26 @@ int ei_nb_radiobutton_group(ei_radiobutton_group_t * group)
     return compt;
 }
 
-bool ei_check_change_radiobutton_state( ei_radiobutton_t* radiobutton, bool actif )
+bool ei_check_change_radiobutton_state(ei_radiobutton_t *radiobutton, bool selected)
 {
     ei_radiobutton_t* part1 = radiobutton->previous_sibling;
     ei_radiobutton_t* part2 = radiobutton->next_sibling;
     bool end=false;//To avoid to advance uselessly in the chaine
     
     //Checking and changing
-    if (actif)
+    if (selected)
     {
         //Change of the current one state
-        radiobutton->actif=actif;
+        radiobutton->selected = selected;
 
         //We consider there are only one activated radiobutton
 
         //First part of the chain
         while (part1!=NULL)
         {
-            if (part1->actif)
+            if (part1->selected)
             {
-                part1->actif=false;
+                part1->selected = false;
                 end=true;
                 break;
             }
@@ -234,9 +233,9 @@ bool ei_check_change_radiobutton_state( ei_radiobutton_t* radiobutton, bool acti
         //Second part of the chain
         while (!end && part2!=NULL)
         {
-            if (part2->actif)
+            if (part2->selected)
             {
-                part2->actif=false;
+                part2->selected = false;
                 break;
             }
             part2=part2->next_sibling;

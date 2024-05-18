@@ -11,10 +11,6 @@
 #include "../implem/headers/ei_frame.h"
 #include "../implem/headers/ei_implementation.h"
 #include "ei_parser.h"
-#include "../implem/headers/parser/ei_lexer.h"
-#include "../implem/headers/parser/ei_parser_option_value_configure.h"
-#include "../implem/headers/parser/ei_parser_option_value_conversion.h"
-#include "../implem/headers/parser/ei_parser_types.h"
 
 // process_key --
 

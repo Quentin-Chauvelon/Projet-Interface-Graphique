@@ -9,59 +9,21 @@
 #include "../implem/headers/ei_internal_callbacks.h"
 #include "../implem/headers/ei_entry_ext.h"
 #include "../implem/headers/ei_event_ext.h"
+#include "../implem/headers/ei_widget_configure_ext.h"
 
 void ei_entry_configure(ei_widget_t widget, int *requested_char_size, const ei_color_t *color, int *border_width, ei_font_t *text_font, ei_color_t *text_color)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
 
-    // If the color is NULL, override the color only if it's the first time this function is called on the widget
-    if (color != NULL)
+    ei_widget_appearance_configure(&entry->widget_appearance, entry->widget.instantiated, color, border_width, 2);
+
+    // The border width can't be less than 2
+    if (entry->widget_appearance.border_width < 2)
     {
-        entry->widget_appearance.color = *color;
-    }
-    else
-    {
-        if (!entry->widget.instantiated)
-        {
-            entry->widget_appearance.color = ei_default_background_color;
-        }
+        entry->widget_appearance.border_width = 2;
     }
 
-    if (border_width != NULL && *border_width >= 2)
-    {
-        entry->widget_appearance.border_width = *border_width;
-    }
-    else
-    {
-        if (!entry->widget.instantiated)
-        {
-            entry->widget_appearance.border_width = 2;
-        }
-    }
-
-    if (text_font != NULL)
-    {
-        entry->text.font = *text_font;
-    }
-    else
-    {
-        if (!entry->widget.instantiated)
-        {
-            entry->text.font = ei_default_font;
-        }
-    }
-
-    if (text_color != NULL)
-    {
-        entry->text.color = *text_color;
-    }
-    else
-    {
-        if (!entry->widget.instantiated)
-        {
-            entry->text.color = ei_font_default_color;
-        }
-    }
+    ei_text_configure(&entry->text, entry->widget.instantiated, NULL, text_font, text_color, NULL);
 
     if (requested_char_size != NULL)
     {
@@ -75,17 +37,7 @@ void ei_entry_configure(ei_widget_t widget, int *requested_char_size, const ei_c
         }
     }
 
-    // Save the widget as instantiated so that any values set by the user won't be overriden
-    // later on if another call is made with NULL values
-    entry->widget.instantiated = true;
-
-    // Update the geometry of the widget in case the size has changed
-    if (ei_widget_is_displayed(widget))
-    {
-        widget->geom_params->manager->runfunc(widget);
-    }
-
-    widget->wclass->geomnotifyfunc(widget);
+    ei_widget_configure_finalize(widget, &entry->widget.instantiated);
 }
 
 void ei_release_focused_entry(ei_widget_t *widget)

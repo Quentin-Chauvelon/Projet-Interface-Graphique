@@ -225,69 +225,16 @@ void ei_placer_runfunc(ei_widget_t widget)
     ei_geometry_run_finalize(widget, &new_screen_location);
 }
 
-/**
- * \brief	A function called when a widget cease to be managed by its geometry manager.
- *		    Most of the work is done in \ref ei_geometrymanager_unmap. This function hook is
- *		    only provided to trigger recomputation when the disappearance of a widget has an
- *		    effect on the geometry of other widgets.
- *
- * @param	widget		The widget instance that must be forgotten by the geometry manager.
- */
 void ei_placer_releasefunc(ei_widget_t widget)
 {
-    /* Widget Hierachy Management */
-
-    ei_widget_t parent = widget->parent;
-
-    if (parent != NULL)
-    {   
-        //if the widget is the only child of his parent
-        if ((widget == parent->children_head)&& (widget == parent->children_tail))
+    if (widget->children_head != NULL)
+    {
+        for (ei_widget_t current_child = widget->children_head; current_child != NULL; current_child = current_child->next_sibling)
         {
-            parent->children_head = NULL;
-            parent->children_tail = NULL;
-        }
-
-        //if the widget is the first child of his parent
-        else if (widget == parent->children_head)
-        {
-            ei_widget_t next_sibling = widget->next_sibling;
-            parent->children_head = next_sibling;
-        }
-
-        //if the widget is the last child of his parent
-        else if (widget == parent->children_tail)
-        {
-            ei_widget_t current = parent->children_head;
-            while (current != widget)
+            if (ei_widget_is_displayed(current_child))
             {
-                current = current->next_sibling;
+                current_child->geom_params->manager->runfunc(current_child);
             }
-            current -> next_sibling = NULL;
-            parent->children_tail = current; 
-        }
-
-        else 
-        {   
-            ei_widget_t next_sibling = widget->next_sibling;
-
-            ei_widget_t prec = parent->children_head;
-            ei_widget_t current = prec->next_sibling;
-            while (current != widget)
-            {
-                prec = current;
-                current = current->next_sibling;
-            }
-            prec->next_sibling = next_sibling;
         }
     }
-    /* Geometry Management of others widgets */
-
-    /* Redrawing the parent */
-    parent = widget->parent;
-    ei_app_invalidate_rect(parent->screen_location);
-    /* Redrawing others affected widgets */
-    
-
-    
 }

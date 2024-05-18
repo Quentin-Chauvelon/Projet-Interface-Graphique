@@ -23,6 +23,28 @@
 static const int rectangles_merge_threshold = 20;
 
 /**
+ * @brief   A struct describing an array of integers that can expand dynamically
+
+*/
+typedef struct int_array_t
+{
+    int *array;      ///< The array of integers
+    int size;        ///< The current size of the array (number of elements for which memory has been allocated)
+    int nb_elements; ///< The current number of elements in the array
+} int_array_t;
+
+/**
+ * @brief   A struct describing an array of booleans that can expand dynamically
+
+*/
+typedef struct bool_array_t
+{
+    bool *array;     ///< The array of booleans
+    int size;        ///< The current size of the array (number of elements for which memory has been allocated)
+    int nb_elements; ///< The current number of elements in the array
+} bool_array_t;
+
+/**
  * @brief   Returns the color corresponding to the id
  *          Eg: id = 0 -> {0, 0, 0, 255}, id = 257 -> {0, 1, 1, 255}
  *
@@ -182,5 +204,72 @@ ei_hsl_color_t ei_convert_rgb_to_hsl(ei_color_t color);
 
 */
 ei_color_t ei_convert_hsl_to_rgb(ei_hsl_color_t hsl);
+
+/**
+ * @brief   Initialize an array of integers and returns it
+ *
+ * @return  The initialized array of integers
+ */
+int_array_t *ei_int_array_initialize();
+
+/**
+ * @brief   Set the value at the given index in the array to the given value
+ *
+ * @param   array   The array of integers
+ * @param   index   The index at which to set the value
+ * @param   value   The value to be set
+ */
+void ei_int_array_set_at_index(int_array_t *array, int index, int value);
+
+/**
+ * @brief   Sum all the elements in the array and returns the result
+ *
+ * @param   array   The array of integers
+ *
+ * @return  The sum of all the elements in the array
+ */
+int ei_int_array_sum(int_array_t *array);
+
+/**
+ * @brief   Free the memory allocated for the array of integers
+ *
+ * @param   array   The array of integers
+ */
+void ei_int_array_free(int_array_t *array);
+
+/**
+ * @brief   Initialize an array of booleans and returns it
+ *
+ * @return  The initialized array of booleans
+ */
+bool_array_t *ei_bool_array_initialize();
+
+/**
+ * @brief   Set the value at the given index in the array to the given value
+ *
+ * @param   array   The array of booleans
+ * @param   index   The index at which to set the value
+ * @param   value   The value to be set
+ */
+void ei_bool_array_set_at_index(bool_array_t *array, int index, bool value);
+
+/**
+ * @brief   Count the number of occurences of the given value in the array
+ *
+ * @param   array   The array of booleans
+ * @param   value   The value to count the occurences of
+ *
+ * @return  The number of occurences of the given value in the array
+ */
+int ei_bool_array_get_occurences(bool_array_t *array, bool value);
+
+/**
+ * @brief   Free the memory allocated for the array of booleans
+ *
+ * @param   array   The array of booleans
+ */
+void ei_bool_array_free(bool_array_t *array);
+
+int ei_map_numpad_keycode_to_ascii(int keycode);
 
 #endif

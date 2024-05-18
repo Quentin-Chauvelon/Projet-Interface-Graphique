@@ -7,7 +7,7 @@ place frame x=50 y=50
 frame frame2 root requested_size={300 200} color={136 136 136 255} border_width=6 relief=sunken
 place frame2 x=400 y=50
 
-button button root requested_size={300 200} color={136 136 136 255} border_width=6 corner_radius=25 relief=raised img=test_image img_rect={0 0 64 64} img_anchor=west
+button button root requested_size={300 200} color={136 136 136 255} border_width=6 corner_radius=25 relief=raised img=misc/klimt.jpg img_rect={256 256 128 128} img_anchor=west
 place button x=50 y=300
 
 button button2 toplevel color={136 136 136 255} border_width=6 corner_radius=25 relief=raised text=No_sunken_effect

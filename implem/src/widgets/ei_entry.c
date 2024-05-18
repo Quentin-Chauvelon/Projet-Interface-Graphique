@@ -318,8 +318,8 @@ void ei_update_requested_char_size(ei_entry_t *entry, int requested_char_size)
     ei_surface_t m_surface = hw_text_create_surface("m", entry->text.font, entry->text.color);
     ei_size_t size = hw_surface_get_size(m_surface);
 
-    entry->widget.requested_size.width = size.width * requested_char_size + ei_entry_default_padding * 2;
-    entry->widget.requested_size.height = size.height + ei_entry_default_padding * 2;
+    entry->widget.requested_size.width = size.width * requested_char_size + ei_entry_default_padding * 2 + entry->widget_appearance.border_width * 2 + ei_entry_default_letter_spacing * (requested_char_size - 1);
+    entry->widget.requested_size.height = size.height + ei_entry_default_padding * 2 + entry->widget_appearance.border_width * 2 + ei_entry_default_letter_spacing * (requested_char_size - 1);
 
     entry->widget.screen_location.size = entry->widget.requested_size;
 }

@@ -33,9 +33,9 @@ typedef struct ei_radiobutton_t
 {
     
     ei_text_properties_t text; // Name taken by the radiobutton
-    bool actif; // To know if the radiobutton is activated or not
-    ei_radiobutton_p  next_sibling; // A Pointer the next radiobutton of the group
-    ei_radiobutton_p previous_sibling; //A Pointer the next radiobutton of the group
+    bool selected;             // To know if the radiobutton is activated or not
+    struct ei_radiobutton_t *next_sibling;     // A Pointer the next radiobutton of the group
+    struct ei_radiobutton_t *previous_sibling; // A Pointer the next radiobutton of the group
     ei_callback_t callback; //Callback function to call when click
     ei_button_t* button ; // A pointer to a button we have to draw before the text 
 } ei_radiobutton_t;
@@ -112,15 +112,15 @@ void ei_add_radiobutton( ei_widget_t widget, ei_radiobutton_t* radiobutton);
  * \brief A function that change a state of a radiobutton from desactivated to an activated state
  *      and check if there are only one activated radiobutton  in the group.
  *          When We use this function to activate a radiobutton the last that was activated become desactivated.
- *          
+ *
  * @param radiobutton A pointer to the radiobutton we have to change the state
- * 
- * @param actif  The state of the radiobutton
- * 
+ *
+ * @param selected  The state of the radiobutton
+ *
  * @return True if the change is done or the check was good and false if not.
- * 
-*/
-bool ei_check_change_radiobutton_state(ei_radiobutton_t* radiobutton, bool actif );
+ *
+ */
+bool ei_check_change_radiobutton_state(ei_radiobutton_t *radiobutton, bool selected);
 
 /**
  * \brief 	A function that is called to notify the widget that its geometry has been modified
