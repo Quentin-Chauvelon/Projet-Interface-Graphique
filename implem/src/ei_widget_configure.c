@@ -444,118 +444,91 @@ void ei_toplevel_configure(ei_widget_t widget,
     ei_widget_configure_finalize(widget, &toplevel->widget.instantiated);
 }
 
-/**
- * @brief                 Configures the attributes of widgets of the class "radiobutton".
- * 
- * @param widget          The widget to configure.
- * 
- * @param text_color      The color of the text. Defaults to \ref ei_font_default_color.
- * 
- * @param text            The text to write in the radiobutton. Defaults nothing is written.
- * 
- * @param text_font       The font used to display the text. Defaults to \ref ei_default_font.
- * 
- * @param text_anchor     The anchor of the text, i.e. where it is placed within the widget.
- *				Defines both the anchoring point on the parent and on the widget.
- *				Defaults to \ref ei_anc_west.
- * 
- * @param callback        The callback function to call when the user clicks on the button.
- *				         Defaults to NULL (no callback).
- * 
- * @param actif The state of the radiobutton
- * 
-*/
-
-void ei_radiobutton_configure(
-    ei_widget_t widget,
-    const ei_color_t *text_color,
-    ei_string_t *text,
-    ei_font_t *text_font,
-    ei_anchor_t *text_anchor,
-    ei_callback_t *callback,
-    bool actif)
+void ei_radio_button_configure(ei_radio_button_t radio_button,
+                               ei_string_t *text,
+                               ei_font_t *text_font,
+                               ei_color_t *text_color,
+                               ei_color_t *button_color,
+                               ei_color_t *button_selected_color,
+                               bool *selected)
 {
-    ei_radiobutton_t *radiobutton = (ei_radiobutton_t *)widget;
+    ei_text_configure(&radio_button->text, true, text, text_font, text_color, NULL);
 
-    ei_text_configure(&radiobutton->text, true, text, text_font, text_color, text_anchor);
+    if (button_color != NULL)
+    {
+        ((ei_button_t *)radio_button->button)->widget_appearance.color = *button_color;
+    }
 
-    if (actif)
+    if (button_selected_color != NULL)
     {
-        ei_check_change_radiobutton_state(radiobutton, actif);
+        radio_button->button_selected_color = *button_selected_color;
     }
-    else
+
+    if (selected != NULL)
     {
-        radiobutton->selected = false;
+        ei_check_change_radio_button_state(radio_button, *selected);
     }
+
+    if (radio_button->group != NULL)
+    {
+        // Use a fake pointer for instantiated so that the radio button group widget
+        // won't be marked as instantiated
+        ei_widget_configure_finalize(&radio_button->group->widget, &(bool){false});
+    }
+
+    ei_update_radio_button_position(radio_button);
 }
 
-/**
- * \brief  Configures the attributes of a group of radiobuttons.
- *
- * @param widget The widget to configure.
- *
- * @param size A pointer to the size of the frame
- *
- * @param back_ground_color A pointer to the color of the frame
- *
- * @param texts_color A pointer to the color we want for all radiobuttons
- *
- * @param border_width  A pointer to the border_width of the frame
- *
- * @param relief A pointer to the relief of the frame
- */
-void ei_radiobutton_group_configure(ei_widget_t widget,
-                                    ei_size_t *size,
-                                    ei_color_t *back_ground_color,
-                                    ei_color_t *texts_color,
-                                    int *border_width,
-                                    ei_relief_t *relief)
+void ei_radio_button_group_configure(ei_widget_t widget,
+                                     const ei_color_t *color,
+                                     int *border_width,
+                                     ei_relief_t *relief,
+                                     ei_font_t *text_font,
+                                     ei_color_t *text_color,
+                                     ei_color_t *buttons_color,
+                                     ei_color_t *button_selected_color)
 {
-    ei_radiobutton_group_t *group = (ei_radiobutton_group_t *)widget;
+    ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget;
 
-    if (size != NULL)
-    {
-        group->widget.requested_size = *size;
-    }
-    else
-    {
-        group->widget.requested_size = (ei_size_t){300, 200};
-    }
+    ei_widget_appearance_configure(&radio_button_group->widget_appearance, radio_button_group->widget.instantiated, color, border_width, 0);
 
-    if (back_ground_color != NULL)
-    {
-        group->window.color = *back_ground_color;
-    }
-    else
-    {
-        group->window.color = ei_default_background_color;
-    }
-
-    if (border_width != NULL)
-    {
-        group->window.border_width = *border_width;
-    }
-    else
-    {
-        group->window.border_width = 5;
-    }
+    ei_text_configure(&radio_button_group->text, radio_button_group->widget.instantiated, NULL, text_font, text_color, NULL);
 
     if (relief != NULL)
     {
-        group->relief = *relief;
+        radio_button_group->relief = *relief;
     }
     else
     {
-        group->relief = ei_relief_none;
-    }
-
-    if (texts_color != NULL)
-    {
-        ei_radiobutton_t *radiobutton = group->radiobutton;
-        while (radiobutton != NULL)
+        if (!radio_button_group->widget.instantiated)
         {
-            radiobutton->text.color = *texts_color;
-            radiobutton = radiobutton->next_sibling;
+            radio_button_group->relief = ei_relief_none;
         }
     }
+
+    if (buttons_color != NULL)
+    {
+        radio_button_group->buttons_color = *buttons_color;
+    }
+    else
+    {
+        if (!radio_button_group->widget.instantiated)
+        {
+            radio_button_group->buttons_color = ei_default_background_color;
+        }
+    }
+
+    if (button_selected_color != NULL)
+    {
+        radio_button_group->button_selected_color = *button_selected_color;
+    }
+    else
+    {
+        if (!radio_button_group->widget.instantiated)
+        {
+            radio_button_group->button_selected_color = k_default_radio_button_selected_color;
+        }
+    }
+
+    ei_widget_configure_finalize(widget, &radio_button_group->widget.instantiated);
 }
