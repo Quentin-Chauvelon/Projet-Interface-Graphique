@@ -1,0 +1,49 @@
+# Valgrind suppresion file
+{
+   hw functions
+   Memcheck:Leak
+   ...
+   fun:hw_*
+}
+{
+   SDL2
+   Memcheck:Leak
+   ...
+   obj:*/libSDL2*.so.*
+}
+{
+   radeonsi_dri
+   Memcheck:Leak
+   ...
+   obj:*radeonsi_dri.so*
+}
+{
+   strncmp 
+   Memcheck:Addr8
+   ...
+   fun:strncmp
+}
+{
+   LLVM
+   Memcheck:Leak
+   ...
+   obj:*libLLVM*.so*
+}
+{
+   X11
+   Memcheck:Leak
+   ...
+   obj:*libX11*.so*
+}
+{
+   _dl_
+   Memcheck:Leak
+   ...
+   fun:*_dl_*
+}
+{
+   libdbus
+   Memcheck:Leak
+   ...
+   obj:*libdbus*
+}
