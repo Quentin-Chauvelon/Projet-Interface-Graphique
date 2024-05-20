@@ -42,7 +42,16 @@ ei_point_t *ei_get_arc_points(ei_point_t center, int radius, int start_angle, in
 ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_frame_part_t part_to_draw);
 
 /**
- * @brief   Draws a plain rectanglee.
+ * @brief   Return the 4 points making up the rectangle at the given screen location with the given size
+ *
+ * @param   screen_location     The location of the rectangle.
+ *
+ * @return  The points of the rectangle
+ */
+ei_point_t *ei_get_rectangle_points(ei_rect_t screen_location);
+
+/**
+ * @brief   Draws a plain rectangle.
  *
  * @param   surface             Where to draw the rectangle. The surface must be *locked* by \ref hw_surface_lock.
  * @param   screen_location     The location of the rectangle.
@@ -50,6 +59,17 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
  * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
  */
 void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper);
+
+/**
+ * @brief   Draws a diamond.
+ *
+ * @param   surface             Where to draw the rectangle. The surface must be *locked* by \ref hw_surface_lock.
+ * @param   screen_location     The location of the rectangle.
+ * @param   background_color    The color of the rectangle.
+ * @param   part_to_draw        The part of the diamond to draw (top, bottom, full). Top and bottom will draw triangles.
+ * @param   clipper             If not NULL, the drawing is restricted within this rectangle.
+ */
+void ei_draw_diamond(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, ei_rounded_frame_part_t part_to_draw, const ei_rect_t *clipper);
 
 /**
  * @brief   Draws a frame with rounded or straight corners.

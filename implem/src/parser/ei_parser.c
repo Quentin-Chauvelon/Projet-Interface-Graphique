@@ -191,6 +191,14 @@ void parse_widget_command()
     }
 
     char *name = parse_widget_name();
+
+    if (ei_parse_widget_from_name(name) != NULL)
+    {
+        printf("\033[0;31mError: Widget with name \"%s\" already exists\033[0m\n", name);
+        error = 0;
+        return;
+    }
+
     char *parent = parse_parent_name();
 
     ei_widget_t parent_widget = ei_parse_widget_from_name(parent);

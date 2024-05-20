@@ -70,6 +70,7 @@ int main(int argc, char **argv)
     test_parsing_ko("what_is_this_type toplevel root\n");
     // test_parsing_ko("toplevel toplevel no_root\n");
     // test_parsing_ko("toplevel toplevel root");
+    // test_parsing_ko("toplevel toplevel root\nframe toplevel root\n");
     // test_parsing_ko("toplevel toplevel root what_is_this_property=0\n");
     // test_parsing_ko("toplevel toplevel root color={200 300}\n");
     // test_parsing_ko("place toplevel\n");

@@ -63,8 +63,8 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     // Draw the close button
     if (toplevel->closable)
     {
-        toplevel->close_button->widget.geom_params->manager->runfunc((ei_widget_t)toplevel->close_button);
-        toplevel->close_button->widget.wclass->drawfunc((ei_widget_t)toplevel->close_button, surface, pick_surface, clipper);
+        toplevel->close_button->widget.geom_params->manager->runfunc(&toplevel->close_button->widget);
+        toplevel->close_button->widget.wclass->drawfunc(&toplevel->close_button->widget, surface, pick_surface, clipper);
 
         ei_point_t center = ei_point(
             toplevel->close_button->widget.screen_location.top_left.x + k_default_toplevel_close_button_size / 2,
@@ -97,26 +97,7 @@ void ei_toplevel_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t
     ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, k_default_toplevel_title_corner_radius, *widget->pick_color, ei_relief_none, clipper);
     ei_draw_rectangle(pick_surface, ei_rect_move(widget->screen_location, 0, widget->screen_location.size.height - k_default_toplevel_title_corner_radius, &widget->screen_location), *widget->pick_color, clipper);
 
-    // If the widget doesn't have children, don't draw them
-    if (widget->children_head != NULL)
-    {
-        // Reduce the size of the clipper to the widget's content rect so that children
-        // can't be drawn outside the widget's content rect
-        ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-
-        // If malloc failed, return
-        if (children_clipper == NULL)
-        {
-            printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-            return;
-        }
-
-        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
-
-        ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
-
-        free(children_clipper);
-    }
+    ei_widget_drawfunc_finalize(widget, surface, pick_surface, clipper);
 
     // Draw the resize square
     if (toplevel->resizable != ei_axis_none)

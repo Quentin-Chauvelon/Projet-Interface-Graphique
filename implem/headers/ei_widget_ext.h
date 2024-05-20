@@ -108,6 +108,18 @@ ei_widget_t ei_widget_allocfunc(size_t widget_size);
 void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_properties_t text, ei_image_properties_t image, const ei_rect_t *clipper);
 
 /**
+ * @brief   Finalize the drawing of a widget. Resizes the clipper to the widget's content rect and draws the children.
+ *
+ * @param	widget		    A pointer to the widget instance to draw.
+ * @param	surface		    A locked surface where to draw the widget. The actual location of the widget in the
+ *				            surface is stored in its "screen_location" field.
+ * @param	pick_surface	The picking offscreen.
+ * @param	clipper		    If not NULL, the drawing is restricted within this rectangle
+ *				            (expressed in the surface reference frame).
+ */
+void ei_widget_drawfunc_finalize(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper);
+
+/**
  * @brief   Returns a clipper that corresponds to the intersection of the content rect
  *          and the given clipper if it is not NULL.
  *

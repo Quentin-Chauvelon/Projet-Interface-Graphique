@@ -13,6 +13,8 @@
 #include "../implem/headers/ei_toplevel.h"
 #include "../implem/headers/ei_types_ext.h"
 
+#include "../implem/headers/ei_radiobutton.h"
+
 int pick_id = 0;
 
 ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, ei_user_param_t user_data, ei_widget_destructor_t destructor)
@@ -24,6 +26,20 @@ ei_widget_t ei_widget_create(ei_const_string_t class_name, ei_widget_t parent, e
             printf("\033[0;31mError: the widget's parent cannot be NULL.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         }
 
+        return NULL;
+    }
+
+    bool is_radio_button = strcmp(class_name, "radio_button") == 0;
+    bool is_radio_button_group = strcmp(parent->wclass->name, "radio_button_group") == 0;
+
+    if (!is_radio_button && is_radio_button_group)
+    {
+        printf("\033[0;33mWarning: a radio_button_group can only have radio_button children.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return NULL;
+    }
+    else if (is_radio_button && !is_radio_button_group)
+    {
+        printf("\033[0;33mWarning: a radio_button can only be a child of a radio_button_group.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         return NULL;
     }
 
@@ -341,6 +357,30 @@ void ei_draw_frame_appearance(ei_surface_t surface, ei_widget_t widget, ei_text_
         ei_point_t where = ei_get_position_in_parent_from_anchor(*widget->content_rect, image_rect.size, image.anchor);
 
         ei_draw_image(surface, image.data, &image_rect, &where, clipper);
+    }
+}
+
+void ei_widget_drawfunc_finalize(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
+{
+    // If the widget doesn't have children, don't draw them
+    if (widget->children_head != NULL)
+    {
+        // Reduce the size of the clipper to the widget's content rect so that children
+        // can't be drawn outside the widget's content rect
+        ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
+
+        // If malloc failed, return
+        if (children_clipper == NULL)
+        {
+            printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+            return;
+        }
+
+        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
+
+        ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
+
+        free(children_clipper);
     }
 }
 

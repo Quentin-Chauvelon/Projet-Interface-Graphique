@@ -196,7 +196,7 @@ ei_point_t *ei_get_rounded_frame_points(ei_rect_t rect, int radius, ei_rounded_f
     return NULL;
 }
 
-void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper)
+ei_point_t *ei_get_rectangle_points(ei_rect_t screen_location)
 {
     ei_point_t *point_array = malloc(4 * sizeof(ei_point_t));
 
@@ -204,13 +204,20 @@ void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color
     if (point_array == NULL)
     {
         printf("\033[0;31mError: Couldn't allocate memory to draw rectangle.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        return;
+        return NULL;
     }
 
     point_array[0] = screen_location.top_left;
     point_array[1] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y);
     point_array[2] = ei_point(screen_location.top_left.x + screen_location.size.width, screen_location.top_left.y + screen_location.size.height);
     point_array[3] = ei_point(screen_location.top_left.x, screen_location.top_left.y + screen_location.size.height);
+
+    return point_array;
+}
+
+void ei_draw_rectangle(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, const ei_rect_t *clipper)
+{
+    ei_point_t *point_array = ei_get_rectangle_points(screen_location);
 
     ei_draw_polygon(surface, point_array, 4, background_color, clipper);
 
@@ -304,6 +311,47 @@ void ei_draw_circle(ei_surface_t surface, ei_point_t center, int radius, ei_colo
     }
 
     ei_draw_polygon(surface, point_array, nb_points, color, clipper);
+
+    free(point_array);
+}
+
+void ei_draw_diamond(ei_surface_t surface, ei_rect_t screen_location, ei_color_t background_color, ei_rounded_frame_part_t part_to_draw, const ei_rect_t *clipper)
+{
+    ei_point_t *point_array = ei_get_rectangle_points(screen_location);
+
+    int size_x = (point_array[1].x - point_array[0].x) / 2;
+    int size_y = (point_array[2].y - point_array[1].y) / 2;
+
+    // 45° rotation
+    float rotation = M_PI / 4;
+
+    for (size_t i = 0; i < 4; i++)
+    {
+        // We translate the point to the origin (- screen location - half the size), then rotate it using
+        // a rotation matrix (formula: https://en.wikipedia.org/wiki/Rotation_matrix) and finally, translate
+        // it back to its original position
+        float position_x = cos(rotation) * (point_array[i].x - screen_location.top_left.x - size_x) + sin(rotation) * (point_array[i].y - screen_location.top_left.y - size_y) + screen_location.top_left.x + size_x;
+        float position_y = -sin(rotation) * (point_array[i].x - screen_location.top_left.x - size_x) + cos(rotation) * (point_array[i].y - screen_location.top_left.y - size_y) + screen_location.top_left.y + size_y;
+
+        point_array[i].x = round(position_x);
+        point_array[i].y = round(position_y);
+    }
+
+    // If we only want to draw the top part of the diamond, merge the very top
+    // point with one of its neighbors to make a triangle
+    if (part_to_draw == ei_rounded_frame_top)
+    {
+        point_array[1] = point_array[0];
+    }
+
+    // Otherwise, if we only want to draw the bottom part of the diamond, merge
+    // the very bottom point with one of its neighbors
+    else if (part_to_draw == ei_rounded_frame_bottom)
+    {
+        point_array[3] = point_array[2];
+    }
+
+    ei_draw_polygon(surface, point_array, 4, background_color, clipper);
 
     free(point_array);
 }

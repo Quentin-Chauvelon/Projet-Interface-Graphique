@@ -20,43 +20,9 @@ ei_widget_t ei_radio_button_group_allocfunc()
     return ei_widget_allocfunc(sizeof(ei_radio_button_group_t));
 }
 
-ei_radio_button_t *ei_radio_button_allocfunc()
-{
-    ei_radio_button_t *radio_button = (ei_radio_button_t *)malloc(sizeof(ei_radio_button_t));
-
-    // If malloc failed, exit since the program will crash if the user tries to use the widget
-    if (radio_button == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory for the radio_button.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        exit(1);
-    }
-
-    memset(radio_button, 0, sizeof(ei_radio_button_t));
-
-    return radio_button;
-}
-
 void ei_radio_button_group_releasefunc(ei_widget_t widget)
 {
     ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget;
-
-    ei_radio_button_t current = radio_button_group->first_radio_button;
-    ei_radio_button_t next = NULL;
-
-    while (current != NULL)
-    {
-        next = current->next_sibling;
-
-        if (current->text.label != NULL)
-        {
-            free(current->text.label);
-        }
-
-        ei_widget_destroy(&current->button->widget);
-
-        free(current);
-        current = next;
-    }
 
     free(radio_button_group);
 }
@@ -77,10 +43,8 @@ void ei_radio_button_group_setdefaultsfunc(ei_widget_t widget)
     radio_button_group->text.color = ei_font_default_color;
     radio_button_group->text.anchor = ei_anc_center;
 
-    radio_button_group->first_radio_button = NULL;
-
-    radio_button_group->buttons_color = ei_default_background_color;
-    radio_button_group->button_selected_color = k_default_radio_button_selected_color;
+    radio_button_group->buttons_color = k_default_radio_button_color;
+    radio_button_group->buttons_selected_color = k_default_radio_button_selected_color;
 }
 
 void ei_radio_button_group_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
@@ -94,147 +58,7 @@ void ei_radio_button_group_drawfunc(ei_widget_t widget, ei_surface_t surface, ei
 
     ei_draw_straight_frame(pick_surface, radio_button_group->widget.screen_location, 0, *widget->pick_color, ei_relief_none, clipper);
 
-    // Margin between the radio button and the top (increases after each radio button is drawn)
-    int top_margin = 0;
-
-    ei_radio_button_t current = radio_button_group->first_radio_button;
-
-    while (current != NULL)
-    {
-        current->button;
-        widget->geom_params->manager->runfunc(&current->button->widget);
-        current->button->widget.wclass->drawfunc(&current->button->widget, surface, pick_surface, clipper);
-
-        ei_point_t label_top_left = ei_point(
-            radio_button_group->widget.content_rect->top_left.x + k_default_radio_button_size + k_default_radio_button_label_spacing,
-            radio_button_group->widget.content_rect->top_left.y + top_margin);
-
-        ei_font_t text_font = current->text.font != NULL
-                                  ? current->text.font
-                                  : radio_button_group->text.font;
-
-        ei_color_t text_color = current->text.color.alpha != 0
-                                    ? current->text.color
-                                    : radio_button_group->text.color;
-
-        ei_draw_text(surface, &label_top_left, current->text.label, text_font, text_color, clipper);
-
-        int width = 0;
-        int height = 0;
-        hw_text_compute_size(current->text.label, text_font, &width, &height);
-
-        top_margin += height + k_default_radio_button_group_spacing;
-
-        ei_draw_straight_frame(pick_surface, (ei_rect_t){label_top_left, ei_size(width, height)}, 0, *widget->pick_color, ei_relief_none, clipper);
-
-        current = current->next_sibling;
-    }
-
-    // int number = ei_nb_radio_button_group(group) + 1;
-
-    // ei_size_t rec_size=clipper->size;
-    // ei_point_t top = clipper->top_left;
-    // ei_point_t end =(ei_point_t) {clipper->top_left.x ,clipper->top_left.y +rec_size.height/ number};
-
-    // //We have to add the border_width
-    // top.x+=group->window.border_width;
-    // top.y+=group->window.border_width;
-    // end.x+=group->window.border_width;
-    // end.y+=group->window.border_width;
-
-    // while (radio_button != NULL)
-    // {
-    //     // printf("ici de draw");
-    //     // Draw of a button before the radio_button to know if he is selected ot not
-    //     ei_color_t color = radio_button->selected == false ? (ei_color_t){0x55, 0x55, 0x55, 0xff} : (ei_color_t){0xff, 0x0, 0x0, 0xff};
-    //     int length_rect = (end.y - top.y) / 2;
-    //     ei_point_t center = (ei_point_t){top.x + length_rect / 4, top.y + length_rect / 2};
-    //     ei_rect_t *cir_rect = &(ei_rect_t){center, {length_rect, length_rect}}; //
-
-    //     radio_button->button = (ei_button_t *)ei_widget_create("button", group, NULL, NULL);
-    //     ;
-    //     ei_button_t *button = (ei_button_t *)radio_button->button;
-    //     ei_button_setdefaultsfunc(button);
-
-    //     ei_button_configure((ei_widget_t)button, NULL,
-    //                         &color,
-    //                         &(int){2}, NULL,
-    //                         &(ei_relief_t){ei_relief_raised},
-    //                         NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    //                         &radio_button->callback, NULL);
-    //     button->widget.screen_location = *cir_rect;
-
-    //     ei_button_drawfunc((ei_widget_t)button, surface, pick_surface, cir_rect);
-
-    //     // Draw the frame appearance (text)
-    //     ei_size_t size = (ei_size_t){rec_size.width - length_rect, rec_size.height / number};
-    //     ei_rect_t *rb_clipper = &(ei_rect_t){{top.x + length_rect, top.y}, size};
-    //     widget->content_rect = rb_clipper;
-    //     ei_draw_frame_appearance(surface, widget, radio_button->text, (ei_image_properties_t)image, rb_clipper);
-
-    //     // Advance to the next radiobuttton
-    //     radio_button = radio_button->next_sibling;
-    //     top.y += rec_size.height / number;
-    //     end.y += rec_size.height / number;
-    // }
-
-    // // Draw the frame on the offscreen picking surface
-    // ei_draw_rounded_frame(pick_surface, widget->screen_location, 0, 0, *widget->pick_color, ei_relief_none, clipper);
-}
-
-// int ei_nb_radio_button_group(ei_radio_button_group_t *group)
-// {
-//     int compt= (int) 0 ;
-//     //printf("ici de nb\n");
-//     ei_radio_button_t *run = (ei_radio_button_t *)group->radio_button;
-//     while ( run !=NULL)
-//     {
-//         //printf("ici de nb\n");
-//         compt++;
-//         run=run->next_sibling;
-//     }
-//     return compt;
-// }
-
-bool ei_check_change_radio_button_state(ei_radio_button_t radio_button, bool selected)
-{
-    //     ei_radio_button_t *part1 = radio_button->previous_sibling;
-    //     ei_radio_button_t *part2 = radio_button->next_sibling;
-    //     bool end=false;//To avoid to advance uselessly in the chaine
-
-    //     //Checking and changing
-    //     if (selected)
-    //     {
-    //         //Change of the current one state
-    //         radio_button->selected = selected;
-
-    //         // We consider there are only one activated radio_button
-
-    //         //First part of the chain
-    //         while (part1!=NULL)
-    //         {
-    //             if (part1->selected)
-    //             {
-    //                 part1->selected = false;
-    //                 end=true;
-    //                 break;
-    //             }
-    //             part1=part1->previous_sibling;
-    //         }
-
-    //         //Second part of the chain
-    //         while (!end && part2!=NULL)
-    //         {
-    //             if (part2->selected)
-    //             {
-    //                 part2->selected = false;
-    //                 break;
-    //             }
-    //             part2=part2->next_sibling;
-    //         }
-    //     }
-
-    //     return true;
+    ei_widget_drawfunc_finalize(widget, surface, pick_surface, clipper);
 }
 
 void ei_radio_button_group_geomnotifyfunc(ei_widget_t widget)
@@ -247,169 +71,307 @@ void ei_radio_button_group_geomnotifyfunc(ei_widget_t widget)
     *widget->content_rect = ei_rect_add(widget->screen_location, border_width, border_width, -border_width * 2, -border_width * 2);
     *widget->content_rect = ei_rect_add(widget->screen_location, k_default_radio_button_group_padding, k_default_radio_button_group_padding, -k_default_radio_button_group_padding * 2, -k_default_radio_button_group_padding * 2);
 
-    ei_radio_button_t current = radio_button_group->first_radio_button;
-
-    while (current != NULL)
-    {
-        ei_update_radio_button_position(current);
-
-        current = current->next_sibling;
-    }
+    ei_radio_buttons_update_position(radio_button_group);
 }
 
 ei_size_t ei_radio_button_group_get_natural_size(ei_radio_button_group_t *radio_button_group)
 {
     int max_width = 0;
     int total_height = k_default_radio_button_group_padding * 2 + radio_button_group->widget_appearance.border_width * 2;
+    int number_of_radio_buttons = 0;
 
-    ei_radio_button_t current = radio_button_group->first_radio_button;
-
-    // Find the largest width out of all the radio buttons + update the height to include all radio buttons
-    while (current != NULL)
+    if (radio_button_group->widget.children_head == NULL)
     {
-        ei_font_t text_font = current->text.font != NULL
-                                  ? current->text.font
+        return ei_size_zero();
+    }
+
+    // Find the largest of its children + calculate the total height of all the children
+    for (ei_widget_t current = radio_button_group->widget.children_head; current != NULL; current = current->next_sibling)
+    {
+        ei_radio_button_t *radio_button = (ei_radio_button_t *)current;
+
+        ei_font_t text_font = radio_button->text.font != NULL
+                                  ? radio_button->text.font
                                   : radio_button_group->text.font;
 
         int width = 0;
         int height = 0;
-        hw_text_compute_size(current->text.label, text_font, &width, &height);
-
-        width += k_default_radio_button_size + k_default_radio_button_label_spacing;
+        hw_text_compute_size(radio_button->text.label, text_font, &width, &height);
 
         if (width > max_width)
         {
             max_width = width;
         }
 
-        total_height += height + k_default_radio_button_group_spacing;
+        total_height += height;
 
-        current = current->next_sibling;
+        number_of_radio_buttons++;
     }
 
-    // Add the padding and border to the maximum width
-    max_width += k_default_radio_button_group_padding * 2 + radio_button_group->widget_appearance.border_width * 2;
+    // Add the button, spacing, padding and border to the maximum width
+    max_width += k_default_radio_button_size + k_default_radio_button_label_spacing + k_default_radio_button_group_padding * 2 + radio_button_group->widget_appearance.border_width * 2;
 
-    // Remove the last spacing from the total height
-    total_height -= k_default_radio_button_group_spacing;
+    // Add the spacing between the radio buttons to the total height
+    total_height += k_default_radio_button_group_spacing * (number_of_radio_buttons - 1);
 
     return ei_size(max_width, total_height);
 }
 
-ei_radio_button_t ei_radio_button_create(ei_string_t text)
+ei_widget_t ei_radio_button_allocfunc()
 {
-    ei_radio_button_t radio_button = malloc(sizeof(ei_impl_radio_button_t));
+    ei_widget_t radio_button = ei_widget_allocfunc(sizeof(ei_radio_button_t));
 
-    radio_button->text.label = malloc(strlen(text) + 1);
-    strcpy(radio_button->text.label, text);
-
-    // Set the default values to NULL, so that the group's values are used, except once
-    // those values are set for the radio_button by the user
-    radio_button->text.font = NULL;
-    radio_button->text.color = (ei_color_t){222, 76, 138, 0}; // Random transparent color since it can't be NULL
-    radio_button->text.anchor = ei_anc_center;
-    radio_button->button_selected_color = (ei_color_t){222, 76, 138, 0}; // Random transparent color since it can't be NULL
-
-    radio_button->previous_sibling = NULL;
-    radio_button->next_sibling = NULL;
-
-    ei_widget_t button = ei_widget_create_internal("button", NULL, NULL, NULL);
-
-    ei_button_configure(button,
-                        &((ei_size_t){k_default_radio_button_size, k_default_radio_button_size}),
-                        &ei_default_background_color,
-                        &k_default_radio_button_border_width,
-                        &(int){0},
-                        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
-    radio_button->button = (ei_button_t *)button;
-
-    radio_button->group = NULL;
+    return radio_button;
 }
 
-void ei_add_radio_button_to_group(ei_widget_t group, ei_radio_button_t radio_button)
+void ei_radio_button_releasefunc(ei_widget_t widget)
 {
-    ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)group;
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
 
-    ei_radio_button_t current = radio_button_group->first_radio_button;
-
-    if (current == NULL)
+    if (radio_button->text.label != NULL)
     {
-        radio_button_group->first_radio_button = radio_button;
+        free(radio_button->text.label);
     }
+
+    free(radio_button);
+}
+
+void ei_radio_button_setdefaultsfunc(ei_widget_t widget)
+{
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
+
+    radio_button->widget = *widget;
+
+    // Set the default values to NULL (or a random transparent color since colors can't be
+    // as they are not pointers), so that the group's values are used, except once
+    // those values are set for that radio_button by the user
+    radio_button->text.label = NULL;
+    radio_button->text.font = NULL;
+    radio_button->text.color = k_default_random_radio_button_color;
+    radio_button->text.anchor = ei_anc_center;
+
+    radio_button->button_color = k_default_random_radio_button_color;
+    radio_button->button_selected_color = k_default_random_radio_button_color;
+
+    radio_button->selected = false;
+
+    radio_button->widget.parent->requested_size = ei_radio_button_group_get_natural_size((ei_radio_button_group_t *)radio_button->widget.parent);
+
+    ei_radio_buttons_update_position((ei_radio_button_group_t *)radio_button->widget.parent);
+}
+
+ei_color_t ei_get_radio_button_color(ei_radio_button_t *radio_button, bool *selected)
+{
+    if (selected == NULL)
+    {
+        selected = &radio_button->selected;
+    }
+
+    // If the radio button is selected or the selected parameter is true, return the selected button color
+    if (*selected)
+    {
+        // If the radio button color has the same components as the random color, then use
+        // the group's color (this is because these colors arent's pointer and thus can't
+        // be NULL, so using a random transparent color seemed like the best fix)
+        if (radio_button->button_color.red == k_default_random_radio_button_color.red &&
+            radio_button->button_color.green == k_default_random_radio_button_color.green &&
+            radio_button->button_color.blue == k_default_random_radio_button_color.blue &&
+            radio_button->button_color.alpha == k_default_random_radio_button_color.alpha)
+        {
+            return ((ei_radio_button_group_t *)radio_button->widget.parent)->buttons_selected_color;
+        }
+        // Otherwise, use the radio button color
+        else
+        {
+            return radio_button->button_selected_color;
+        }
+    }
+    // Otherwise return the unselected button color
     else
     {
-        while (current->next_sibling != NULL)
+        if (radio_button->button_color.red == k_default_random_radio_button_color.red &&
+            radio_button->button_color.green == k_default_random_radio_button_color.green &&
+            radio_button->button_color.blue == k_default_random_radio_button_color.blue &&
+            radio_button->button_color.alpha == k_default_random_radio_button_color.alpha)
         {
-            current = current->next_sibling;
+            return ((ei_radio_button_group_t *)radio_button->widget.parent)->buttons_color;
         }
-
-        current->next_sibling = radio_button;
-        radio_button->previous_sibling = current;
-    }
-
-    radio_button->group = radio_button_group;
-
-    ei_size_t radio_button_group_size = ei_radio_button_group_get_natural_size(radio_button_group);
-
-    // Update the radio button group size
-    radio_button->group->widget.requested_size = radio_button_group_size;
-
-    ei_update_radio_button_position(radio_button);
-
-    if (ei_widget_is_displayed(&radio_button->group->widget))
-    {
-        radio_button->group->widget.geom_params->manager->runfunc(&radio_button->group->widget);
+        else
+        {
+            return radio_button->button_color;
+        }
     }
 }
 
-void ei_update_radio_button_position(ei_radio_button_t radio_button)
+void ei_radio_button_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pick_surface, ei_rect_t *clipper)
 {
+    DEBUG ? printf("Drawing widget %d\n", widget->pick_id) : 0;
 
-    // If the radio button is not in a group yet, return
-    if (radio_button->group == NULL)
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
+
+    ei_point_t where = ei_point(
+        radio_button->widget.screen_location.top_left.x + k_default_radio_button_size + k_default_radio_button_label_spacing,
+        radio_button->widget.screen_location.top_left.y);
+
+    ei_font_t text_font = radio_button->text.font != NULL
+                              ? radio_button->text.font
+                              : ((ei_radio_button_group_t *)widget->parent)->text.font;
+
+    ei_color_t text_color;
+
+    // If the radio button text color has the same components as the random color, then use
+    // the group's color (this is because these colors arent's pointer and thus can't
+    // be NULL, so using a random transparent color seemed like the best fix)
+    if (radio_button->text.color.red == k_default_random_radio_button_color.red &&
+        radio_button->text.color.green == k_default_random_radio_button_color.green &&
+        radio_button->text.color.blue == k_default_random_radio_button_color.blue &&
+        radio_button->text.color.alpha == k_default_random_radio_button_color.alpha)
+    {
+        text_color = ((ei_radio_button_group_t *)radio_button->widget.parent)->text.color;
+    }
+    // Otherwise, use the radio button text color
+    else
+    {
+        text_color = radio_button->text.color;
+    }
+
+    // Draw the text
+    ei_draw_text(surface, &where, radio_button->text.label, text_font, text_color, clipper);
+
+    int width = 0;
+    int height = 0;
+    hw_text_compute_size(radio_button->text.label, text_font, &width, &height);
+
+    ei_rect_t text_rect = ei_rect(
+        where,
+        ei_size(width, height));
+
+    // Draw the rect that includes the text on the offscreen picking surface
+    ei_draw_straight_frame(pick_surface, text_rect, 0, *widget->pick_color, ei_relief_none, clipper);
+
+    ei_rect_t button_rect = ei_rect(
+        ei_point(
+            radio_button->widget.screen_location.top_left.x,
+            radio_button->widget.screen_location.top_left.y + height / 2 - k_default_radio_button_size / 2 + 1),
+        ei_size(k_default_radio_button_size, k_default_radio_button_size));
+
+    ei_color_t unselected_button_color = ei_get_radio_button_color(radio_button, &(bool){false});
+
+    ei_color_t top_color = radio_button->selected
+                               ? ei_lighten_color(unselected_button_color)
+                               : ei_darken_color(unselected_button_color);
+
+    ei_color_t bottom_color = radio_button->selected
+                                  ? ei_darken_color(unselected_button_color)
+                                  : ei_lighten_color(unselected_button_color);
+
+    // Draw the border of the button
+    ei_draw_diamond(surface, button_rect, top_color, ei_rounded_frame_top, clipper);
+    ei_draw_diamond(surface, button_rect, bottom_color, ei_rounded_frame_bottom, clipper);
+
+    ei_color_t button_color = ei_get_radio_button_color(radio_button, NULL);
+
+    ei_draw_diamond(pick_surface, button_rect, *widget->pick_color, ei_rounded_frame_full, clipper);
+
+    // Draw the center of the button
+    button_rect = ei_rect_add(button_rect, k_default_radio_button_border_width, k_default_radio_button_border_width, -k_default_radio_button_border_width * 2, -k_default_radio_button_border_width * 2);
+    ei_draw_diamond(surface, button_rect, button_color, ei_rounded_frame_full, clipper);
+
+    ei_widget_drawfunc_finalize(widget, surface, pick_surface, clipper);
+}
+
+void ei_radio_button_geomnotifyfunc(ei_widget_t widget)
+{
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
+
+    *widget->content_rect = widget->screen_location;
+}
+
+void select_radio_button(ei_widget_t widget)
+{
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
+    ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget->parent;
+
+    for (ei_widget_t current = radio_button_group->widget.children_head; current != NULL; current = current->next_sibling)
+    {
+        ei_radio_button_t *current_radio_button = (ei_radio_button_t *)current;
+
+        // Unselect any selected radio button
+        current_radio_button->selected = false;
+
+        // Select the given radio button
+        if (current_radio_button == radio_button)
+        {
+            current_radio_button->selected = true;
+        }
+    }
+}
+
+bool is_radio_button_selected(ei_widget_t widget)
+{
+    return ((ei_radio_button_t *)widget)->selected;
+}
+
+ei_widget_t get_selected_radio_button(ei_widget_t widget)
+{
+    ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget;
+
+    for (ei_widget_t current = radio_button_group->widget.children_head; current != NULL; current = current->next_sibling)
+    {
+        if (is_radio_button_selected(current))
+        {
+            return current;
+        }
+    }
+}
+
+ei_string_t get_selected_radio_button_text(ei_widget_t widget)
+{
+    return ((ei_radio_button_t *)get_selected_radio_button(widget))->text.label;
+}
+
+void clear_selection(ei_widget_t widget)
+{
+    ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget;
+
+    for (ei_widget_t current = radio_button_group->widget.children_head; current != NULL; current = current->next_sibling)
+    {
+        ((ei_radio_button_t *)current)->selected = false;
+    }
+}
+
+void ei_radio_buttons_update_position(ei_radio_button_group_t *radio_button_group)
+{
+    if (radio_button_group->widget.children_head == NULL)
     {
         return;
     }
 
-    ei_radio_button_t current = radio_button->group->first_radio_button;
+    int top_left_y = 0;
 
-    int top = 0;
-
-    while (true)
+    for (ei_widget_t current = radio_button_group->widget.children_head; current != NULL; current = current->next_sibling)
     {
-        if (current == NULL)
-        {
-            break;
-        }
+        ei_radio_button_t *radio_button = (ei_radio_button_t *)current;
 
-        ei_font_t text_font = current->text.font != NULL
-                                  ? current->text.font
-                                  : radio_button->group->text.font;
+        ei_place(current, NULL, NULL, &top_left_y, NULL, NULL, NULL, NULL, NULL, NULL);
+
+        ei_font_t text_font = radio_button->text.font != NULL
+                                  ? radio_button->text.font
+                                  : radio_button_group->text.font;
 
         int width = 0;
         int height = 0;
-        hw_text_compute_size(current->text.label, text_font, &width, &height);
 
-        // If we are at the radio button we are looking for, update the position of the button
-        // based on the size of its label
-        if (current == radio_button)
+        if (radio_button->text.label != NULL)
         {
-            ei_widget_t button = (ei_widget_t)current->button;
-
-            int button_x = radio_button->group->widget.content_rect->top_left.x;
-            int button_y = radio_button->group->widget.content_rect->top_left.y + top + height / 2 - k_default_radio_button_size / 2;
-
-            ei_place(button, NULL, &button_x, &button_y, NULL, NULL, NULL, NULL, NULL, NULL);
-
-            break;
-        }
-        // Otherwise, update the top position to include the height + spacing of the current radio button
-        else
-        {
-            top += height + k_default_radio_button_group_spacing;
+            hw_text_compute_size(radio_button->text.label, text_font, &width, &height);
         }
 
-        current = current->next_sibling;
+        top_left_y += height + k_default_radio_button_group_spacing;
+    }
+
+    if (ei_widget_is_displayed(&radio_button_group->widget))
+    {
+        radio_button_group->widget.geom_params->manager->runfunc(&radio_button_group->widget);
     }
 }

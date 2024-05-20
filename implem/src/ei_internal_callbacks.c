@@ -16,6 +16,7 @@
 #include "../implem/headers/ei_utils_ext.h"
 #include "../implem/headers/ei_placer_ext.h"
 #include "../implem/headers/ei_entry_ext.h"
+#include "../implem/headers/api/ei_radio_button.h"
 #include "../implem/headers/ei_radiobutton.h"
 
 static bool *displayed;
@@ -48,41 +49,18 @@ static bool ei_button_press(ei_widget_t widget, ei_event_t *event, ei_user_param
     return false;
 }
 
-static bool ei_radiobutton_pressed(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
+static bool ei_radio_button_selected(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
-    ei_radiobutton_group_t *group = (ei_radiobutton_t *)widget;
-    ei_radiobutton_t *radiobutton = group->radiobutton; // A pointer to the first radiobutton on the group
+    select_radio_button(widget);
 
-    // Search where was the click
-    ei_point_t mouse_position = event->param.mouse.where;
-    ei_rect_t position;
+    ei_radio_button_group_t *radio_button_group = ((ei_radio_button_group_t *)widget->parent);
 
-    printf("Click\n");
-
-    while (radiobutton != NULL)
+    if (radio_button_group->callback != NULL)
     {
-        position = radiobutton->button->widget.screen_location;
-
-        if (mouse_position.x >= position.top_left.x &&
-            mouse_position.x <= position.top_left.x + position.size.width &&
-            mouse_position.y >= position.top_left.y &&
-            mouse_position.y <= position.top_left.y + position.size.height)
-        {
-            // Useless if the button is already activated
-            if (radiobutton->selected)
-            {
-                return false;
-            }
-
-            // Otherwise
-            ei_check_change_radiobutton_state(radiobutton, true);
-            return true;
-        }
-
-        // Advance to the next radiobuttton
-        radiobutton = radiobutton->next_sibling;
+        radio_button_group->callback(widget->parent, event, NULL);
     }
-    return false;
+
+    ei_app_invalidate_rect(&widget->parent->screen_location);
 }
 
 static bool ei_button_release(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
@@ -1304,16 +1282,17 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
         // Checking if the surface is NULL also allows to know if we should
         // toggle on or off the offscreen picking surface.
         bool *displayed = (bool *)user_param;
+        *displayed = !*displayed;
 
         ei_surface_t root_surface = ei_app_root_surface();
 
         ei_widget_t root = ei_app_root_widget();
         ei_update_pick_color_from_id(&root, *displayed ? 1000000 : 1);
 
-        root->wclass->drawfunc(root, root_surface, ei_app_offscreen_picking_surface(), &widget->screen_location);
-
         hw_surface_lock(root_surface);
         hw_surface_lock(ei_app_offscreen_picking_surface());
+
+        root->wclass->drawfunc(root, root_surface, ei_app_offscreen_picking_surface(), &widget->screen_location);
 
         // If the offscreen picking surface is not displayed, make a copy of the root surface
         // and display the offscreen picking surface
@@ -1327,8 +1306,6 @@ static bool toggle_offscreen_picking_surface_display(ei_widget_t widget, ei_even
 
         hw_surface_update_rects(ei_app_root_surface(), NULL);
 
-        *displayed = !*displayed;
-
         return true;
     }
 
@@ -1340,7 +1317,7 @@ void ei_bind_all_internal_callbacks()
     ei_bind_internal(ei_ev_mouse_buttondown, NULL, "button", ei_button_press, NULL, 20);
     ei_bind_internal(ei_ev_mouse_buttondown, NULL, "toplevel", ei_toplevel_pressed, NULL, 20);
     ei_bind_internal(ei_ev_mouse_buttondown, NULL, "entry", ei_entry_pressed, NULL, 20);
-    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "radiobutton", ei_radiobutton_pressed, NULL, 20);
+    ei_bind_internal(ei_ev_mouse_buttondown, NULL, "radio_button", ei_radio_button_selected, NULL, 20);
 
     displayed = malloc(sizeof(bool));
     *displayed = false;

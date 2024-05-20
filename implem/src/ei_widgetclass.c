@@ -140,29 +140,46 @@ void ei_widgetclass_register_all()
     entry->geomnotifyfunc = &ei_entry_geomnotifyfunc;
     entry->next = NULL;
 
-    ei_widgetclass_t* radiobutton=malloc(sizeof(ei_widgetclass_t));
+    ei_widgetclass_t *radio_button_group = malloc(sizeof(ei_widgetclass_t));
 
     // If malloc failed, return
-    if (radiobutton==NULL)
+    if (radio_button_group == NULL)
     {
-        printf("\033[0;31mError: Couldn't allocate memory for the entry widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        printf("\033[0;31mError: Couldn't allocate memory for the radio button group widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
         return;
     }
 
-    strcpy(radiobutton->name,"radiobutton");
-    radiobutton->allocfunc = & ei_radiobutton_allocfunc_group ;
-    radiobutton->releasefunc= & ei_radiobutton_releasefunc_group;
-    radiobutton->drawfunc= & ei_radiobutton_drawfunc_group;
-    radiobutton->setdefaultsfunc= & ei_radiobutton_setdefaultsfunc_group;
-    radiobutton->geomnotifyfunc= & ei_radiobutton_geomnotifyfunc;
-    radiobutton->next=NULL;
+    strcpy(radio_button_group->name, "radio_button_group");
+    radio_button_group->allocfunc = &ei_radio_button_group_allocfunc;
+    radio_button_group->releasefunc = &ei_radio_button_group_releasefunc;
+    radio_button_group->drawfunc = &ei_radio_button_group_drawfunc;
+    radio_button_group->setdefaultsfunc = &ei_radio_button_group_setdefaultsfunc;
+    radio_button_group->geomnotifyfunc = &ei_radio_button_group_geomnotifyfunc;
+    radio_button_group->next = NULL;
 
+    ei_widgetclass_t *radio_button = malloc(sizeof(ei_widgetclass_t));
+
+    // If malloc failed, return
+    if (radio_button == NULL)
+    {
+        printf("\033[0;31mError: Couldn't allocate memory for the radio button group widget class.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
+        return;
+    }
+
+    strcpy(radio_button->name, "radio_button");
+    radio_button->allocfunc = &ei_radio_button_allocfunc;
+    radio_button->releasefunc = &ei_radio_button_releasefunc;
+    radio_button->drawfunc = &ei_radio_button_drawfunc;
+    radio_button->setdefaultsfunc = &ei_radio_button_setdefaultsfunc;
+    radio_button->geomnotifyfunc = &ei_radio_button_geomnotifyfunc;
+    radio_button->next = NULL;
 
     ei_widgetclass_register(frame);
     ei_widgetclass_register(button);
     ei_widgetclass_register(toplevel);
     ei_widgetclass_register(entry);
-    ei_widgetclass_register(radiobutton);
+    ei_widgetclass_register(radio_button_group);
+    ei_widgetclass_register(radio_button);
 }
 
 void ei_widgetclass_free_all()
@@ -180,8 +197,9 @@ void ei_widgetclass_free_all()
         if (strcmp(current->name, "frame") == 0 ||
             strcmp(current->name, "button") == 0 ||
             strcmp(current->name, "toplevel") == 0 ||
-            strcmp(current->name, "entry") == 0||
-            strcmp(current->name, "radiobutton")==0 )
+            strcmp(current->name, "entry") == 0 ||
+            strcmp(current->name, "radio_button") == 0 ||
+            strcmp(current->name, "radio_button_group") == 0)
         {
             free(current);
         }

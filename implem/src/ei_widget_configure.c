@@ -232,6 +232,19 @@ void ei_frame_configure(ei_widget_t widget,
         }
     }
 
+    // Update the minimum size of the frame in case the or image has changed
+    ei_size_t natural_size = ei_frame_get_natural_size(frame);
+
+    if (widget->requested_size.width < natural_size.width)
+    {
+        widget->requested_size.width = natural_size.width;
+    }
+
+    if (widget->requested_size.height < natural_size.height)
+    {
+        widget->requested_size.height = natural_size.height;
+    }
+
     ei_widget_configure_finalize(widget, &frame->widget.instantiated);
 }
 
@@ -323,6 +336,19 @@ void ei_button_configure(ei_widget_t widget,
         {
             widget->requested_size = ei_button_get_natural_size(button);
         }
+    }
+
+    // Update the minimum size of the button in case the or image has changed
+    ei_size_t natural_size = ei_button_get_natural_size(button);
+
+    if (widget->requested_size.width < natural_size.width)
+    {
+        widget->requested_size.width = natural_size.width;
+    }
+
+    if (widget->requested_size.height < natural_size.height)
+    {
+        widget->requested_size.height = natural_size.height;
     }
 
     ei_widget_configure_finalize(widget, &button->widget.instantiated);
@@ -444,7 +470,7 @@ void ei_toplevel_configure(ei_widget_t widget,
     ei_widget_configure_finalize(widget, &toplevel->widget.instantiated);
 }
 
-void ei_radio_button_configure(ei_radio_button_t radio_button,
+void ei_radio_button_configure(ei_widget_t widget,
                                ei_string_t *text,
                                ei_font_t *text_font,
                                ei_color_t *text_color,
@@ -452,11 +478,15 @@ void ei_radio_button_configure(ei_radio_button_t radio_button,
                                ei_color_t *button_selected_color,
                                bool *selected)
 {
+    ei_radio_button_t *radio_button = (ei_radio_button_t *)widget;
+
+    // Call the text configure with instantiated as true since we want to keep NULL values
+    // so that we know if which properties have been set and otherwise use the group's properties
     ei_text_configure(&radio_button->text, true, text, text_font, text_color, NULL);
 
     if (button_color != NULL)
     {
-        ((ei_button_t *)radio_button->button)->widget_appearance.color = *button_color;
+        radio_button->button_color = *button_color;
     }
 
     if (button_selected_color != NULL)
@@ -466,17 +496,24 @@ void ei_radio_button_configure(ei_radio_button_t radio_button,
 
     if (selected != NULL)
     {
-        ei_check_change_radio_button_state(radio_button, *selected);
+        select_radio_button(widget);
     }
 
-    if (radio_button->group != NULL)
-    {
-        // Use a fake pointer for instantiated so that the radio button group widget
-        // won't be marked as instantiated
-        ei_widget_configure_finalize(&radio_button->group->widget, &(bool){false});
-    }
+    ei_font_t font = radio_button->text.font != NULL
+                         ? radio_button->text.font
+                         : ((ei_radio_button_group_t *)widget->parent)->text.font;
 
-    ei_update_radio_button_position(radio_button);
+    int width = 0;
+    int height = 0;
+    hw_text_compute_size(radio_button->text.label, font, &width, &height);
+
+    widget->requested_size = ei_size(width + k_default_radio_button_size + k_default_radio_button_label_spacing, height);
+
+    ei_radio_buttons_update_position((ei_radio_button_group_t *)widget->parent);
+
+    widget->parent->requested_size = ei_radio_button_group_get_natural_size((ei_radio_button_group_t *)widget->parent);
+
+    ei_widget_configure_finalize(widget->parent, &(bool){true});
 }
 
 void ei_radio_button_group_configure(ei_widget_t widget,
@@ -486,7 +523,8 @@ void ei_radio_button_group_configure(ei_widget_t widget,
                                      ei_font_t *text_font,
                                      ei_color_t *text_color,
                                      ei_color_t *buttons_color,
-                                     ei_color_t *button_selected_color)
+                                     ei_color_t *buttons_selected_color,
+                                     ei_callback_t *callback)
 {
     ei_radio_button_group_t *radio_button_group = (ei_radio_button_group_t *)widget;
 
@@ -514,21 +552,35 @@ void ei_radio_button_group_configure(ei_widget_t widget,
     {
         if (!radio_button_group->widget.instantiated)
         {
-            radio_button_group->buttons_color = ei_default_background_color;
+            radio_button_group->buttons_color = k_default_radio_button_color;
         }
     }
 
-    if (button_selected_color != NULL)
+    if (buttons_selected_color != NULL)
     {
-        radio_button_group->button_selected_color = *button_selected_color;
+        radio_button_group->buttons_selected_color = *buttons_selected_color;
     }
     else
     {
         if (!radio_button_group->widget.instantiated)
         {
-            radio_button_group->button_selected_color = k_default_radio_button_selected_color;
+            radio_button_group->buttons_selected_color = k_default_radio_button_selected_color;
         }
     }
+
+    if (callback != NULL)
+    {
+        radio_button_group->callback = *callback;
+    }
+    else
+    {
+        if (!radio_button_group->widget.instantiated)
+        {
+            radio_button_group->callback = NULL;
+        }
+    }
+
+    ei_radio_buttons_update_position(radio_button_group);
 
     ei_widget_configure_finalize(widget, &radio_button_group->widget.instantiated);
 }

@@ -137,24 +137,7 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
     // Draw the entry on the offscreen picking surface
     ei_draw_straight_frame(pick_surface, widget->screen_location, 0, *widget->pick_color, ei_relief_none, clipper);
 
-    // Reduce the size of the clipper to the widget's content rect so that children
-    // can't be drawn outside the widget's content rect
-    ei_rect_t *children_clipper = malloc(sizeof(ei_rect_t));
-
-    // If malloc failed, set the children clipper to the clipper
-    if (children_clipper == NULL)
-    {
-        printf("\033[0;31mError: Couldn't allocate memory for children clipper.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);
-        *children_clipper = *clipper;
-    }
-    else
-    {
-        *children_clipper = ei_get_children_clipper(*widget->content_rect, clipper);
-    }
-
-    ei_impl_widget_draw_children(widget, surface, pick_surface, children_clipper);
-
-    free(children_clipper);
+    ei_widget_drawfunc_finalize(widget, surface, pick_surface, clipper);
 }
 
 void ei_draw_cursor(ei_surface_t surface, ei_entry_t *entry, ei_rect_t *clipper)

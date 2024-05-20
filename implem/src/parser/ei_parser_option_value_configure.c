@@ -7,6 +7,7 @@
 #include "../api/ei_placer.h"
 #include "../api/ei_widget_configure.h"
 #include "../implem/headers/ei_implementation.h"
+#include "../implem/headers/api/ei_radio_button.h"
 #include "../implem/headers/parser/ei_parser_types.h"
 #include "../implem/headers/parser/ei_parser_option_value_conversion.h"
 
@@ -191,7 +192,7 @@ void ei_set_option_value(enum options_action action, ei_widget_t widget, char *o
             }
             else if (strcmp(option_name, "closable") == 0)
             {
-                if (*cast_tye == 1)
+                if (*cast_tye == 0)
                 {
                     ei_toplevel_configure(widget, NULL, NULL, NULL, NULL, &(bool){strcmp((char *)option_value, "true") == 0}, NULL, NULL);
                 }
@@ -250,6 +251,103 @@ void ei_set_option_value(enum options_action action, ei_widget_t widget, char *o
             else
             {
                 printf("\033[0;31mError: Option %s is not configurable for entry\033[0m\n", option_name);
+                error = 0;
+                return;
+            }
+        }
+        else if (strcmp(widget->wclass->name, "radio_button_group") == 0)
+        {
+            if (strcmp(option_name, "color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_group_configure(widget, &color, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            }
+            else if (strcmp(option_name, "border_width") == 0)
+            {
+                ei_radio_button_group_configure(widget, NULL, &(int){*(double *)option_value}, NULL, NULL, NULL, NULL, NULL, NULL);
+            }
+            else if (strcmp(option_name, "relief") == 0)
+            {
+                ei_radio_button_group_configure(widget, NULL, NULL, &(ei_relief_t){ei_option_value_to_relief(option_value)}, NULL, NULL, NULL, NULL, NULL);
+            }
+            else if (strcmp(option_name, "text_font") == 0)
+            {
+                ei_font_t font = hw_text_font_create(ei_option_value_to_string(), ei_style_normal, 5);
+                ei_radio_button_group_configure(widget, NULL, NULL, NULL, &font, NULL, NULL, NULL, NULL);
+                hw_text_font_free(font);
+            }
+            else if (strcmp(option_name, "text_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_group_configure(widget, NULL, NULL, NULL, NULL, &color, NULL, NULL, NULL);
+            }
+            else if (strcmp(option_name, "buttons_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_group_configure(widget, NULL, NULL, NULL, NULL, NULL, &color, NULL, NULL);
+            }
+            else if (strcmp(option_name, "button_selected_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_group_configure(widget, NULL, NULL, NULL, NULL, NULL, NULL, &color, NULL);
+            }
+            else
+            {
+                printf("\033[0;31mError: Option %s is not configurable for radio_button_group\033[0m\n", option_name);
+                error = 0;
+                return;
+            }
+        }
+        else if (strcmp(widget->wclass->name, "radio_button") == 0)
+        {
+            if (strcmp(option_name, "text") == 0)
+            {
+                if (*cast_tye == 0)
+                {
+                    ei_radio_button_configure(widget, &(char *){option_value}, NULL, NULL, NULL, NULL, NULL);
+                }
+                else if (*cast_tye == 1)
+                {
+                    char *text = ei_option_value_to_string();
+                    ei_radio_button_configure(widget, &text, NULL, NULL, NULL, NULL, NULL);
+                    free(text);
+                }
+            }
+            else if (strcmp(option_name, "text_font") == 0)
+            {
+                ei_font_t font = hw_text_font_create(ei_option_value_to_string(), ei_style_normal, 5);
+                ei_radio_button_configure(widget, NULL, &font, NULL, NULL, NULL, NULL);
+                hw_text_font_free(font);
+            }
+            else if (strcmp(option_name, "text_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_configure(widget, NULL, NULL, &color, NULL, NULL, NULL);
+            }
+            else if (strcmp(option_name, "button_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_configure(widget, NULL, NULL, NULL, &color, NULL, NULL);
+            }
+            else if (strcmp(option_name, "button_selected_color") == 0)
+            {
+                ei_color_t color = ei_option_value_to_color();
+                ei_radio_button_configure(widget, NULL, NULL, NULL, NULL, &color, NULL);
+            }
+            else if (strcmp(option_name, "selected") == 0)
+            {
+                if (*cast_tye == 0)
+                {
+                    ei_radio_button_configure(widget, NULL, NULL, NULL, NULL, NULL, &(bool){strcmp((char *)option_value, "true") == 0});
+                }
+                else if (*cast_tye == 2)
+                {
+                    ei_radio_button_configure(widget, NULL, NULL, NULL, NULL, NULL, (int){*(double *)option_value} == 1 ? &(bool){true} : &(bool){false});
+                }
+            }
+            else
+            {
+                printf("\033[0;31mError: Option %s is not configurable for radio_button\033[0m\n", option_name);
                 error = 0;
                 return;
             }

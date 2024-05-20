@@ -198,6 +198,11 @@ target_link_libraries(content_rect_visualization		ei ${PLATFORM_LIB_FLAGS})
 add_executable(radiobutton			${TEST_DIR}/radiobutton.c)
 target_link_libraries(radiobutton		ei ${PLATFORM_LIB_FLAGS})
 
+# target radiobuttons
+
+add_executable(radiobuttons			${TEST_DIR}/radiobuttons.c)
+target_link_libraries(radiobuttons		ei ${PLATFORM_LIB_FLAGS})
+
 
 # target personal_information_grid
 
