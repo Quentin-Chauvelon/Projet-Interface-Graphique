@@ -86,6 +86,8 @@ void ei_button_setdefaultsfunc(ei_widget_t widget)
     button->corner_radius = k_default_button_corner_radius;
     button->callback = NULL;
     button->user_param = NULL;
+
+    button->frame_appearance.has_user_set_size = false;
 }
 
 void ei_button_geomnotifyfunc(ei_widget_t widget)

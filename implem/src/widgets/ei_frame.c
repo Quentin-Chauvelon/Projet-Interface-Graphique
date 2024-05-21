@@ -75,6 +75,8 @@ void ei_frame_setdefaultsfunc(ei_widget_t widget)
     frame->frame_appearance.image.data = NULL;
     frame->frame_appearance.image.rect = NULL;
     frame->frame_appearance.image.anchor = ei_anc_center;
+
+    frame->frame_appearance.has_user_set_size = false;
 }
 
 void ei_frame_geomnotifyfunc(ei_widget_t widget)

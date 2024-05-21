@@ -223,6 +223,7 @@ void ei_frame_configure(ei_widget_t widget,
     if (requested_size != NULL)
     {
         widget->requested_size = *requested_size;
+        frame->frame_appearance.has_user_set_size = true;
     }
     else
     {
@@ -232,17 +233,26 @@ void ei_frame_configure(ei_widget_t widget,
         }
     }
 
-    // Update the minimum size of the frame in case the or image has changed
+    // If the user has not explicitally set the size of the frame, update the size of the widget
+    // to exactly fit the text or image in case they have changed
     ei_size_t natural_size = ei_frame_get_natural_size(frame);
-
-    if (widget->requested_size.width < natural_size.width)
+    if (!frame->frame_appearance.has_user_set_size)
     {
         widget->requested_size.width = natural_size.width;
-    }
-
-    if (widget->requested_size.height < natural_size.height)
-    {
         widget->requested_size.height = natural_size.height;
+    }
+    // Otherwise, resize the frame if it is too small to fit the text and image
+    else {
+
+        if (widget->requested_size.width < natural_size.width)
+        {
+            widget->requested_size.width = natural_size.width;
+        }
+
+        if (widget->requested_size.height < natural_size.height)
+        {
+            widget->requested_size.height = natural_size.height;
+        }
     }
 
     ei_widget_configure_finalize(widget, &frame->widget.instantiated);
@@ -329,6 +339,7 @@ void ei_button_configure(ei_widget_t widget,
     if (requested_size != NULL)
     {
         widget->requested_size = *requested_size;
+        button->frame_appearance.has_user_set_size = true;
     }
     else
     {
@@ -338,18 +349,29 @@ void ei_button_configure(ei_widget_t widget,
         }
     }
 
-    // Update the minimum size of the button in case the or image has changed
+    // If the user has not explicitally set the size of the frame, update the size of the widget
+    // to exactly fit the text or image in case they have changed
     ei_size_t natural_size = ei_button_get_natural_size(button);
-
-    if (widget->requested_size.width < natural_size.width)
+    if (!button->frame_appearance.has_user_set_size)
     {
+
         widget->requested_size.width = natural_size.width;
-    }
-
-    if (widget->requested_size.height < natural_size.height)
-    {
         widget->requested_size.height = natural_size.height;
     }
+    // Otherwise, resize the frame if it is too small to fit the text and image
+    else {
+
+        if (widget->requested_size.width < natural_size.width)
+        {
+            widget->requested_size.width = natural_size.width;
+        }
+
+        if (widget->requested_size.height < natural_size.height)
+        {
+            widget->requested_size.height = natural_size.height;
+        }
+    }
+
 
     ei_widget_configure_finalize(widget, &button->widget.instantiated);
 }

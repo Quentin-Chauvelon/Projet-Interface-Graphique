@@ -55,6 +55,7 @@ typedef struct ei_frame_appearance_t
     ei_relief_t relief;          ///< The relief of the widget.
     ei_text_properties_t text;   ///< The properties of the text.
     ei_image_properties_t image; ///< The properties of the image.
+    bool has_user_set_size;      ///< True if the user has set the size of the widget explicitally (call the configure functin with requested size not null). This is used to know if the widget should resize to fit its content or if the size has been defined by the user.
 } ei_frame_appearance_t;
 
 /**
