@@ -155,6 +155,10 @@ void parse_list_options(enum options_action action, ei_widget_t widget)
         {
             break;
         }
+        else if (is_current_token(COMMENT))
+        {
+            parse_token(COMMENT);
+        }
         else
         {
             printf("\033[0;31mError: Expected a name token or new line, got %c\033[0m\n", get_current());
@@ -242,6 +246,10 @@ void parse_place_command()
 
 void parse_command()
 {
+    if (is_current_token(COMMENT))
+    {
+        parse_token(COMMENT);
+    }
     if (is_current_token(END_LINE))
     {
         parse_token(END_LINE);
@@ -271,7 +279,7 @@ void parse_lists_commands()
             return;
         }
 
-        if (is_current_token(NAME) || is_current_token(END_LINE))
+        if (is_current_token(NAME) || is_current_token(END_LINE) || is_current_token(COMMENT))
         {
             parse_command();
         }
@@ -284,7 +292,7 @@ void parse_lists_commands()
 
 void parse_ig()
 {
-    if (is_current_token(NAME) || is_current_token(END_LINE))
+    if (is_current_token(NAME) || is_current_token(END_LINE) || is_current_token(COMMENT))
     {
         parse_lists_commands();
     }

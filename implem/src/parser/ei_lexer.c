@@ -89,6 +89,14 @@ double parse_token_real()
     return integer + (double)decimal / pow(10, nb_digits);
 }
 
+void parse_token_comment()
+{
+    while (get_current() != '\n')
+    {
+        update_current();
+    }
+}
+
 char *parse_token_name()
 {
     skip_spaces();
@@ -211,6 +219,11 @@ void *parse_token(token token)
     {
         double real = parse_token_real();
         value = &real;
+    }
+    else if (token == COMMENT)
+    {
+        parse_token_comment();
+        return NULL;
     }
     else if (token == END_OF_FILE)
     {

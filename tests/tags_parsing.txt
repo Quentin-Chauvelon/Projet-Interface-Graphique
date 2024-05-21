@@ -1,4 +1,5 @@
-toplevel toplevel root color={0 255 0 255} border_width=8 closable=false resizable=none min_size={100 300}
+# Let's start with a comment?
+toplevel toplevel root color={0 255 0 255} border_width=8 closable=false resizable=none min_size={100 300} # This is a comment that should be ignored if everything works well
 place toplevel x=400 y=300
 
 frame frame root requested_size={300 200} color={136 136 136 128} border_width=6 relief=raised text={Red on hover or press X to delete} text_color={0 0 255 255} text_anchor=southeast
@@ -13,12 +14,19 @@ place button x=50 y=300
 button button2 toplevel color={136 136 136 255} border_width=6 corner_radius=25 relief=raised text=No_sunken_effect
 place button2 rel_x=1 rel_y=1 rel_width=0.5 rel_height=0.5 anchor=southeast
 
-entry entry toplevel requested_char_size=10 color={255 255 0 255} text_color={50 50 50 255}
-place entry x=4 y=12 rel_width=0.5 rel_height=0.5
+entry entry toplevel requested_char_size=10 color={255 255 0 255} text_color={50 50 50 255} # text_color={255 0 0 255}
+place entry x=4 y=12 rel_width=0.5 rel_height=0.5 # This should work, hopefully
 
 radio_button_group group frame2 buttons_color={196 137 193 255} text_color={117 30 113 255}
 place group rel_x=0.5 rel_y=0.5 anchor=center
 
-radio_button option_one group text=Option_Without_Spaces text_color={64 135 194 255} selected=0
+# Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# In pellentesque in ex ac elementum.
+# Praesent luctus quis libero sed tincidunt.
+# Suspendisse auctor, ex ac semper mattis, tortor nulla sollicitudin velit, hendrerit tempor enim ipsum nec felis.
 
+# btw, here we have a comment ##### which a bunch of useless '#'
+radio_button option_one group text=Option_Without_Spaces text_color={64 135 194 255} selected=0
 radio_button option_two group text={Option With Spaces} selected=true
+
+##### This is also a comment #####
