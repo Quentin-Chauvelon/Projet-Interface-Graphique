@@ -29,6 +29,16 @@ void skip_spaces()
     }
 }
 
+char get_next()
+{
+    if (get_current() == '\0')
+    {
+        return '\0';
+    }
+
+    return characters[current_char + 1];
+}
+
 int parse_digit()
 {
     if (get_current() >= '0' && get_current() <= '9')
@@ -97,6 +107,26 @@ void parse_token_comment()
     }
 }
 
+void parse_token_multiline_comment()
+{
+    while (true)
+    {
+        if (get_current() == '\0')
+        {
+            return;
+        }
+
+        if (get_current() == '*' && get_next() == '/')
+        {
+            update_current();
+            update_current();
+            break;
+        }
+
+        update_current();
+    }
+}
+
 char *parse_token_name()
 {
     skip_spaces();
@@ -144,6 +174,13 @@ char *parse_token_name()
 
 bool is_current_token(token token)
 {
+    skip_spaces();
+
+    if (get_current() == '/' && get_next() == '*')
+    {
+        parse_token_multiline_comment();
+    }
+
     skip_spaces();
 
     if (error == 0)

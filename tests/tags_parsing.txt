@@ -5,8 +5,16 @@ place toplevel x=400 y=300
 frame frame root requested_size={300 200} color={136 136 136 128} border_width=6 relief=raised text={Red on hover or press X to delete} text_color={0 0 255 255} text_anchor=southeast
 place frame x=50 y=50
 
-frame frame2 root requested_size={300 200} color={136 136 136 255} border_width=6 relief=sunken
-place frame2 x=400 y=50
+frame frame2 root requested_size={300 200} /* Multiline comment inside a line */ color={136 136 /* Multiline comments even work between numbers*/ 136 255} border_width=6 relief=sunken /* Multiline comment at end of line */
+place frame2 x=400 /* Multiline comments even work between options*/ y=50
+
+/* This a multiline comment:
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+In pellentesque in ex ac elementum.
+Praesent luctus quis libero sed tincidunt.
+Suspendisse auctor, ex ac semper mattis, tortor nulla sollicitudin velit, hendrerit tempor enim ipsum nec felis.
+End of multiline comment */
+
 
 button button root requested_size={300 200} color={136 136 136 255} border_width=6 corner_radius=25 relief=raised img_rect={256 256 128 128} img_anchor=west img=misc/klimt.jpg
 place button x=50 y=300
@@ -25,8 +33,11 @@ place group rel_x=0.5 rel_y=0.5 anchor=center
 # Praesent luctus quis libero sed tincidunt.
 # Suspendisse auctor, ex ac semper mattis, tortor nulla sollicitudin velit, hendrerit tempor enim ipsum nec felis.
 
-# btw, here we have a comment ##### which a bunch of useless '#'
 radio_button option_one group text=Option_Without_Spaces text_color={64 135 194 255} selected=0
 radio_button option_two group text={Option With Spaces} selected=true
+# btw, here we have a comment ##### which a bunch of useless '#'
 
 ##### This is also a comment #####
+
+/*
+Unfinished multiline comment which is allowed
