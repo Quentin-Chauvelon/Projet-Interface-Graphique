@@ -2,11 +2,11 @@
 toplevel toplevel root color={0 255 0 255} border_width=8 closable=false resizable=none min_size={100 300} # This is a comment that should be ignored if everything works well
 place toplevel x=400 y=300
 
-frame frame root requested_size={300 200} color={136 136 136 128} border_width=6 relief=raised text={Red on hover or press X to delete} text_color={0 0 255 255} text_anchor=southeast
+frame frame root requested_size={300 200} color={136 136 136 128} border_width=6 /* border_width=100 */ relief=raised text={Red on /**/ hover or press X to delete} text_color={0 0 255 255} text_anchor=southeast
 place frame x=50 y=50
 
-frame frame2 root requested_size={300 200} /* Multiline comment inside a line */ color={136 136 /* Multiline comments even work between numbers*/ 136 255} border_width=6 relief=sunken /* Multiline comment at end of line */
-place frame2 x=400 /* Multiline comments even work between options*/ y=50
+frame /**/ frame2 root requested_size/**/=/**/{300 200} /* Multiline comment inside a line */ color={136 136 /* Multiline comment between numbers*/ 136 255} border_width=6 relief=sunken /* Multiline comment at end of line */
+place/**/frame2 x=400 /* Multiline comment between options*/ y=50
 
 /* This a multiline comment:
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.

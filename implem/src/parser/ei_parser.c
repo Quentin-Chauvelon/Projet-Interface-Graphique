@@ -194,6 +194,11 @@ void parse_widget_command()
         return;
     }
 
+    if (is_current_token(MULTILINE_COMMENT))
+    {
+        parse_token(MULTILINE_COMMENT);
+    }
+
     char *name = parse_widget_name();
 
     if (ei_parse_widget_from_name(name) != NULL)
@@ -201,6 +206,11 @@ void parse_widget_command()
         printf("\033[0;31mError: Widget with name \"%s\" already exists\033[0m\n", name);
         error = 0;
         return;
+    }
+
+    if (is_current_token(MULTILINE_COMMENT))
+    {
+        parse_token(MULTILINE_COMMENT);
     }
 
     char *parent = parse_parent_name();
@@ -227,6 +237,11 @@ void parse_place_command()
 {
     // We already know the command start with place, so we can skip it
     free(parse_token_name());
+
+    if (is_current_token(MULTILINE_COMMENT))
+    {
+        parse_token(MULTILINE_COMMENT);
+    }
 
     char *name = parse_token_name();
 

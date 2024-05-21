@@ -144,8 +144,8 @@ char *parse_token_name()
                (get_current() >= 'A' && get_current() <= 'Z') ||
                (get_current() >= '0' && get_current() <= '9') ||
                get_current() == '_' ||
-               get_current() == '/' || // The '/' and '.' characters are not part of the grammar but were added to handle image paths
-               get_current() == '.')
+               (get_current() == '/' && get_next() != '*') || // If we read a '/', make sure the next charcter is not a '*', otherwise it's a comment
+               get_current() == '.')                          // The '/' and '.' characters are not part of the grammar but were added to handle image paths
         {
             length++;
             update_current();
@@ -176,6 +176,13 @@ bool is_current_token(token token)
 {
     skip_spaces();
 
+    // If token is a multiline comment, return before trying to parse an eventual comment
+    if (token == MULTILINE_COMMENT)
+    {
+        return get_current() == '/' && get_next() == '*';
+    }
+
+    // Skip any multiline comments if there are any
     if (get_current() == '/' && get_next() == '*')
     {
         parse_token_multiline_comment();
@@ -260,6 +267,11 @@ void *parse_token(token token)
     else if (token == COMMENT)
     {
         parse_token_comment();
+        return NULL;
+    }
+    else if (token == MULTILINE_COMMENT)
+    {
+        parse_token_multiline_comment();
         return NULL;
     }
     else if (token == END_OF_FILE)
