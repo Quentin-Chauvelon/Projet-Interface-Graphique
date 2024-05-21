@@ -4,6 +4,7 @@
 #include "../implem/headers/ei_button.h"
 #include "../implem/headers/ei_entry.h"
 #include "../implem/headers/ei_types_ext.h"
+#include "../implem/headers/ei_entry_ext.h"
 #include "../implem/headers/ei_internal_callbacks.h"
 
 ei_event_bind_t *first_event_bind = NULL;
@@ -407,6 +408,17 @@ void ei_handle_event(ei_event_t event)
         filter_widget = picking_widget == NULL
                             ? ei_app_root_widget()
                             : picking_widget;
+    }
+
+    if (event.type == ei_ev_mouse_buttonup) {
+        if (strcmp(picking_widget->wclass->name, "entry") != 0)
+        {
+            if (is_an_entryfocused())
+            {
+                ei_widget_t root = ei_app_root_widget();
+                ei_release_focused_entry(&root);
+            }
+        }
     }
 
     ei_event_bind_t *current_event = first_event_bind;

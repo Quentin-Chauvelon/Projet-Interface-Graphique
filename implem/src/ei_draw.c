@@ -406,7 +406,7 @@ int ei_copy_surface(ei_surface_t destination, const ei_rect_t *dst_rect, ei_surf
                                             ? hw_surface_get_size(destination)
                                             : dst_rect->size;
 
-    // If the surfaces after clipping don't have the same size, resize them
+    // If the surfaces after clipping don't have the same size, return 1
     if (!ei_equal_sizes(src_size_after_clipping, dst_size_after_clipping))
     {
         printf("\033[0;33mWarning: Couldn't copy surface, source and destination surfaces have different sizes.\n\t at %s (%s:%d)\033[0m\n", __func__, __FILE__, __LINE__);

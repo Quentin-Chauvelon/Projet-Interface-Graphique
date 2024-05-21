@@ -49,4 +49,11 @@ void ei_get_previous_entry(ei_widget_t *widget, ei_widget_t *entry, ei_widget_t 
  */
 ei_const_string_t ei_entry_get_text_between_characters(ei_widget_t widget, ei_entry_character_t *first_character, ei_entry_character_t *last_character);
 
+/**
+ * @brief   Returns if an entry is currently focused or not
+ * 
+ * @return  True if an entry is focused, false otherwise
+*/
+bool is_an_entryfocused();
+
 #endif

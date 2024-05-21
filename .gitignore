@@ -1,5 +1,6 @@
 cmake/
 build/
 .vscode/
+clion/cmake-build-relwithdebinfo/
 
 **/._*

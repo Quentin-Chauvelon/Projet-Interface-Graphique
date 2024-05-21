@@ -1,3 +1,14 @@
+/**
+ * How to use:
+ * This file aims at testing the radio button API. There are 2 windows:
+ * - The firsrt tests the configuration of radio buttons / goup. This allows us to make sure that 'default values' (the group properties)
+ * are applied to the radio buttons if they have not been configured and that is also works depending of the order in which we configured the radio buttons and group
+ * - The second one tests all the other functions of the API. When selecting a radio button in the left, it tests getting the selected widget from the group and matches
+ * it with the radio buttons on the right (selecting a radio button on the right does not link them to the ones on the left). The "Selected: ..." text tests getting
+ * the text of the selected radio button. The "Is first selected ? ..." text tests checking if a given widget is selected, etc...
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -44,6 +55,12 @@ bool on_clear_selection_clicked(ei_widget_t widget, ei_event_t *event, ei_user_p
 
 bool on_linked_radio_button_selected(ei_widget_t widget, ei_event_t *event, ei_user_param_t user_param)
 {
+    // This function will not link the radio buttons that have been created using the "Add option" button.
+    // This is done on purpose as this file aims at testing all the functions of the API. The linked radio
+    // buttons allowed us to test the "ei_radio_button_select" function. The following code compares addresses
+    // of the radio buttons from the left with the ones on the right, and thus won't work for any added radio
+    // buttons.
+
     ei_widget_t selected_radio_button = get_selected_radio_button(radio_button_group2);
 
     if (selected_radio_button == radio_button2_1)
@@ -180,8 +197,10 @@ int main(int argc, char **argv)
     ei_place(clear_button, &(ei_anchor_t){ei_anc_southeast}, &(int){-20}, &(int){-20}, NULL, NULL, &(float){1}, &(float){1}, NULL, NULL);
 
     // Error: can't parent a radio button to something other than a radio button group
+    printf("Should have an error message because we are trying to create a radio button not a child of radio button group:\n");
     ei_widget_create("radio_button", window2, NULL, NULL);
 
+    printf("Should have an error message because we are trying to create a widget, not a radio button, as a child of a radio button group:\n");
     // Error: all children of a radio button group must be radio buttons
     ei_widget_create("frame", radio_button_group3, NULL, NULL);
 

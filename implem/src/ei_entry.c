@@ -11,6 +11,8 @@
 #include "../implem/headers/ei_event_ext.h"
 #include "../implem/headers/ei_widget_configure_ext.h"
 
+static bool is_entry_focused = false;
+
 void ei_entry_configure(ei_widget_t widget, int *requested_char_size, const ei_color_t *color, int *border_width, ei_font_t *text_font, ei_color_t *text_color)
 {
     ei_entry_t *entry = (ei_entry_t *)widget;
@@ -51,6 +53,8 @@ void ei_release_focused_entry(ei_widget_t *widget)
     if (strcmp((*widget)->wclass->name, "entry") == 0 && ((ei_entry_t *)*widget)->focused)
     {
         ei_entry_release_focus(*widget);
+
+        is_entry_focused = false;
     }
 
     // Check all children
@@ -187,6 +191,13 @@ void ei_entry_give_focus(ei_widget_t widget)
     entry->focused = true;
     entry->cursor_visible = true;
 
+    is_entry_focused = true;
+
     // Start blinking the cursor
     ei_restart_blinking_timer((ei_entry_t *)widget, true);
+}
+
+bool is_an_entryfocused()
+{
+    return is_entry_focused;
 }

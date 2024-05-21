@@ -118,7 +118,9 @@ void ei_entry_drawfunc(ei_widget_t widget, ei_surface_t surface, ei_surface_t pi
 
     // Draw the selection background (which will override the cursor since
     // it shouldn't be drawn if a selection is active)
-    if (entry->selection_start_character != NULL && entry->selection_end_character != NULL)
+    if (entry->focused &&
+        entry->selection_start_character != NULL &&
+        entry->selection_end_character != NULL)
     {
         ei_rect_t selection_rect = ei_rect(
             ei_point(
@@ -305,6 +307,8 @@ void ei_update_requested_char_size(ei_entry_t *entry, int requested_char_size)
     entry->widget.requested_size.height = size.height + ei_entry_default_padding * 2 + entry->widget_appearance.border_width * 2 + ei_entry_default_letter_spacing * (requested_char_size - 1);
 
     entry->widget.screen_location.size = entry->widget.requested_size;
+
+    hw_surface_free(m_surface);
 }
 
 void ei_entry_release_focus(ei_widget_t widget)
@@ -419,6 +423,8 @@ void ei_entry_add_character(ei_entry_t *entry, char character)
     {
         ei_compute_positions_after_character(entry, entry->cursor);
     }
+
+    hw_surface_free(text_surface);
 }
 
 void ei_entry_erase_character(ei_entry_t *entry, ei_entry_character_t *character)

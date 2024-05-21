@@ -82,9 +82,9 @@ int main(int argc, char **argv)
     // Image, no rect, bigger than widget
     ei_widget_t frame1;
     frame1 = ei_widget_create("frame", ei_app_root_widget(), NULL, NULL);
-    ei_frame_configure(frame1, &(ei_size_t){150, 150}, &(ei_color_t){0x00, 0x00, 0x00, 0xff},
+    ei_frame_configure(frame1, &(ei_size_t){0, 0}, &(ei_color_t){0x00, 0x00, 0x00, 0xff},
                        NULL, NULL, NULL,
-                       NULL, NULL, NULL, &image, NULL, &(ei_anchor_t){ei_anc_northeast});
+                       NULL, NULL, NULL, &image2, NULL, &(ei_anchor_t){ei_anc_northeast});
     ei_place_xy(frame1, 10, 10);
 
     // Image, rect, NE anchor
