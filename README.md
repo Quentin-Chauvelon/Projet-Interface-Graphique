@@ -16,14 +16,14 @@ Voici la liste des tests que nous avons écrits et ce qu'ils nous ont permis de 
 `make text`
 
 Ce fichier nous a permis de tester l'affichage de texte dans divers conditions : couleur, ancrage, overlap...
-La toplevel permet de s'assurer que le texte est redessiné correctement lorsqu'on la déplace dessus
+Une toplevel a aussi été ajoutée et peut être déplacée pour s'assurer que le texte est redessiné correctement lorsque l'on passe dessus
 
 ### Image
 
 `make image`
 
-Ce fichier nous a permis de tester l'affichaque d'images dans divers conditions : image plus grande/plus petite que le widget, rectangle (subpart) dans ou en dehors de l'image, ancrage de l'image...
-La toplevel permet de nouveau de nous assurer que les images sont bien redessinées lorsque l'on la déplace dessus
+Ce fichier nous a permis de tester l'affichage d'images dans divers conditions : image plus grande/plus petite que le widget, rectangle (subpart) dans ou en dehors de l'image, ancrage de l'image...
+Une toplevel a aussi été ajoutée et peut être déplacée pour s'assurer que l'image est redessinée correctement lorsque l'on passe dessus
 
 ### Resize toplevel
 
@@ -35,13 +35,13 @@ Ce fichier nous a permis de tester que le redimensionnement d'une toplevel se fa
 
 `make placer`
 
-Ce fichier nous a permis de tester les différents paramèters du placer : position relative/absolue, taille relative/absolue, ancrage...
+Ce fichier nous a permis de tester les différents paramètres du placer : position relative/absolue, taille relative/absolue, ancrage...
 
 ### Radio button
 
 `make radiobutton`
 
-Ce fichier reproduit l'exemple des radio buttons donné dans le sujet (Figure 4.6). Il nous a permis de tester le bon fonctionnement des radio buttons sur un test simple
+Ce fichier reproduit l'exemple des radio buttons donnés dans le sujet (Figure 4.6). Il nous a permis de tester le bon fonctionnement des radio buttons sur un test simple
 
 ### Radio buttons
 
@@ -54,7 +54,7 @@ Plus d'informations sont disponibles dans le fichier `tests/radio_buttons.c`
 
 `make tags`
 
-Ce fichier nous a permis de tester les tags personnalisés et notamment la création d'un tag par l'utilisateur, y associé une fonction et l'ajouter à n'importe quel widget. Il nous permet aussi de nous assurer que l'on peut supprimer un tag de certains widgets (ex: enlever le comportement par défaut d'un bouton)
+Ce fichier nous a permis de tester les tags personnalisés et notamment la création d'un tag par l'utilisateur, y associer une fonction et l'ajouter à n'importe quel widget. Il nous permet aussi de nous assurer que l'on peut supprimer un tag de certains widgets (ex: enlever le comportement par défaut d'un bouton)
 
 ### Parsing
 
