@@ -7,7 +7,7 @@
 
 ## Tests
 
-Outre les applications de tests qui nous étaient fournies et qui nous ont permis de tester notre implémentation de l'API au fur et à mesure du développement, nous avons également écrit nos propre applications de tests pour vérifier le fonctionnement de notre code, non pas sur ces cas génériques mais plutôt sur des cas plus spécifiques pour s'assurer du bon respect de toutes les contraintes du sujet. Certains éléments ont aussi été testés en modifiant les fichiers de tests qui nous étaient donnés sans pour autant créer un fichier spécifique.
+Outre les applications de tests qui nous étaient fournies et qui nous ont permis de tester notre implémentation de l'API au fur et à mesure du développement, nous avons également écrit nos propres applications de tests pour vérifier le fonctionnement de notre code, non pas sur des cas génériques mais plutôt sur des cas plus spécifiques pour s'assurer du bon respect de toutes les contraintes du sujet. Certains éléments ont aussi été testés en modifiant les fichiers de tests qui nous étaient donnés sans pour autant créer un fichier spécifique.
 Les tests que nous avons ajoutés nous ont aussi permis de vérifier le bon fonctionnement des extensions que nous avons réalisées.
 Voici la liste des tests que nous avons écrits et ce qu'ils nous ont permis de tester :
 
@@ -23,6 +23,7 @@ La toplevel permet de s'assurer que le texte est redessiné correctement lorsqu'
 `make image`
 
 Ce fichier nous a permis de tester l'affichaque d'images dans divers conditions : image plus grande/plus petite que le widget, rectangle (subpart) dans ou en dehors de l'image, ancrage de l'image...
+La toplevel permet de nouveau de nous assurer que les images sont bien redessinées lorsque l'on la déplace dessus
 
 ### Resize toplevel
 
@@ -46,14 +47,14 @@ Ce fichier reproduit l'exemple des radio buttons donné dans le sujet (Figure 4.
 
 `make radiobuttons`
 
-Ce fichier nous a permis de tester dans un premier temps la configuration correcte des radio buttons, ainsi que les valeurs par défaut de leur groupe, en fonction de l'ordre d'appel des diverses fonctions. Puis dans un second temps, il nous a permis de tester les différentes fonctions de l'API (récupérer le radio button sélectionné dans un groupe, savoir si un radio button est sélectionné, récupérer le texte du radio button sélectionné...)
+Ce fichier nous a permis de tester dans un premier temps la configuration correcte des radio buttons (ainsi que les valeurs par défaut de leur groupe), en fonction de l'ordre d'appel des diverses fonctions. Puis dans un second temps, il nous a permis de tester les différentes fonctions de l'API (récupérer le radio button sélectionné dans un groupe, savoir si un radio button est sélectionné, récupérer le texte du radio button sélectionné...)
 Plus d'informations sont disponibles dans le fichier `tests/radio_buttons.c`
 
 ### Custom tags
 
 `make tags`
 
-Ce fichier nous a permis de tester les tags personnalisés et notamment pouvoir la création d'un tag par l'utilisateur, y associé une fonction et l'ajouter à n'importe quel widget. Il nous permet aussi de nous assurer que l'on peut supprimer un tag de certains widgets (ex: enlever le comportement par défaut d'un bouton)
+Ce fichier nous a permis de tester les tags personnalisés et notamment la création d'un tag par l'utilisateur, y associé une fonction et l'ajouter à n'importe quel widget. Il nous permet aussi de nous assurer que l'on peut supprimer un tag de certains widgets (ex: enlever le comportement par défaut d'un bouton)
 
 ### Parsing
 
@@ -83,7 +84,7 @@ Ce fichier reproduit l'exemple du gestionnaire de géométrie en grille donné d
 
 `make grid_playground`
 
-Ce fichier nous a permis de tester les différentes fonctionnalités des grilles de manière dynamique (il est possible jouer avec les paramètres de la grille, ajouter des cellules, etc... pour voir le résultat en temps réel). Il permet de tester l'ancrage, margin, espacement, anchrage/remplissage d'un widget dans une cellule, maximisation de la taille d'une ou plusieurs lignes/colonnes (en cliquant sur les boutons Row ou Column en en-tête de ligne/colonne)...
+Ce fichier nous a permis de tester les différentes fonctionnalités des grilles de manière dynamique (il est possible de jouer avec les paramètres de la grille, ajouter des cellules, etc... pour voir le résultat en temps réel). Il permet de tester l'ancrage, margin, espacement, anchrage/remplissage d'un widget dans une cellule, maximisation de la taille d'une ou plusieurs lignes/colonnes (en cliquant sur les boutons Row ou Column en en-tête de ligne/colonne)...
 Plus d'informations sont disponibles dans le fichier `tests/grid_playground.c`
 
 ### Content Rect Visualization
