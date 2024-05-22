@@ -1,9 +1,9 @@
 # Projet IG PLC
 
-*Equipe :*
-*BADIANE Seydina*
-*BOSSE Christian*
-*CHAUVELON Quentin*
+*Equipe :*  
+*BADIANE Seydina*  
+*BOSSE Christian*  
+*CHAUVELON Quentin*  
 
 ## Tests
 
