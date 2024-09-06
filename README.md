@@ -17,12 +17,12 @@
 ![C](https://img.shields.io/badge/C-%2300599C.svg?style=flat&logo=C&logoColor=white&labelColor=grey)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=flat&logo=cmake&logoColor=white&labelColor=grey)
 
-This project is my end of term project. I worked on it in a group of 3 for 1 month during my first year of Master's Degree. The goal of this project was to code a widget library in C that would allow users to create GUIs. With this library, simple games can be created like minesweeper or 2048. Specifically, we had to implement the following functionnalities:
-- Various widgets such as frames, buttons, entries, etc... that can be instantiated, configured, positionned...
+This project is my end of term project. I worked on it in a group of 3 for 1 month during my first year of Master's Degree. The goal of this project was to code a widget library in C that would allow users to create GUIs. With this library, simple games can be created like minesweeper or 2048. Specifically, we had to implement the following functionalities:
+- Various widgets such as frames, buttons, entries, etc... that can be instantiated, configured, positioned...
 - Event handling and callbacks (clicks, key presses, etc...)
 - A grid geometry manager to arrange widgets in a grid and customize it
 - A Parser to create GUIs from a file
-- Tags that can be added/removed from widgets to personnalize their behavior
+- Tags that can be added/removed from widgets to personalize their behavior
 
 To organize ourselves, we divided the tasks among us using a planning tool: Trello.
 
